@@ -1,0 +1,40 @@
+@startuml
+title BEACON - Plugin-Based Testing System
+
+!include ../styles/theme-simple.puml
+
+package "Probe (Raspberry Pi)" {
+  package "Agent" {
+    rectangle "Scheduler" as scheduler
+    rectangle "Plugin Loader" as loader
+    rectangle "Result Formatter" as formatter
+  }
+
+  package "Test Plugins" {
+    rectangle "HTTP Test" as http
+    rectangle "RSSI Test" as rssi
+    rectangle "Ping Test" as ping
+    rectangle "iPerf Test" as iperf
+  }
+}
+
+package "Central Server" {
+  rectangle "GraphQL API" as gql
+  rectangle "Plugin Repository" as repo
+}
+
+scheduler --> loader : Trigger execution
+loader --> http
+loader --> rssi
+loader --> ping
+loader --> iperf
+
+http --> formatter
+rssi --> formatter
+ping --> formatter
+iperf --> formatter
+
+loader --> gql : Get enabled tests
+loader --> repo : New plugin download
+
+@enduml

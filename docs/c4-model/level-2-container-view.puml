@@ -1,0 +1,56 @@
+@startuml
+title BEACON - Container Diagram (C2)
+
+skinparam noteFontSize 11
+
+!include ../styles/theme-simple.puml
+
+actor "Admin" as admin
+
+' ── Central Server boundary ──────────────────────────────
+package "Central Server" {
+
+  rectangle "GraphQL API\n<size:10>[Python/Node.js · HTTP]</size>" as gql
+  database "Config Store" as cfg
+
+  gql -down-> cfg : read/write config
+}
+
+' ── Monitoring Stack boundary ────────────────────────────
+package "Monitoring Stack" {
+
+  database "Prometheus\n<size:10>[Prometheus · pull]</size>" as prom
+  rectangle "Grafana" as graf
+
+  graf -right-> prom : PromQL over HTTP
+}
+
+' ── Raspberry Pi boundary (multiple instances) ───────────
+package "Raspberry Pi Probe  ×N" {
+
+  rectangle "Probe Agent\n<size:10>[Python/C · Raspberry Pi OS]</size>" as agent
+  rectangle "/metrics endpoint\n<size:10>[HTTP · Prometheus]</size>" as metrics
+
+  agent -right-> metrics : update on\neach test run
+}
+
+' ── Cross-boundary arrows ─────────────────────────────────
+admin -right-> gql       : GraphQL over HTTP\n(configure & view status)
+admin -down-> graf       : View dashboards
+
+agent -up-> gql          : GraphQL over HTTP\n(poll config every N s)
+gql -down-> agent        : config response\n(enabled tests, interval)
+
+prom -up-> metrics       : HTTP GET /metrics\n(scrape every 15 s · pull)
+
+note bottom of agent
+  Each Pi runs one Agent process.
+  Scheduler triggers plugins;
+  results written to /metrics.
+end note
+
+note bottom of prom
+  Prometheus scrapes all probes.
+end note
+
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+title BEACON - Communication Architecture
+
+!include ../styles/theme-simple.puml
+
+actor Admin
+
+package "Central Server" {
+  rectangle "GraphQL API" as gql
+  rectangle "Config Manager" as cfg
+}
+
+package "Probe 1 (Raspberry Pi)" {
+  rectangle "Agent" as p1agent
+  rectangle "/metrics endpoint" as p1metrics
+}
+
+package "Probe 2 (Raspberry Pi)" {
+  rectangle "Agent" as p2agent
+  rectangle "/metrics endpoint" as p2metrics
+}
+
+package "Monitoring Stack" {
+  database "Prometheus" as prom
+  rectangle "Grafana" as graf
+}
+
+Admin --> gql : Configure probes\n(view status, enable tests)
+
+p1agent --> gql : Fetch config\n(tests, interval)
+gql --> p1agent : Config response
+
+p2agent --> gql : Fetch config\n(tests, interval)
+gql --> p2agent : Config response
+
+p1agent --> p1metrics : Update metrics
+p2agent --> p2metrics : Update metrics
+
+prom --> p1metrics : Scrape metrics (HTTP pull)
+prom --> p2metrics : Scrape metrics (HTTP pull)
+
+graf --> prom : Query metrics
+prom --> graf : Return time-series data
+
+@enduml

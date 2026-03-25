@@ -1,0 +1,61 @@
+' Shared colorful and consistent visual theme for BEACON diagrams
+skinparam backgroundColor #FFFDF8
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam padding 8
+skinparam dpi 150
+
+skinparam ArrowColor #5B4B8A
+skinparam ArrowFontColor #2F2A44
+skinparam ArrowFontSize 11
+
+skinparam package {
+  BackgroundColor #FFF4E6
+  BorderColor #D47A00
+  FontColor #3B2F2F
+  RoundCorner 10
+}
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #2B6CB0
+  FontColor #1C2A39
+  RoundCorner 10
+}
+
+skinparam component {
+  BackgroundColor #F4FAFF
+  BorderColor #2B6CB0
+  FontColor #1C2A39
+  RoundCorner 10
+}
+
+skinparam actor {
+  BackgroundColor #E8F7EE
+  BorderColor #2F855A
+  FontColor #1E3D2F
+}
+
+skinparam cloud {
+  BackgroundColor #F7EEFF
+  BorderColor #8B5FBF
+  FontColor #3E2E57
+}
+
+skinparam database {
+  BackgroundColor #FFF8E1
+  BorderColor #B7791F
+  FontColor #4A3410
+}
+
+skinparam node {
+  BackgroundColor #EEF8FF
+  BorderColor #2C7A9E
+  FontColor #16384A
+}
+
+skinparam note {
+  BackgroundColor #FFF9D6
+  BorderColor #D6B656
+  FontColor #4A3B10
+}

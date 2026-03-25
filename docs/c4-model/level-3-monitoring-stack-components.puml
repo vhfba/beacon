@@ -1,0 +1,59 @@
+@startuml
+title BEACON - Component Diagram (C3) · Monitoring Stack
+
+skinparam componentFontSize 13
+skinparam noteFontSize 11
+
+!include ../styles/theme-simple.puml
+
+actor "Admin" as admin
+rectangle "/metrics endpoint ×N\n<size:10>[Probe · HTTP]</size>" as probes
+
+package "Monitoring Stack" {
+
+	' ── Prometheus ─────────────────────────────────────────
+	package "Prometheus" {
+
+		component "Scrape Manager\n<size:10>executes pull jobs per scrape_config</size>" as scraper
+		component "TSDB\n<size:10>local time-series storage</size>" as tsdb
+		component "Rules Engine\n<size:10>recording rules, alert rules</size>" as rules
+		component "Query Engine\n<size:10>PromQL evaluation</size>" as promql
+		component "Alertmanager\n<size:10>route, group, silence alerts</size>" as alertmgr
+
+		scraper  -down-> tsdb     : write scraped samples
+		rules    -down-> tsdb     : read & write\nrecording rules
+		rules    -right-> alertmgr : fire alerts
+		promql   -down-> tsdb     : read samples\nfor PromQL queries
+	}
+
+	' ── Grafana ────────────────────────────────────────────
+	package "Grafana" {
+
+		component "Datasource Plugin\n<size:10>Prometheus HTTP API connector</size>" as ds
+		component "Dashboard Engine\n<size:10>panel rendering, variables</size>" as dash
+		component "Alerting\n<size:10>Grafana-managed alert rules</size>" as galert
+		component "User & Auth\n<size:10>local accounts / LDAP</size>" as gauth
+
+		ds     -right-> dash    : feed panel data
+		ds     -right-> galert  : feed alert evaluation
+		gauth  -down->  dash    : access control
+	}
+
+	' ── Cross-package wiring ───────────────────────────────
+	ds -up-> promql : PromQL over HTTP\n(per panel refresh)
+}
+
+' ── External arrows ────────────────────────────────────────
+scraper -up-> probes : HTTP GET /metrics\n(pull)
+admin   -right-> gauth  : Login
+admin   -down-> dash    : view dashboards\n& explore metrics
+
+note bottom of tsdb
+	Retention period still to be defined.
+end note
+
+note bottom of alertmgr
+	Only if necessary, as Prometheus alerting is often sufficient.
+end note
+
+@enduml

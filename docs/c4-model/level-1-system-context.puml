@@ -1,0 +1,37 @@
+@startuml
+title BEACON - System Context (C1)
+
+!include ../styles/theme-simple.puml
+
+actor "Admin" as admin
+
+rectangle "BEACON\n<size:11>IoT Wi-Fi analytics cluster</size>" as beacon {
+}
+
+cloud "Building Wi-Fi\nInfrastructure" as wifi {
+}
+
+node "iPerf Server\n<size:11>Throughput test endpoint</size>" as iperf {
+}
+
+database "NTP / DNS\n<size:11>Network services</size>" as ntp
+
+admin -right-> beacon : Configure probes,\nview dashboards
+beacon -up-> wifi : Collect Wi-Fi metrics
+beacon -right-> iperf : Active throughput\n& latency tests
+beacon -down-> ntp : Time sync,\nname resolution
+
+note right of beacon
+  Deployables inside BEACON:
+  • Raspberry Pi probe agents
+  • GraphQL API + config store
+  • Prometheus + Grafana stack
+end note
+
+note right of iperf
+  Optional component for active testing.
+  Only needed if you want to run
+  throughput or latency tests.
+end note
+
+@enduml

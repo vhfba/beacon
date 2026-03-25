@@ -1,0 +1,68 @@
+@startuml
+title BEACON - Component Diagram (C3) · Central Server
+
+skinparam componentFontSize 13
+skinparam noteFontSize 11
+
+!include ../styles/theme-simple.puml
+
+actor "Admin" as admin
+actor "Probe Agent" as probe
+
+package "Central Server" {
+
+  ' ── GraphQL API layer ──────────────────────────────────
+  package "GraphQL API" {
+
+    component "Query Resolver\n<size:10>probe status, metrics summary</size>" as qresolver
+    component "Mutation Resolver\n<size:10>enable/disable tests, set interval</size>" as mresolver
+    component "Auth Middleware\n<size:10>API key / token validation</size>" as auth
+    component "Schema\n<size:10>type definitions, validation</size>" as schema
+
+    auth -down-> qresolver : pass if valid
+    auth -down-> mresolver : pass if valid
+    schema -right-> qresolver : validates
+    schema -right-> mresolver : validates
+  }
+
+  ' ── Config Manager ─────────────────────────────────────
+  package "Config Manager" {
+
+    component "Probe Registry\n<size:10>tracks registered probes, last seen</size>" as registry
+    component "Test Config Service\n<size:10>enabled plugins, schedule interval</size>" as testcfg
+  }
+
+  ' ── Plugin Repository ──────────────────────────────────
+  package "Plugin Repository" {
+
+    component "Plugin Store\n<size:10>plugin bundles</size>" as pluginstore
+    component "Plugin Manifest\n<size:10>name, checksum</size>" as manifest
+
+    manifest -right-> pluginstore : resolves
+  }
+
+  ' ── Persistence ────────────────────────────────────────
+  database "Config Store\n<size:10>[SQLite / PostgreSQL]</size>" as db
+
+  ' ── Internal wiring ────────────────────────────────────
+  qresolver -down-> registry   : query probe list\n& last seen
+  qresolver -down-> testcfg    : query enabled tests
+  mresolver -down-> testcfg    : update test config
+  mresolver -down-> registry   : register / deregister probe
+  testcfg   -down-> db         : read / write
+  registry  -down-> db         : read / write
+  pluginstore -down-> db       : read plugin blobs
+  manifest   -down-> db        : read manifest rows
+}
+
+' ── External arrows ────────────────────────────────────────
+admin  -right-> auth         : GraphQL over HTTP\n(mutations & queries)
+probe  -right-> auth         : GraphQL over HTTP\n(fetch config & register)
+probe  -up-> manifest        : check latest plugin
+probe  -up-> pluginstore     : download plugin bundle
+
+note right of auth
+  planned
+end note
+
+@enduml
