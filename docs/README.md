@@ -58,6 +58,12 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 - `adr/ADR-004-use-python-for-the-central-server.md`  
   Decision to implement the central server in Python with Strawberry, SQLAlchemy, and Uvicorn.
 
+- `adr/ADR-005-use-strawberry-for-the-graphql-layer.md`  
+  Decision to use Strawberry as the Python GraphQL library.
+
+- `adr/ADR-006-use-postgresql-with-sqlalchemy-and-alembic-for-configuration-storage.md`  
+  Decision to use PostgreSQL with SQLAlchemy and Alembic for persistent configuration storage.
+
 ## Styling
 
 - There is no shared local style include for diagrams.
