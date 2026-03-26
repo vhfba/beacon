@@ -1,0 +1,34 @@
+@startuml
+title BEACON - Use Cases
+
+left to right direction
+
+actor Admin as admin
+actor "Probe agent" as probe
+
+rectangle "Central server" as central {
+  usecase "Register probe" as UC_Register 
+  usecase "View fleet status" as UC_Fleet 
+  usecase "Enable / disable tests" as UC_Enable 
+  usecase "Set schedule interval" as UC_Schedule 
+
+  usecase "Poll configuration" as UC_Poll 
+  usecase "Fetch plugin / download bundle" as UC_Plugin 
+}
+
+rectangle "Monitoring stack" as monitoring {
+  usecase "View dashboards" as UC_Dash 
+  usecase "Manage alert rules" as UC_Alerts 
+}
+
+admin --> UC_Register
+admin --> UC_Fleet
+admin --> UC_Enable
+admin --> UC_Schedule
+admin --> UC_Dash
+admin --> UC_Alerts
+
+probe --> UC_Poll
+probe --> UC_Plugin
+
+@enduml

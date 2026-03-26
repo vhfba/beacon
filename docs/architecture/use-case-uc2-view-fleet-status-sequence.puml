@@ -1,0 +1,22 @@
+@startuml
+title UC2 - View Fleet Status (Sequence)
+
+autonumber
+
+actor Admin as admin
+participant "Query resolver" as query
+participant "Probe registry" as registry
+participant "Test config service" as cfg
+
+admin -> query : probes { id, lastSeen, tests }
+query -> registry : listProbes()
+registry --> query : [{ id, lastSeen }]
+query -> cfg : getEnabledTests(probeIds)
+cfg --> query : [{ probeId, plugins, interval }]
+query --> admin : merged probe list
+
+note over admin, query
+  lastSeen staleness drives probe health indicator in UI
+end note
+
+@enduml

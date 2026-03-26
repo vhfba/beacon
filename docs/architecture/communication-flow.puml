@@ -1,8 +1,6 @@
 @startuml
 title BEACON - Communication Architecture
 
-!include ../styles/theme-simple.puml
-
 actor Admin
 
 package "Central Server" {

@@ -1,8 +1,6 @@
 @startuml
 title BEACON - Plugin-Based Testing System
 
-!include ../styles/theme-simple.puml
-
 package "Probe (Raspberry Pi)" {
   package "Agent" {
     rectangle "Scheduler" as scheduler

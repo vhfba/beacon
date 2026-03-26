@@ -1,25 +1,19 @@
 @startuml
 title BEACON - System Context (C1)
 
-!include ../styles/theme-simple.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-actor "Admin" as admin
+Person(admin, "Admin")
+System(beacon, "BEACON", "IoT Wi-Fi analytics cluster")
 
-rectangle "BEACON\n<size:11>IoT Wi-Fi analytics cluster</size>" as beacon {
-}
+System_Ext(wifi, "Building Wi-Fi Infrastructure", "Wi-Fi environment that probes measure")
+System_Ext(iperf, "iPerf Server", "Throughput and latency test endpoint")
+System_Ext(ntp, "NTP / DNS", "Time sync and name resolution services")
 
-cloud "Building Wi-Fi\nInfrastructure" as wifi {
-}
-
-node "iPerf Server\n<size:11>Throughput test endpoint</size>" as iperf {
-}
-
-database "NTP / DNS\n<size:11>Network services</size>" as ntp
-
-admin -right-> beacon : Configure probes,\nview dashboards
-beacon -up-> wifi : Collect Wi-Fi metrics
-beacon -right-> iperf : Active throughput\n& latency tests
-beacon -down-> ntp : Time sync,\nname resolution
+Rel(admin, beacon, "Configure probes and view dashboards", "GraphQL + Grafana")
+Rel(beacon, wifi, "Collect Wi-Fi metrics")
+Rel(beacon, iperf, "Run active throughput and latency tests")
+Rel(beacon, ntp, "Time sync and name resolution")
 
 note right of beacon
   Deployables inside BEACON:

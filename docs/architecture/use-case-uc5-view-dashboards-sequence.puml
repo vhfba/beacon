@@ -1,0 +1,23 @@
+@startuml
+title UC5 - View Dashboards (Sequence)
+
+autonumber
+
+actor Admin as admin
+participant "Grafana auth" as gauth
+participant "Dashboard engine" as dash
+participant "Prometheus query engine" as promq
+
+admin -> gauth : login(user, password)
+gauth --> admin : session token
+
+admin -> dash : openDashboard(id)
+dash -> promq : PromQL query (HTTP)
+note right of promq
+  reads TSDB
+end note
+
+promq --> dash : time-series data
+dash --> admin : rendered dashboard panels
+
+@enduml

@@ -1,65 +1,52 @@
 @startuml
 title BEACON - Component Diagram (C3) · Central Server
 
-skinparam componentFontSize 13
-skinparam noteFontSize 11
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-!include ../styles/theme-simple.puml
+Person(admin, "Admin")
+Person_Ext(probe, "Probe Agent")
 
-actor "Admin" as admin
-actor "Probe Agent" as probe
+System_Boundary(central, "Central Server") {
 
-package "Central Server" {
-
-  ' ── GraphQL API layer ──────────────────────────────────
-  package "GraphQL API" {
-
-    component "Query Resolver\n<size:10>probe status, metrics summary</size>" as qresolver
-    component "Mutation Resolver\n<size:10>enable/disable tests, set interval</size>" as mresolver
-    component "Auth Middleware\n<size:10>API key / token validation</size>" as auth
-    component "Schema\n<size:10>type definitions, validation</size>" as schema
-
-    auth -down-> qresolver : pass if valid
-    auth -down-> mresolver : pass if valid
-    schema -right-> qresolver : validates
-    schema -right-> mresolver : validates
+  Container_Boundary(gqlapi, "GraphQL API") {
+    Component(qresolver, "Query Resolver", "GraphQL Resolver", "Probe status and metrics summary queries")
+    Component(mresolver, "Mutation Resolver", "GraphQL Resolver", "Enable/disable tests and set schedule interval")
+    Component(auth, "Auth Middleware", "Middleware", "API key/token validation")
+    Component(schema, "Schema", "GraphQL SDL", "Type definitions and request validation")
   }
 
-  ' ── Config Manager ─────────────────────────────────────
-  package "Config Manager" {
-
-    component "Probe Registry\n<size:10>tracks registered probes, last seen</size>" as registry
-    component "Test Config Service\n<size:10>enabled plugins, schedule interval</size>" as testcfg
+  Container_Boundary(cfgmgr, "Config Manager") {
+    Component(registry, "Probe Registry", "Service", "Tracks registered probes and last-seen heartbeat")
+    Component(testcfg, "Test Config Service", "Service", "Stores enabled plugins and scheduling interval")
   }
 
-  ' ── Plugin Repository ──────────────────────────────────
-  package "Plugin Repository" {
-
-    component "Plugin Store\n<size:10>plugin bundles</size>" as pluginstore
-    component "Plugin Manifest\n<size:10>name, checksum</size>" as manifest
-
-    manifest -right-> pluginstore : resolves
+  Container_Boundary(pluginrepo, "Plugin Repository") {
+    Component(pluginstore, "Plugin Store", "Service", "Serves plugin bundles")
+    Component(manifest, "Plugin Manifest", "Service", "Resolves plugin name/version/checksum metadata")
   }
 
-  ' ── Persistence ────────────────────────────────────────
-  database "Config Store\n<size:10>[SQLite / PostgreSQL]</size>" as db
-
-  ' ── Internal wiring ────────────────────────────────────
-  qresolver -down-> registry   : query probe list\n& last seen
-  qresolver -down-> testcfg    : query enabled tests
-  mresolver -down-> testcfg    : update test config
-  mresolver -down-> registry   : register / deregister probe
-  testcfg   -down-> db         : read / write
-  registry  -down-> db         : read / write
-  pluginstore -down-> db       : read plugin blobs
-  manifest   -down-> db        : read manifest rows
+  ComponentDb(db, "Config Store", "SQLite/PostgreSQL", "Configuration and plugin metadata persistence")
 }
 
-' ── External arrows ────────────────────────────────────────
-admin  -right-> auth         : GraphQL over HTTP\n(mutations & queries)
-probe  -right-> auth         : GraphQL over HTTP\n(fetch config & register)
-probe  -up-> manifest        : check latest plugin
-probe  -up-> pluginstore     : download plugin bundle
+Rel(auth, qresolver, "Pass if valid")
+Rel(auth, mresolver, "Pass if valid")
+Rel(schema, qresolver, "Validate queries")
+Rel(schema, mresolver, "Validate mutations")
+
+Rel(qresolver, registry, "Query probe list and last-seen state")
+Rel(qresolver, testcfg, "Query enabled tests")
+Rel(mresolver, testcfg, "Update test configuration")
+Rel(mresolver, registry, "Register/deregister probe")
+Rel(testcfg, db, "Read/write")
+Rel(registry, db, "Read/write")
+Rel(pluginstore, db, "Read plugin bundle metadata")
+Rel(manifest, db, "Read manifest rows")
+Rel(manifest, pluginstore, "Resolve bundle reference")
+
+Rel(admin, auth, "GraphQL mutations and queries", "HTTP")
+Rel(probe, auth, "Fetch config and register", "HTTP")
+Rel(probe, manifest, "Check latest plugin metadata")
+Rel(probe, pluginstore, "Download plugin bundle")
 
 note right of auth
   planned

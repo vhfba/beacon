@@ -1,0 +1,33 @@
+@startuml
+title UC3 - Enable or Disable Tests (Sequence)
+
+autonumber
+
+actor Admin as admin
+participant "Auth middleware" as auth
+participant "Mutation resolver" as mutation
+participant "Test config service" as cfg
+
+admin -> auth : setTests(probeId, plugins)
+note right of auth
+  auth
+end note
+
+auth -> mutation : forward
+note right of mutation
+  validate
+end note
+
+mutation -> cfg : updatePlugins(probeId, list)
+note right of cfg
+  persist
+end note
+
+cfg --> mutation : ok
+mutation --> admin : { probeId, enabledPlugins }
+
+note over admin, mutation
+  Probe picks up the change on its next config poll (UC7)
+end note
+
+@enduml

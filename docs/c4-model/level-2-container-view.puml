@@ -1,47 +1,35 @@
 @startuml
 title BEACON - Container Diagram (C2)
 
-skinparam noteFontSize 11
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-!include ../styles/theme-simple.puml
+Person(admin, "Admin")
 
-actor "Admin" as admin
-
-' ── Central Server boundary ──────────────────────────────
-package "Central Server" {
-
-  rectangle "GraphQL API\n<size:10>[Python/Node.js · HTTP]</size>" as gql
-  database "Config Store" as cfg
-
-  gql -down-> cfg : read/write config
+System_Boundary(central, "Central Server") {
+  Container(gql, "GraphQL API", "Python/Node.js, HTTP", "Serves central configuration and probe status")
+  ContainerDb(cfg, "Config Store", "SQLite/PostgreSQL", "Stores probe registry and test configuration")
 }
 
-' ── Monitoring Stack boundary ────────────────────────────
-package "Monitoring Stack" {
-
-  database "Prometheus\n<size:10>[Prometheus · pull]</size>" as prom
-  rectangle "Grafana" as graf
-
-  graf -right-> prom : PromQL over HTTP
+System_Boundary(monitoring, "Monitoring Stack") {
+  ContainerDb(prom, "Prometheus", "Prometheus", "Scrapes probe metrics and stores time-series")
+  Container(graf, "Grafana", "Grafana", "Dashboards and metric exploration")
 }
 
-' ── Raspberry Pi boundary (multiple instances) ───────────
-package "Raspberry Pi Probe  ×N" {
-
-  rectangle "Probe Agent\n<size:10>[Python/C · Raspberry Pi OS]</size>" as agent
-  rectangle "/metrics endpoint\n<size:10>[HTTP · Prometheus]</size>" as metrics
-
-  agent -right-> metrics : update on\neach test run
+System_Boundary(probes, "Raspberry Pi Probe xN") {
+  Container(agent, "Probe Agent", "Python/C on Raspberry Pi OS", "Polls config and runs test plugins")
+  Container(metrics, "/metrics endpoint", "HTTP", "Exposes latest probe metrics to Prometheus")
 }
 
-' ── Cross-boundary arrows ─────────────────────────────────
-admin -right-> gql       : GraphQL over HTTP\n(configure & view status)
-admin -down-> graf       : View dashboards
+Rel(gql, cfg, "Read/write configuration")
+Rel(graf, prom, "Execute PromQL queries", "HTTP")
+Rel(agent, metrics, "Update metrics on each test run")
 
-agent -up-> gql          : GraphQL over HTTP\n(poll config every N s)
-gql -down-> agent        : config response\n(enabled tests, interval)
+Rel(admin, gql, "Configure probes and view status", "GraphQL over HTTP")
+Rel(admin, graf, "View dashboards")
 
-prom -up-> metrics       : HTTP GET /metrics\n(scrape every 15 s · pull)
+Rel(agent, gql, "Poll configuration", "GraphQL over HTTP")
+Rel(gql, agent, "Return enabled tests and interval", "GraphQL response")
+Rel(prom, metrics, "Scrape /metrics every 15s", "HTTP GET")
 
 note bottom of agent
   Each Pi runs one Agent process.

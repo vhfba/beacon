@@ -7,7 +7,6 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 - `architecture/`: focused technical architecture views
 - `c4-model/`: C4 diagrams (levels 1 to 3)
 - `adr/`: architecture decision records
-- `styles/`: shared PlantUML style files
 
 ## Diagram Index
 
@@ -18,6 +17,18 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 
 - `architecture/plugin-testing-architecture.puml`  
   Plugin-based testing flow inside probe agents and server-side plugin repository usage.
+
+- `architecture/use-cases-diagram.puml`  
+  Use case view for Admin and Probe Agent interactions with the central server and monitoring stack.
+
+- `architecture/use-case-uc2-view-fleet-status-sequence.puml`  
+  Sequence flow for viewing fleet status by merging probe registry data with enabled tests.
+
+- `architecture/use-case-uc3-set-tests-sequence.puml`  
+  Sequence flow for enabling/disabling probe tests through auth, mutation resolver, and config service.
+
+- `architecture/use-case-uc5-view-dashboards-sequence.puml`  
+  Sequence flow for Grafana dashboard access and Prometheus query execution.
 
 ### C4 Model
 
@@ -44,16 +55,11 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 - `adr/ADR-003-graphql-for-central-configuration-api.md`  
   Decision to use GraphQL for Admin and probe configuration workflows.
 
+- `adr/ADR-004-use-python-for-the-central-server.md`  
+  Decision to implement the central server in Python with Strawberry, SQLAlchemy, and Uvicorn.
+
 ## Styling
 
-All diagrams use the shared theme:
-
-- `styles/theme-simple.puml`
-
-To keep consistency, include this in each `.puml` file after `@startuml`:
-
-```puml
-!include ../styles/theme-simple.puml
-```
-
-(For files inside `architecture/` and `c4-model/`, the relative include path above is correct.)
+- There is no shared local style include for diagrams.
+- C4 diagrams under `c4-model/` use C4-PlantUML with internet `!includeurl` directives.
+- Architecture diagrams under `architecture/` use plain PlantUML without a shared theme file.

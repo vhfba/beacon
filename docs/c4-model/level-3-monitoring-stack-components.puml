@@ -1,52 +1,42 @@
 @startuml
 title BEACON - Component Diagram (C3) · Monitoring Stack
 
-skinparam componentFontSize 13
-skinparam noteFontSize 11
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-!include ../styles/theme-simple.puml
+Person(admin, "Admin")
+System_Ext(probes, "Probe /metrics endpoint xN", "HTTP endpoints exposed by probe agents")
 
-actor "Admin" as admin
-rectangle "/metrics endpoint ×N\n<size:10>[Probe · HTTP]</size>" as probes
+System_Boundary(monitoring, "Monitoring Stack") {
 
-package "Monitoring Stack" {
-
-	' ── Prometheus ─────────────────────────────────────────
-	package "Prometheus" {
-
-		component "Scrape Manager\n<size:10>executes pull jobs per scrape_config</size>" as scraper
-		component "TSDB\n<size:10>local time-series storage</size>" as tsdb
-		component "Rules Engine\n<size:10>recording rules, alert rules</size>" as rules
-		component "Query Engine\n<size:10>PromQL evaluation</size>" as promql
-		component "Alertmanager\n<size:10>route, group, silence alerts</size>" as alertmgr
-
-		scraper  -down-> tsdb     : write scraped samples
-		rules    -down-> tsdb     : read & write\nrecording rules
-		rules    -right-> alertmgr : fire alerts
-		promql   -down-> tsdb     : read samples\nfor PromQL queries
+	Container_Boundary(prometheus, "Prometheus") {
+		Component(scraper, "Scrape Manager", "Prometheus", "Executes pull jobs per scrape_config")
+		Component(tsdb, "TSDB", "Prometheus storage", "Local time-series storage")
+		Component(rules, "Rules Engine", "Prometheus", "Recording and alert rule evaluation")
+		Component(promql, "Query Engine", "PromQL", "PromQL evaluation")
+		Component(alertmgr, "Alertmanager", "Alertmanager", "Route, group and silence alerts")
 	}
 
-	' ── Grafana ────────────────────────────────────────────
-	package "Grafana" {
-
-		component "Datasource Plugin\n<size:10>Prometheus HTTP API connector</size>" as ds
-		component "Dashboard Engine\n<size:10>panel rendering, variables</size>" as dash
-		component "Alerting\n<size:10>Grafana-managed alert rules</size>" as galert
-		component "User & Auth\n<size:10>local accounts / LDAP</size>" as gauth
-
-		ds     -right-> dash    : feed panel data
-		ds     -right-> galert  : feed alert evaluation
-		gauth  -down->  dash    : access control
+	Container_Boundary(grafana, "Grafana") {
+		Component(ds, "Datasource Plugin", "Prometheus connector", "Connects dashboards to Prometheus HTTP API")
+		Component(dash, "Dashboard Engine", "Grafana", "Panel rendering and templating")
+		Component(galert, "Alerting", "Grafana", "Grafana-managed alert rules")
+		Component(gauth, "User and Auth", "Grafana", "Local accounts and LDAP integration")
 	}
-
-	' ── Cross-package wiring ───────────────────────────────
-	ds -up-> promql : PromQL over HTTP\n(per panel refresh)
 }
 
-' ── External arrows ────────────────────────────────────────
-scraper -up-> probes : HTTP GET /metrics\n(pull)
-admin   -right-> gauth  : Login
-admin   -down-> dash    : view dashboards\n& explore metrics
+Rel(scraper, tsdb, "Write scraped samples")
+Rel(rules, tsdb, "Read/write recording and alerting series")
+Rel(rules, alertmgr, "Fire alerts")
+Rel(promql, tsdb, "Read samples for query execution")
+
+Rel(ds, dash, "Provide panel data")
+Rel(ds, galert, "Provide alert evaluation data")
+Rel(gauth, dash, "Authorize dashboard access")
+Rel(ds, promql, "Execute PromQL over HTTP")
+
+Rel(scraper, probes, "Scrape /metrics", "HTTP GET")
+Rel(admin, gauth, "Login")
+Rel(admin, dash, "View dashboards and explore metrics")
 
 note bottom of tsdb
 	Retention period still to be defined.
