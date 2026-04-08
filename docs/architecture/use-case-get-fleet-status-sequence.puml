@@ -1,0 +1,21 @@
+@startuml
+title Use Case - Get Fleet Status (GetFleetStatusUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Query\nfleetStatus" as gql
+control "GetFleetStatusUseCase" as uc
+database "IProbeRepository" as probes
+database "PostgreSQL" as db
+
+admin -> gql : fleetStatus
+gql -> uc : ExecuteAsync()
+uc -> probes : GetAllAsync()
+probes -> db : SELECT all probes
+db --> probes : probe rows
+probes --> uc : Probe list
+uc --> gql : ProbeDTO list
+gql --> admin : FleetStatusResponse
+
+@enduml

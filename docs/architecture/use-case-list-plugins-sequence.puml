@@ -1,0 +1,21 @@
+@startuml
+title Use Case - List Plugins (ListPluginsUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Query\nplugins" as gql
+control "ListPluginsUseCase" as uc
+database "IPluginRepository" as plugins
+database "PostgreSQL" as db
+
+admin -> gql : plugins
+gql -> uc : ExecuteAsync()
+uc -> plugins : GetAllAsync()
+plugins -> db : SELECT all plugins
+db --> plugins : plugin rows
+plugins --> uc : Plugin list
+uc --> gql : PluginDTO list
+gql --> admin : [PluginType]
+
+@enduml

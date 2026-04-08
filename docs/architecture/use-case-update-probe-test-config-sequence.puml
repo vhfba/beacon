@@ -1,0 +1,31 @@
+@startuml
+title Use Case - Update Probe Test Config (UpdateProbeTestConfigUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Mutation\nupdateProbeTestConfig" as gql
+control "UpdateProbeTestConfigUseCase" as uc
+database "IProbeRepository" as probes
+database "ITestTypeRepository" as tests
+database "IProbeTestConfigurationRepository" as configs
+database "PostgreSQL" as db
+
+admin -> gql : updateProbeTestConfig(input)
+gql -> uc : ExecuteAsync(input)
+uc -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe
+db --> probes : probe row
+probes --> uc : Probe
+uc -> tests : GetByNameAsync(testType)
+tests -> db : SELECT test_type
+db --> tests : test_type row
+tests --> uc : TestType
+uc -> configs : UpdateAsync(config)
+configs -> db : UPSERT probe_test_config
+db --> configs : persisted
+configs --> uc : ok
+uc --> gql : ProbeTestConfigurationDTO
+gql --> admin : UpdateProbeTestConfigResponse(success=true)
+
+@enduml

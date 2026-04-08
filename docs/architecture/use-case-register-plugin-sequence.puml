@@ -1,0 +1,29 @@
+@startuml
+title Use Case - Register Plugin (RegisterPluginUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Mutation\nregisterPlugin" as gql
+control "RegisterPluginUseCase" as uc
+database "IPluginRepository" as plugins
+database "PostgreSQL" as db
+
+admin -> gql : registerPlugin(input)
+gql -> uc : ExecuteAsync(input)
+uc -> plugins : GetByIdAsync(id)
+plugins -> db : SELECT by id
+db --> plugins : no row
+plugins --> uc : null
+uc -> plugins : GetByNameAsync(name)
+plugins -> db : SELECT by name
+db --> plugins : rows without same version
+plugins --> uc : Plugin list
+uc -> plugins : CreateAsync(new Plugin)
+plugins -> db : INSERT plugin
+db --> plugins : inserted
+plugins --> uc : Plugin
+uc --> gql : PluginDTO
+gql --> admin : RegisterPluginResponse(success=true)
+
+@enduml

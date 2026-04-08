@@ -1,0 +1,26 @@
+@startuml
+title Use Case - Update Probe Status (UpdateProbeStatusUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Mutation\nupdateProbeStatus" as gql
+control "UpdateProbeStatusUseCase" as uc
+database "IProbeRepository" as probes
+database "PostgreSQL" as db
+
+admin -> gql : updateProbeStatus(probeId,status)
+gql -> uc : ExecuteAsync(probeId,status)
+uc -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe
+db --> probes : probe row
+probes --> uc : Probe
+uc -> uc : Validate and UpdateStatus(status)
+uc -> probes : UpdateAsync(probe)
+probes -> db : UPDATE probe status
+db --> probes : updated
+probes --> uc : ok
+uc --> gql : ProbeDTO
+gql --> admin : UpdateProbeStatusResponse(success=true)
+
+@enduml

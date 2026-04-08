@@ -1,0 +1,234 @@
+# GraphQL Schema for BEACON Central Server (.NET 9)
+# Per ADR-003: GraphQL API for both Admin and Probe clients
+# Per ADR-008: HotChocolate GraphQL implementation
+
+## Enums
+
+enum ProbeStatusType {
+  REGISTERED
+  ACTIVE
+  INACTIVE
+  DECOMMISSIONED
+}
+
+## Scalars
+
+scalar DateTime
+
+## Object Types
+
+"""
+Probe type - represents a Raspberry Pi device
+"""
+type Probe {
+  id: String!
+  name: String!
+  location: String!
+  ipAddress: String!
+  status: ProbeStatusType!
+  createdAt: DateTime!
+  lastHeartbeat: DateTime
+  lastConfigFetch: DateTime
+}
+
+"""
+Test type configuration for a probe
+"""
+type ProbeTestConfig {
+  probeId: String!
+  testType: String!
+  intervalSeconds: Int!
+  enabled: Boolean!
+}
+
+"""
+Probe configuration response - narrow scope for probe agents
+"""
+type ProbeConfig {
+  probeId: String!
+  enabledTests: [ProbeTestConfig!]!
+}
+
+"""
+Plugin entity
+"""
+type Plugin {
+  id: String!
+  name: String!
+  version: String!
+  checksum: String!
+  description: String
+  releasedAt: DateTime!
+  available: Boolean!
+}
+
+"""
+Fleet status response
+"""
+type FleetStatusResponse {
+  probes: [Probe!]!
+}
+
+## Input Types
+
+"""
+Input for registering a new probe
+"""
+input RegisterProbeInput {
+  id: String!
+  name: String!
+  location: String!
+  ipAddress: String!
+}
+
+"""
+Input for updating probe test configuration
+"""
+input UpdateProbeTestConfigInput {
+  probeId: String!
+  testType: String!
+  intervalSeconds: Int!
+  enabled: Boolean! = true
+}
+
+"""
+Input for registering a plugin
+"""
+input RegisterPluginInput {
+  id: String!
+  name: String!
+  version: String!
+  checksum: String!
+  description: String
+}
+
+"""
+Input for enabling or disabling a probe test
+"""
+input SetProbeTestEnabledInput {
+  probeId: String!
+  testType: String!
+  enabled: Boolean!
+}
+
+"""
+Input for enabling or disabling a plugin
+"""
+input SetPluginAvailabilityInput {
+  pluginId: String!
+  available: Boolean!
+}
+
+## Response Types
+
+"""
+Response from registerProbe mutation
+"""
+type RegisterProbeResponse {
+  success: Boolean!
+  message: String
+  probe: Probe
+}
+
+"""
+Response from updateProbeTestConfig mutation
+"""
+type UpdateProbeTestConfigResponse {
+  success: Boolean!
+  message: String
+  config: ProbeTestConfig
+}
+
+"""
+Response from updateProbeStatus mutation
+"""
+type UpdateProbeStatusResponse {
+  success: Boolean!
+  message: String
+  probe: Probe
+}
+
+"""
+Response from registerPlugin mutation
+"""
+type RegisterPluginResponse {
+  success: Boolean!
+  message: String
+  plugin: Plugin
+}
+
+"""
+Response from setProbeTestEnabled mutation
+"""
+type SetProbeTestEnabledResponse {
+  success: Boolean!
+  message: String
+  config: ProbeTestConfig
+}
+
+"""
+Response from setPluginAvailability mutation
+"""
+type SetPluginAvailabilityResponse {
+  success: Boolean!
+  message: String
+  plugin: Plugin
+}
+
+## Query Root
+
+type Query {
+  """
+  Get the status of all probes in the fleet (Admin only)
+  """
+  fleetStatus: FleetStatusResponse!
+
+  """
+  Get configuration for a specific probe (called by probes for polling)
+  """
+  probeConfig(probeId: String!): ProbeConfig!
+
+  """
+  List all plugins (available and disabled)
+  """
+  plugins: [Plugin!]!
+
+  """
+  Get a plugin by id
+  """
+  plugin(id: String!): Plugin
+}
+
+## Mutation Root
+
+type Mutation {
+  """
+  Register a new probe device in the system
+  """
+  registerProbe(input: RegisterProbeInput!): RegisterProbeResponse!
+
+  """
+  Update test configuration for a probe
+  """
+  updateProbeTestConfig(input: UpdateProbeTestConfigInput!): UpdateProbeTestConfigResponse!
+
+  """
+  Update the status of a probe (e.g., mark as INACTIVE)
+  """
+  updateProbeStatus(probeId: String!, status: String!): UpdateProbeStatusResponse!
+
+  """
+  Register a plugin for probe distribution
+  """
+  registerPlugin(input: RegisterPluginInput!): RegisterPluginResponse!
+
+  """
+  Enable or disable a test for a probe without changing interval
+  """
+  setProbeTestEnabled(input: SetProbeTestEnabledInput!): SetProbeTestEnabledResponse!
+
+  """
+  Enable or disable plugin availability for distribution
+  """
+  setPluginAvailability(input: SetPluginAvailabilityInput!): SetPluginAvailabilityResponse!
+}

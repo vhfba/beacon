@@ -1,0 +1,25 @@
+@startuml
+title Use Case - Register Probe (RegisterProbeUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Mutation\nregisterProbe" as gql
+control "RegisterProbeUseCase" as uc
+database "IProbeRepository" as probes
+database "PostgreSQL" as db
+
+admin -> gql : registerProbe(input)
+gql -> uc : ExecuteAsync(input)
+uc -> probes : GetByIpAddressAsync(ipAddress)
+probes -> db : SELECT probe by ip
+db --> probes : no row
+probes --> uc : null
+uc -> probes : RegisterAsync(new Probe)
+probes -> db : INSERT probe
+db --> probes : inserted
+probes --> uc : Probe
+uc --> gql : ProbeDTO
+gql --> admin : RegisterProbeResponse(success=true)
+
+@enduml

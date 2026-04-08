@@ -1,0 +1,33 @@
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+code/*/.venv/
+
+# Tool caches
+.pytest_cache/
+code/*/.pytest_cache/
+
+# Java / Maven build outputs
+target/
+code/*/target/
+
+# Java IDE and project files
+*.iml
+.idea/
+.vscode/
+
+# Runtime logs
+*.log
+logs/
+code/*/logs/
+
+# Local databases
+*.db
+code/*/*.db
+
+# OS/editor files
+.DS_Store
+Thumbs.db

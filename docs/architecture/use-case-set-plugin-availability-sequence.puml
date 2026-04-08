@@ -1,0 +1,30 @@
+@startuml
+title Use Case - Set Plugin Availability (SetPluginAvailabilityUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Mutation\nsetPluginAvailability" as gql
+control "SetPluginAvailabilityUseCase" as uc
+database "IPluginRepository" as plugins
+database "PostgreSQL" as db
+
+admin -> gql : setPluginAvailability(input)
+gql -> uc : ExecuteAsync(input)
+uc -> plugins : GetByIdAsync(pluginId)
+plugins -> db : SELECT plugin
+db --> plugins : plugin row
+plugins --> uc : Plugin
+alt available=true
+  uc -> uc : plugin.Restore()
+else available=false
+  uc -> uc : plugin.Retire()
+end
+uc -> plugins : UpdateAsync(plugin)
+plugins -> db : UPDATE available flag
+db --> plugins : updated
+plugins --> uc : ok
+uc --> gql : PluginDTO
+gql --> admin : SetPluginAvailabilityResponse(success=true)
+
+@enduml

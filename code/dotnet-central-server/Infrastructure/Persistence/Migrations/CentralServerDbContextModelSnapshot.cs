@@ -1,0 +1,227 @@
+using CentralServer.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+namespace CentralServer.Infrastructure.Persistence.Migrations;
+
+#nullable disable
+
+[DbContext(typeof(CentralServerDbContext))]
+public partial class CentralServerDbContextModelSnapshot : ModelSnapshot
+{
+    protected override void BuildModel(ModelBuilder modelBuilder)
+    {
+#pragma warning disable 612, 618
+        modelBuilder
+            .HasAnnotation("ProductVersion", "9.0.0")
+            .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+        modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", b =>
+        {
+            b.Property<string>("Id")
+                .HasMaxLength(50)
+                .HasColumnType("character varying(50)")
+                .HasColumnName("id");
+
+            b.Property<DateTime>("CreatedAt")
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("created_at");
+
+            b.Property<string>("IpAddress")
+                .IsRequired()
+                .HasMaxLength(45)
+                .HasColumnType("character varying(45)")
+                .HasColumnName("ip_address");
+
+            b.Property<DateTime?>("LastConfigFetch")
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("last_config_fetch");
+
+            b.Property<DateTime?>("LastHeartbeat")
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("last_heartbeat");
+
+            b.Property<string>("Location")
+                .IsRequired()
+                .HasMaxLength(255)
+                .HasColumnType("character varying(255)")
+                .HasColumnName("location");
+
+            b.Property<string>("Name")
+                .IsRequired()
+                .HasMaxLength(255)
+                .HasColumnType("character varying(255)")
+                .HasColumnName("name");
+
+            b.Property<string>("Status")
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnType("character varying(50)")
+                .HasColumnName("status");
+
+            b.Property<long>("Version")
+                .IsConcurrencyToken()
+                .HasColumnType("bigint")
+                .HasColumnName("version");
+
+            b.HasKey("Id");
+
+            b.HasIndex("IpAddress")
+                .IsUnique()
+                .HasName("unique_ip_probe");
+
+            b.HasIndex("CreatedAt")
+                .HasName("idx_probes_created_at")
+                .HasAnnotation("Relational:Descending", new[] { true });
+
+            b.HasIndex("LastHeartbeat")
+                .HasName("idx_probes_last_heartbeat")
+                .HasAnnotation("Relational:Descending", new[] { true });
+
+            b.HasIndex("Status")
+                .HasName("idx_probes_status");
+
+            b.ToTable("probes", (string)null);
+        });
+        modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.TestTypeEntity", b =>
+        {
+            b.Property<string>("Name")
+                .HasMaxLength(50)
+                .HasColumnType("character varying(50)")
+                .HasColumnName("name");
+
+            b.Property<string>("Description")
+                .IsRequired()
+                .HasMaxLength(500)
+                .HasColumnType("character varying(500)")
+                .HasColumnName("description");
+
+            b.HasKey("Name");
+
+            b.ToTable("test_types", (string)null);
+
+            b.HasData(
+                new { Name = "RSSI", Description = "Receive Signal Strength Indicator measurement" },
+                new { Name = "PING", Description = "ICMP echo request to measure latency" },
+                new { Name = "HTTP", Description = "HTTP connectivity and response time test" },
+                new { Name = "IPERF", Description = "Network throughput measurement" }
+            );
+        });
+        modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.PluginEntity", b =>
+        {
+            b.Property<string>("Id")
+                .HasMaxLength(100)
+                .HasColumnType("character varying(100)")
+                .HasColumnName("id");
+
+            b.Property<string>("Checksum")
+                .IsRequired()
+                .HasMaxLength(128)
+                .HasColumnType("character varying(128)")
+                .HasColumnName("checksum");
+
+            b.Property<string>("Description")
+                .HasMaxLength(1000)
+                .HasColumnType("character varying(1000)")
+                .HasColumnName("description");
+
+            b.Property<bool>("Available")
+                .HasColumnType("boolean")
+                .HasColumnName("available");
+
+            b.Property<string>("Name")
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnType("character varying(100)")
+                .HasColumnName("name");
+
+            b.Property<DateTime>("ReleasedAt")
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("released_at");
+
+            b.Property<string>("Version")
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnType("character varying(50)")
+                .HasColumnName("version");
+
+            b.HasKey("Id");
+
+            b.HasIndex(new[] { "Name", "Version" }, "idx_plugins_name_version")
+                .IsUnique();
+
+            b.HasIndex("Available", "idx_plugins_available");
+
+            b.HasIndex("Name", "idx_plugins_name");
+
+            b.HasIndex("ReleasedAt", "idx_plugins_released_at")
+                .HasAnnotation("Relational:Descending", new[] { true });
+
+            b.ToTable("plugins", (string)null);
+        });
+        modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeTestConfigEntity", b =>
+        {
+            b.Property<string>("ProbeId")
+                .HasMaxLength(50)
+                .HasColumnType("character varying(50)")
+                .HasColumnName("probe_id");
+
+            b.Property<string>("TestType")
+                .HasMaxLength(50)
+                .HasColumnType("character varying(50)")
+                .HasColumnName("test_type");
+
+            b.Property<bool>("Enabled")
+                .HasColumnType("boolean")
+                .HasColumnName("enabled");
+
+            b.Property<int>("IntervalSeconds")
+                .HasColumnType("integer")
+                .HasColumnName("interval_seconds");
+
+            b.HasKey("ProbeId", "TestType");
+
+            b.HasIndex("ProbeId", "Enabled", "idx_probe_config_probe_enabled");
+
+            b.HasIndex("Enabled", "idx_probe_config_enabled");
+
+            b.HasIndex("ProbeId", "idx_probe_config_probe_id");
+
+            b.HasIndex("TestType");
+
+            b.ToTable("probe_test_configurations", (string)null);
+        });
+
+        modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeTestConfigEntity", b =>
+        {
+            b.HasOne("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", "Probe")
+                .WithMany("TestConfigurations")
+                .HasForeignKey("ProbeId")
+                .IsRequired()
+                .HasConstraintName("fk_probe_test_config_probes");
+
+            b.HasOne("CentralServer.Infrastructure.Persistence.Entities.TestTypeEntity", "TestTypeEntity")
+                .WithMany("ProbeConfigurations")
+                .HasForeignKey("TestType")
+                .IsRequired()
+                .HasConstraintName("fk_probe_test_config_test_types");
+
+            b.Navigation("Probe");
+            b.Navigation("TestTypeEntity");
+        });
+
+        modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", b =>
+        {
+            b.Navigation("TestConfigurations");
+        });
+
+        modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.TestTypeEntity", b =>
+        {
+            b.Navigation("ProbeConfigurations");
+        });
+#pragma warning restore 612, 618
+    }
+}

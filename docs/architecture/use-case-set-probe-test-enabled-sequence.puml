@@ -1,0 +1,31 @@
+@startuml
+title Use Case - Set Probe Test Enabled (SetProbeTestEnabledUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Mutation\nsetProbeTestEnabled" as gql
+control "SetProbeTestEnabledUseCase" as uc
+database "IProbeRepository" as probes
+database "IProbeTestConfigurationRepository" as configs
+database "PostgreSQL" as db
+
+admin -> gql : setProbeTestEnabled(input)
+gql -> uc : ExecuteAsync(input)
+uc -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe by id
+db --> probes : probe row
+probes --> uc : Probe
+uc -> configs : GetAsync(probeId,testType)
+configs -> db : SELECT existing config
+db --> configs : config row
+configs --> uc : ProbeTestConfiguration
+uc -> uc : updated = config.WithEnabled(enabled)
+uc -> configs : UpdateAsync(updated)
+configs -> db : UPDATE enabled flag
+db --> configs : updated
+configs --> uc : ok
+uc --> gql : ProbeTestConfigurationDTO
+gql --> admin : SetProbeTestEnabledResponse(success=true)
+
+@enduml

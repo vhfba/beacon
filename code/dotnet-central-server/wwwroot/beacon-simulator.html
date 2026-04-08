@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BEACON .NET GraphQL Simulator</title>
+  <style>
+    :root {
+      --bg: #f3f8f7;
+      --card: #ffffff;
+      --ink: #0f2f35;
+      --muted: #4a666b;
+      --line: #d7e3e5;
+      --accent: #0f7b72;
+      --accent-2: #de8a2c;
+      --ok: #1f8f46;
+      --bad: #b03232;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 0% 0%, #dcefeb 0%, transparent 42%),
+        radial-gradient(circle at 100% 0%, #fde8d2 0%, transparent 35%),
+        var(--bg);
+    }
+
+    .page {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .hero {
+      background: linear-gradient(120deg, #0f3f49 0%, #0f6a71 65%, #0c8281 100%);
+      color: #ecf8f9;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 14px 30px rgba(20, 52, 57, 0.12);
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.2rem, 2.8vw, 2rem);
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: #c9e6e8;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 10px 22px rgba(19, 44, 48, 0.08);
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    input,
+    select,
+    button,
+    textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #bed0d3;
+      padding: 9px 10px;
+      font: inherit;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 700;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    button.alt {
+      background: #47656a;
+    }
+
+    button.warn {
+      background: var(--accent-2);
+      color: #2f1f09;
+    }
+
+    button.small {
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      border-radius: 8px;
+    }
+
+    .status {
+      margin-top: 8px;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #eaf6f2;
+      color: #1c593f;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .status.error {
+      background: #fdeaea;
+      color: var(--bad);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      background: #fff;
+    }
+
+    th,
+    td {
+      text-align: left;
+      white-space: nowrap;
+      padding: 8px;
+      border-bottom: 1px solid #edf3f4;
+    }
+
+    th {
+      background: #f2faf9;
+      color: #36555b;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    textarea {
+      min-height: 210px;
+      resize: vertical;
+      font-family: "Consolas", "Courier New", monospace;
+      background: #fbfefe;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    @media (min-width: 980px) {
+      .layout {
+        grid-template-columns: 2fr 1fr;
+      }
+
+      .full {
+        grid-column: 1 / -1;
+      }
+
+      .split {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>BEACON Central API Simulator (.NET)</h1>
+      <p>Test GraphQL operations against this server and inspect JSON responses quickly.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Connection</h2>
+      <div class="controls">
+        <div>
+          <label for="endpoint">GraphQL endpoint</label>
+          <input id="endpoint" value="/graphql" />
+        </div>
+        <div>
+          <button id="refreshAll" type="button">Refresh Fleet + Plugins</button>
+        </div>
+        <div>
+          <button id="seedDemo" class="warn" type="button">Seed Demo Probes + Tests + Plugins</button>
+        </div>
+      </div>
+      <div id="status" class="status">Ready.</div>
+      <p class="meta">Use this page at /beacon-simulator.html while the .NET server is running.</p>
+    </section>
+
+    <section class="layout">
+      <section class="panel">
+        <h2>Fleet</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>IP</th>
+                <th>Status</th>
+                <th>Last Heartbeat</th>
+              </tr>
+            </thead>
+            <tbody id="fleetRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Plugins</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Version</th>
+                <th>Available</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="pluginRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel full">
+        <h2>Admin Actions</h2>
+        <div class="split">
+          <form id="registerForm">
+            <h3>Register Probe</h3>
+            <div class="controls">
+              <div>
+                <label for="probeId">Probe ID</label>
+                <input id="probeId" required value="probe-100" />
+              </div>
+              <div>
+                <label for="probeName">Name</label>
+                <input id="probeName" required value="Lab East" />
+              </div>
+              <div>
+                <label for="probeLocation">Location</label>
+                <input id="probeLocation" required value="Building A" />
+              </div>
+              <div>
+                <label for="probeIp">IP Address</label>
+                <input id="probeIp" required value="10.1.1.100" />
+              </div>
+            </div>
+            <div style="margin-top:8px;"><button type="submit">Register</button></div>
+          </form>
+
+          <form id="configForm">
+            <h3>Update Test Config</h3>
+            <div class="controls">
+              <div>
+                <label for="cfgProbeId">Probe ID</label>
+                <input id="cfgProbeId" required value="probe-100" />
+              </div>
+              <div>
+                <label for="cfgType">Test Type</label>
+                <input id="cfgType" required value="PING" />
+              </div>
+              <div>
+                <label for="cfgInterval">Interval (seconds)</label>
+                <input id="cfgInterval" type="number" min="5" max="3600" required value="30" />
+              </div>
+              <div>
+                <label for="cfgEnabled">Enabled</label>
+                <select id="cfgEnabled">
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:8px;"><button class="warn" type="submit">Update Config</button></div>
+          </form>
+
+          <form id="testToggleForm">
+            <h3>Enable / Disable Test</h3>
+            <div class="controls">
+              <div>
+                <label for="toggleProbeId">Probe ID</label>
+                <input id="toggleProbeId" required value="probe-100" />
+              </div>
+              <div>
+                <label for="toggleType">Test Type</label>
+                <input id="toggleType" required value="PING" />
+              </div>
+              <div>
+                <label for="toggleEnabled">Enabled</label>
+                <select id="toggleEnabled">
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:8px;"><button class="alt" type="submit">Apply Toggle</button></div>
+          </form>
+
+          <form id="statusForm">
+            <h3>Update Probe Status</h3>
+            <div class="controls">
+              <div>
+                <label for="statusProbeId">Probe ID</label>
+                <input id="statusProbeId" required value="probe-100" />
+              </div>
+              <div>
+                <label for="statusValue">Status</label>
+                <select id="statusValue">
+                  <option value="REGISTERED">REGISTERED</option>
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                  <option value="DECOMMISSIONED">DECOMMISSIONED</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:8px;"><button class="alt" type="submit">Update Status</button></div>
+          </form>
+
+          <form id="probeConfigForm">
+            <h3>Get Probe Config</h3>
+            <div class="controls">
+              <div>
+                <label for="probeConfigProbeId">Probe ID</label>
+                <input id="probeConfigProbeId" required value="probe-100" />
+              </div>
+              <div>
+                <button type="submit">Fetch Config</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel full">
+        <h2>Response Output</h2>
+        <textarea id="output" readonly>{}</textarea>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <button id="clearOutput" class="alt" type="button">Clear Output</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const ui = {
+      endpoint: document.getElementById("endpoint"),
+      status: document.getElementById("status"),
+      output: document.getElementById("output"),
+      fleetRows: document.getElementById("fleetRows"),
+      pluginRows: document.getElementById("pluginRows"),
+      refreshAll: document.getElementById("refreshAll"),
+      seedDemo: document.getElementById("seedDemo"),
+      registerForm: document.getElementById("registerForm"),
+      configForm: document.getElementById("configForm"),
+      testToggleForm: document.getElementById("testToggleForm"),
+      statusForm: document.getElementById("statusForm"),
+      probeConfigForm: document.getElementById("probeConfigForm"),
+      clearOutput: document.getElementById("clearOutput")
+    };
+
+    const DEMO_PLUGINS = [
+      {
+        id: "plugin-rssi-v1",
+        name: "RSSI Monitor",
+        version: "1.0.0",
+        checksum: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        description: "Signal strength monitor"
+      },
+      {
+        id: "plugin-http-v2",
+        name: "HTTP Probe",
+        version: "2.1.0",
+        checksum: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        description: "HTTP endpoint reachability checks"
+      }
+    ];
+
+    const DEMO_PROBES = [
+      {
+        id: "probe-001",
+        name: "Main Floor",
+        location: "Room 101",
+        ipAddress: "192.168.1.100",
+        status: "ACTIVE",
+        tests: [
+          { testType: "PING", intervalSeconds: 30, enabled: true },
+          { testType: "HTTP", intervalSeconds: 60, enabled: true }
+        ]
+      },
+      {
+        id: "probe-002",
+        name: "Lobby Probe",
+        location: "Entrance",
+        ipAddress: "192.168.1.101",
+        status: "ACTIVE",
+        tests: [
+          { testType: "RSSI", intervalSeconds: 20, enabled: true },
+          { testType: "PING", intervalSeconds: 45, enabled: true }
+        ]
+      },
+      {
+        id: "probe-003",
+        name: "West Wing",
+        location: "Building A, Room 204",
+        ipAddress: "192.168.1.102",
+        status: "INACTIVE",
+        tests: [
+          { testType: "HTTP", intervalSeconds: 120, enabled: true },
+          { testType: "IPERF", intervalSeconds: 300, enabled: true }
+        ]
+      }
+    ];
+
+    function setStatus(message, isError) {
+      ui.status.textContent = message;
+      ui.status.className = isError ? "status error" : "status";
+    }
+
+    function setOutput(data) {
+      ui.output.value = JSON.stringify(data, null, 2);
+    }
+
+    function td(value) {
+      return `<td>${value ?? ""}</td>`;
+    }
+
+    async function gql(query, variables) {
+      const endpoint = ui.endpoint.value.trim() || "/graphql";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, variables: variables || {} })
+      });
+      const payload = await response.json();
+      if (!response.ok || payload.errors) {
+        throw new Error(JSON.stringify(payload.errors || payload, null, 2));
+      }
+      return payload.data;
+    }
+
+    function isDuplicateError(errorText) {
+      const value = (errorText || "").toLowerCase();
+      return value.includes("already") || value.includes("exists") || value.includes("duplicate");
+    }
+
+    function renderFleet(probes) {
+      ui.fleetRows.innerHTML = "";
+      if (!probes || probes.length === 0) {
+        ui.fleetRows.innerHTML = "<tr><td colspan='6'>No probes found.</td></tr>";
+        return;
+      }
+      for (const probe of probes) {
+        const row = `
+          <tr>
+            ${td(probe.id)}
+            ${td(probe.name)}
+            ${td(probe.location)}
+            ${td(probe.ipAddress)}
+            ${td(probe.status)}
+            ${td(probe.lastHeartbeat || "-")}
+          </tr>`;
+        ui.fleetRows.insertAdjacentHTML("beforeend", row);
+      }
+    }
+
+    function renderPlugins(plugins) {
+      ui.pluginRows.innerHTML = "";
+      if (!plugins || plugins.length === 0) {
+        ui.pluginRows.innerHTML = "<tr><td colspan='5'>No plugins found.</td></tr>";
+        return;
+      }
+      for (const plugin of plugins) {
+        const toggleLabel = plugin.available ? "Disable" : "Enable";
+        const nextValue = plugin.available ? "false" : "true";
+        const row = `
+          <tr>
+            ${td(plugin.id)}
+            ${td(plugin.name)}
+            ${td(plugin.version)}
+            ${td(plugin.available)}
+            <td>
+              <button
+                type="button"
+                class="small ${plugin.available ? "warn" : "alt"}"
+                data-plugin-id="${plugin.id}"
+                data-next-available="${nextValue}">
+                ${toggleLabel}
+              </button>
+            </td>
+          </tr>`;
+        ui.pluginRows.insertAdjacentHTML("beforeend", row);
+      }
+    }
+
+    async function refreshAll() {
+      try {
+        const fleetQuery = `query { fleetStatus { probes { id name location ipAddress status lastHeartbeat } } }`;
+        const pluginsQuery = `query { plugins { id name version checksum description releasedAt available } }`;
+        const [fleetData, pluginsData] = await Promise.all([
+          gql(fleetQuery),
+          gql(pluginsQuery)
+        ]);
+        renderFleet(fleetData.fleetStatus.probes);
+        renderPlugins(pluginsData.plugins);
+        setOutput({ fleet: fleetData, plugins: pluginsData });
+        setStatus("Fleet and plugins loaded.", false);
+      } catch (error) {
+        setStatus("Failed to refresh data.", true);
+        setOutput({ error: String(error) });
+      }
+    }
+
+    async function seedDemoData() {
+      const registerPluginMutation = `
+        mutation RegisterPlugin($input: RegisterPluginInputTypeInput!) {
+          registerPlugin(input: $input) {
+            success
+            message
+            plugin { id name version }
+          }
+        }
+      `;
+
+      const registerProbeMutation = `
+        mutation RegisterProbe($input: RegisterProbeInputTypeInput!) {
+          registerProbe(input: $input) {
+            success
+            message
+            probe { id }
+          }
+        }
+      `;
+
+      const updateConfigMutation = `
+        mutation UpdateProbeTestConfig($input: UpdateProbeTestConfigInputTypeInput!) {
+          updateProbeTestConfig(input: $input) {
+            success
+            message
+            config { probeId testType intervalSeconds enabled }
+          }
+        }
+      `;
+
+      const updateStatusMutation = `
+        mutation UpdateProbeStatus($probeId: String!, $status: String!) {
+          updateProbeStatus(probeId: $probeId, status: $status) {
+            success
+            message
+            probe { id status }
+          }
+        }
+      `;
+
+      const summary = {
+        registeredPlugins: 0,
+        registeredProbes: 0,
+        configuredTests: 0,
+        statusUpdates: 0,
+        skipped: [],
+        errors: []
+      };
+
+      setStatus("Seeding demo data...", false);
+
+      for (const plugin of DEMO_PLUGINS) {
+        try {
+          const data = await gql(registerPluginMutation, { input: plugin });
+          if (data.registerPlugin?.success) {
+            summary.registeredPlugins += 1;
+          } else {
+            summary.skipped.push(`plugin ${plugin.id}: ${data.registerPlugin?.message || "not created"}`);
+          }
+        } catch (error) {
+          const msg = String(error);
+          if (isDuplicateError(msg)) {
+            summary.skipped.push(`plugin ${plugin.id}: already exists`);
+          } else {
+            summary.errors.push(`plugin ${plugin.id}: ${msg}`);
+          }
+        }
+      }
+
+      for (const probe of DEMO_PROBES) {
+        try {
+          const reg = await gql(registerProbeMutation, {
+            input: {
+              id: probe.id,
+              name: probe.name,
+              location: probe.location,
+              ipAddress: probe.ipAddress
+            }
+          });
+
+          if (reg.registerProbe?.success) {
+            summary.registeredProbes += 1;
+          } else {
+            summary.skipped.push(`probe ${probe.id}: ${reg.registerProbe?.message || "not created"}`);
+          }
+        } catch (error) {
+          const msg = String(error);
+          if (isDuplicateError(msg)) {
+            summary.skipped.push(`probe ${probe.id}: already exists`);
+          } else {
+            summary.errors.push(`probe ${probe.id}: ${msg}`);
+          }
+        }
+
+        for (const test of probe.tests) {
+          try {
+            const cfg = await gql(updateConfigMutation, {
+              input: {
+                probeId: probe.id,
+                testType: test.testType,
+                intervalSeconds: test.intervalSeconds,
+                enabled: test.enabled
+              }
+            });
+
+            if (cfg.updateProbeTestConfig?.success) {
+              summary.configuredTests += 1;
+            } else {
+              summary.skipped.push(`config ${probe.id}/${test.testType}: ${cfg.updateProbeTestConfig?.message || "not updated"}`);
+            }
+          } catch (error) {
+            summary.errors.push(`config ${probe.id}/${test.testType}: ${String(error)}`);
+          }
+        }
+
+        try {
+          const status = await gql(updateStatusMutation, {
+            probeId: probe.id,
+            status: probe.status
+          });
+          if (status.updateProbeStatus?.success) {
+            summary.statusUpdates += 1;
+          }
+        } catch (error) {
+          summary.errors.push(`status ${probe.id}: ${String(error)}`);
+        }
+      }
+
+      await refreshAll();
+      setOutput(summary);
+
+      if (summary.errors.length > 0) {
+        setStatus("Seed completed with some errors. Check output.", true);
+      } else {
+        setStatus("Seed completed successfully.", false);
+      }
+    }
+
+    ui.refreshAll.addEventListener("click", refreshAll);
+    ui.seedDemo.addEventListener("click", seedDemoData);
+
+    ui.registerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const variables = {
+        input: {
+          id: document.getElementById("probeId").value.trim(),
+          name: document.getElementById("probeName").value.trim(),
+          location: document.getElementById("probeLocation").value.trim(),
+          ipAddress: document.getElementById("probeIp").value.trim()
+        }
+      };
+      const mutation = `
+        mutation RegisterProbe($input: RegisterProbeInputTypeInput!) {
+          registerProbe(input: $input) {
+            success
+            message
+            probe { id name location ipAddress status createdAt }
+          }
+        }
+      `;
+      try {
+        const data = await gql(mutation, variables);
+        setOutput(data);
+        setStatus("Probe registration completed.", false);
+        await refreshAll();
+      } catch (error) {
+        setStatus("Probe registration failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.configForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const variables = {
+        input: {
+          probeId: document.getElementById("cfgProbeId").value.trim(),
+          testType: document.getElementById("cfgType").value.trim(),
+          intervalSeconds: Number(document.getElementById("cfgInterval").value),
+          enabled: document.getElementById("cfgEnabled").value === "true"
+        }
+      };
+      const mutation = `
+        mutation UpdateProbeTestConfig($input: UpdateProbeTestConfigInputTypeInput!) {
+          updateProbeTestConfig(input: $input) {
+            success
+            message
+            config { probeId testType intervalSeconds enabled }
+          }
+        }
+      `;
+      try {
+        const data = await gql(mutation, variables);
+        setOutput(data);
+        setStatus("Probe test configuration updated.", false);
+      } catch (error) {
+        setStatus("Updating test configuration failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.testToggleForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const variables = {
+        input: {
+          probeId: document.getElementById("toggleProbeId").value.trim(),
+          testType: document.getElementById("toggleType").value.trim(),
+          enabled: document.getElementById("toggleEnabled").value === "true"
+        }
+      };
+      const mutation = `
+        mutation SetProbeTestEnabled($input: SetProbeTestEnabledInputTypeInput!) {
+          setProbeTestEnabled(input: $input) {
+            success
+            message
+            config { probeId testType intervalSeconds enabled }
+          }
+        }
+      `;
+      try {
+        const data = await gql(mutation, variables);
+        setOutput(data);
+        if (data.setProbeTestEnabled?.success) {
+          setStatus("Probe test enabled state updated.", false);
+        } else {
+          setStatus("Probe test toggle was rejected.", true);
+        }
+      } catch (error) {
+        setStatus("Updating probe test enabled state failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.pluginRows.addEventListener("click", async (event) => {
+      const target = event.target;
+      const button = target.closest("button[data-plugin-id]");
+      if (!button) {
+        return;
+      }
+
+      const pluginId = button.getAttribute("data-plugin-id");
+      const nextAvailable = button.getAttribute("data-next-available") === "true";
+      if (!pluginId) {
+        return;
+      }
+
+      const mutation = `
+        mutation SetPluginAvailability($input: SetPluginAvailabilityInputTypeInput!) {
+          setPluginAvailability(input: $input) {
+            success
+            message
+            plugin { id name version available }
+          }
+        }
+      `;
+
+      try {
+        const data = await gql(mutation, {
+          input: {
+            pluginId,
+            available: nextAvailable
+          }
+        });
+        setOutput(data);
+        if (data.setPluginAvailability?.success) {
+          setStatus(`Plugin ${pluginId} availability updated.`, false);
+          await refreshAll();
+        } else {
+          setStatus(`Plugin ${pluginId} toggle was rejected.`, true);
+        }
+      } catch (error) {
+        setStatus(`Plugin ${pluginId} toggle failed.`, true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.statusForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const variables = {
+        probeId: document.getElementById("statusProbeId").value.trim(),
+        status: document.getElementById("statusValue").value
+      };
+      const mutation = `
+        mutation UpdateProbeStatus($probeId: String!, $status: String!) {
+          updateProbeStatus(probeId: $probeId, status: $status) {
+            success
+            message
+            probe { id status lastHeartbeat }
+          }
+        }
+      `;
+      try {
+        const data = await gql(mutation, variables);
+        setOutput(data);
+        setStatus("Probe status updated.", false);
+        await refreshAll();
+      } catch (error) {
+        setStatus("Updating probe status failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.probeConfigForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const variables = {
+        probeId: document.getElementById("probeConfigProbeId").value.trim()
+      };
+      const query = `
+        query ProbeConfig($probeId: String!) {
+          probeConfig(probeId: $probeId) {
+            probeId
+            enabledTests {
+              probeId
+              testType
+              intervalSeconds
+              enabled
+            }
+          }
+        }
+      `;
+      try {
+        const data = await gql(query, variables);
+        setOutput(data);
+        setStatus("Probe configuration loaded.", false);
+      } catch (error) {
+        setStatus("Probe configuration request failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.clearOutput.addEventListener("click", () => {
+      setOutput({});
+      setStatus("Output cleared.", false);
+    });
+
+    refreshAll();
+  </script>
+</body>
+</html>

@@ -8,6 +8,7 @@ actor "Probe agent" as probe
 
 rectangle "Central server" as central {
   usecase "Register probe" as UC_Register 
+  usecase "Register plugin" as UC_RegPlugin
   usecase "View fleet status" as UC_Fleet 
   usecase "Enable / disable tests" as UC_Enable 
   usecase "Set schedule interval" as UC_Schedule 
@@ -22,6 +23,7 @@ rectangle "Monitoring stack" as monitoring {
 }
 
 admin --> UC_Register
+admin --> UC_RegPlugin
 admin --> UC_Fleet
 admin --> UC_Enable
 admin --> UC_Schedule

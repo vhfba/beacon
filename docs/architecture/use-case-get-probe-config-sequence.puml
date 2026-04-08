@@ -1,0 +1,29 @@
+@startuml
+title Use Case - Get Probe Config (GetProbeConfigUseCase)
+
+autonumber
+
+actor "Probe Agent" as probe
+boundary "GraphQL Query\nprobeConfig" as gql
+control "GetProbeConfigUseCase" as uc
+database "IProbeRepository" as probes
+database "IProbeTestConfigurationRepository" as configs
+database "PostgreSQL" as db
+
+probe -> gql : probeConfig(probeId)
+gql -> uc : ExecuteAsync(probeId)
+uc -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe by id
+db --> probes : probe row
+probes --> uc : Probe
+uc -> probes : UpdateAsync(RecordConfigFetch)
+probes -> db : UPDATE last_config_fetch
+db --> probes : updated
+uc -> configs : GetEnabledByProbeIdAsync(probeId)
+configs -> db : SELECT enabled tests
+db --> configs : config rows
+configs --> uc : ProbeTestConfiguration list
+uc --> gql : ProbeConfigDTO
+gql --> probe : ProbeConfigType
+
+@enduml

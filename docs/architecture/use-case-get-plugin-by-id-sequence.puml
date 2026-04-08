@@ -1,0 +1,21 @@
+@startuml
+title Use Case - Get Plugin By ID (GetPluginByIdUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Query\nplugin(id)" as gql
+control "GetPluginByIdUseCase" as uc
+database "IPluginRepository" as plugins
+database "PostgreSQL" as db
+
+admin -> gql : plugin(id)
+gql -> uc : ExecuteAsync(id)
+uc -> plugins : GetByIdAsync(id)
+plugins -> db : SELECT plugin by id
+db --> plugins : plugin row/null
+plugins --> uc : Plugin/null
+uc --> gql : PluginDTO/null
+gql --> admin : PluginType/null
+
+@enduml

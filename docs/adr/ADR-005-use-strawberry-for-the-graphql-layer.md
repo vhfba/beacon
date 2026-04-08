@@ -1,47 +1,49 @@
-# ADR-005: Use Strawberry for the GraphQL layer
+# ADR-005: Use Spring GraphQL for the GraphQL layer
 
 |Metadata|Value|
 |--------|-----|
 |Date|[2026-03-26]|
-|Status|Proposed|
-|Tags|beacon, graphql, strawberry, python|
+|Status|Declined|
+|Superseded by|ADR-008|
+|Tags|beacon, graphql, spring-graphql, java|
 
 ## Context
-Given ADR-003's decision to use GraphQL and ADR-004's decision to use Python, the team must select a specific Python GraphQL library. The options differ significantly in their approach to schema definition: some are schema-first (write SDL, generate resolvers), others are code-first (write Python, derive the schema). BEACON's schema includes probe registry types, plugin manifest types, and configuration mutation inputs - a moderate surface that will evolve during the project. The team also needs the library to integrate naturally with Python dataclasses and type annotations, since Strawberry's type system and the SQLAlchemy models must coexist without excessive translation layers.
+Given ADR-003's decision to use GraphQL and ADR-004's decision to implement the server with Spring Boot on Java, BEACON needed a GraphQL framework that integrates naturally with Spring's dependency injection, transaction boundaries, and validation model. The API must support both Admin and probe-agent access patterns while remaining easy to evolve and test. Schema governance and resolver wiring should stay close to standard Spring conventions.
 
 ## Decision
-BEACON uses Strawberry as the GraphQL library. Strawberry is code-first: Python classes decorated with @strawberry.type and @strawberry.input define the schema, and resolver functions are standard Python methods. It integrates directly with ASGI via strawberry.asgi.GraphQL, runs over Uvicorn, and supports async resolvers natively. Authentication middleware sits in front of the ASGI app and injects probe or admin identity into the Strawberry context object, which resolvers access without coupling auth logic to business logic.
+BEACON uses Spring GraphQL (`spring-boot-starter-graphql`) as the GraphQL framework. The schema is maintained in SDL files and mapped to resolver/controller methods using Spring annotations. The GraphQL endpoint is exposed through Spring Web MVC integration, and exception handling is centralized via GraphQL exception resolvers. This keeps GraphQL wiring aligned with the rest of the Spring application model.
 
 ## Alternatives considered
 
-### 1. Ariadne
-How it would work: Schema is defined in SDL files, and Python resolver functions are bound to types by name at startup. Admin and probe queries map to separate resolver modules.
+### 1. GraphQL Java without Spring GraphQL integration
+How it would work: The service would wire GraphQL Java components manually and manage runtime wiring and HTTP integration directly.
 
-Why it was rejected: SDL-first development splits the source of truth across .graphql files and Python functions, which increases the maintenance surface during rapid iteration. When a field changes, both the SDL and the resolver binding must be updated in sync. For a project iterating quickly within an internship, code-first keeps everything in one place.
+Why it was rejected: Manual setup increases boilerplate and maintenance burden compared with Spring GraphQL's built-in endpoint, schema loading, and resolver integration.
 
-### 2. Graphene
-How it would work: Python classes inherit from graphene.ObjectType, and resolvers are methods on those classes. Graphene has a large existing user base and many examples.
+### 2. REST-only API (no GraphQL)
+How it would work: Replace GraphQL with multiple REST endpoints for Admin and probe-agent operations.
 
-Why it was rejected: Graphene's API predates Python's modern type annotation system and does not use dataclasses or typing natively. The result is verbose class definitions that diverge from the rest of the codebase's style. Strawberry was designed specifically for modern Python and integrates cleanly with dataclasses, typing, and pydantic - all of which BEACON's models already use.
+Why it was rejected: It conflicts with ADR-003 and would increase endpoint proliferation for mixed client needs.
 
-### 3. Strawberry with a code-generated schema exported to SDL
-How it would work: Strawberry is used code-first but the generated SDL is exported and committed to the repository for documentation and contract validation purposes.
+### 3. Netflix DGS framework
+How it would work: Use DGS on top of Spring for GraphQL schema and resolver development.
 
-Why it was not a separate alternative: This is a usage pattern within Strawberry, not a competing library. BEACON will adopt this practice as part of its development workflow regardless.
+Why it was rejected: DGS would be a valid option, but Spring GraphQL offered a more direct path with fewer additional framework conventions for this project scope.
 
 ## Consequences
 
 ### Positive
-- Code-first schema definition keeps types, resolvers, and validation logic colocated in Python, reducing the number of files that must change together.
-- Native async resolver support means probe config polling and database queries can be awaited without blocking the event loop.
-- Strawberry's context mechanism provides a clean injection point for authentication identity, keeping resolvers free of auth boilerplate.
-- Type annotations on resolver return values are checked by mypy and validated at startup, catching schema drift early.
-- Lightweight footprint - Strawberry adds minimal dependencies beyond the standard ASGI stack.
+- Native integration with Spring Boot reduces setup complexity and aligns GraphQL with existing app lifecycle and configuration.
+- SDL-based schema keeps the contract explicit and easy to share across clients.
+- Resolver methods use familiar Spring patterns for dependency injection and validation.
+- Standardized exception handling and instrumentation are easier to integrate in the Spring ecosystem.
 
 ### Negative
-- Strawberry is younger than Graphene and Ariadne; some advanced features (subscriptions, federation) have a smaller body of community examples to draw from.
-- Code-first means the SDL is derived, not primary - tooling that expects SDL as input (some client code generators) requires an extra export step.
-- Debugging complex resolver chains requires familiarity with Python async tracebacks, which can be less readable than synchronous stacks.
+- Teams must maintain SDL and resolver mappings in sync.
+- Some advanced GraphQL UX features (such as GraphiQL plugin integrations) may depend on external assets if default tooling is used.
 
 ## Related decisions
-Depends on ADR-003 (GraphQL API decision) and ADR-004 (Python language decision). Influences ADR-006 because Strawberry resolvers call SQLAlchemy sessions directly, so the ORM choice affects how async database access is structured inside resolvers.
+Depends on ADR-003 (GraphQL API decision) and ADR-004 (Java/Spring language-platform decision). Influences ADR-006 because resolver implementations depend on JPA repositories and transaction boundaries.
+
+## Revision history
+- **2026-04-01**: Status changed to Declined. The central server platform has been transitioned to .NET 9 (ADR-007), requiring a new GraphQL framework decision. See ADR-008 for the replacement approach.

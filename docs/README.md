@@ -10,6 +10,11 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 
 ## Diagram Index
 
+### API Documentation
+
+- `graphql-api.md`
+  GraphQL endpoint reference with schema summary and example queries/mutations.
+
 ### Architecture
 
 - `architecture/communication-flow.puml`  
@@ -19,7 +24,7 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
   Plugin-based testing flow inside probe agents and server-side plugin repository usage.
 
 - `architecture/use-cases-diagram.puml`  
-  Use case view for Admin and Probe Agent interactions with the central server and monitoring stack.
+  Use case view for Admin and Probe Agent interactions with the central server and monitoring stack, including plugin registration.
 
 - `architecture/use-case-uc2-view-fleet-status-sequence.puml`  
   Sequence flow for viewing fleet status by merging probe registry data with enabled tests.
@@ -29,6 +34,36 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 
 - `architecture/use-case-uc5-view-dashboards-sequence.puml`  
   Sequence flow for Grafana dashboard access and Prometheus query execution.
+
+- `architecture/use-case-register-probe-sequence.puml`  
+  Sequence flow for probe registration via RegisterProbeUseCase.
+
+- `architecture/use-case-get-fleet-status-sequence.puml`  
+  Sequence flow for fleet retrieval via GetFleetStatusUseCase.
+
+- `architecture/use-case-get-probe-config-sequence.puml`  
+  Sequence flow for probe config polling via GetProbeConfigUseCase.
+
+- `architecture/use-case-update-probe-test-config-sequence.puml`  
+  Sequence flow for interval/enabled updates via UpdateProbeTestConfigUseCase.
+
+- `architecture/use-case-update-probe-status-sequence.puml`  
+  Sequence flow for lifecycle state updates via UpdateProbeStatusUseCase.
+
+- `architecture/use-case-list-plugins-sequence.puml`  
+  Sequence flow for plugin listing via ListPluginsUseCase.
+
+- `architecture/use-case-register-plugin-sequence.puml`  
+  Sequence flow for plugin registration via RegisterPluginUseCase.
+
+- `architecture/use-case-get-plugin-by-id-sequence.puml`  
+  Sequence flow for single plugin lookup via GetPluginByIdUseCase.
+
+- `architecture/use-case-set-probe-test-enabled-sequence.puml`  
+  Sequence flow for toggling test enabled state via SetProbeTestEnabledUseCase.
+
+- `architecture/use-case-set-plugin-availability-sequence.puml`  
+  Sequence flow for toggling plugin availability via SetPluginAvailabilityUseCase.
 
 ### C4 Model
 
@@ -55,14 +90,14 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 - `adr/ADR-003-graphql-for-central-configuration-api.md`  
   Decision to use GraphQL for Admin and probe configuration workflows.
 
-- `adr/ADR-004-use-python-for-the-central-server.md`  
-  Decision to implement the central server in Python with Strawberry, SQLAlchemy, and Uvicorn.
+- `adr/ADR-004-use-java-spring-boot-for-the-central-server.md`  
+  Decision to implement the central server in Java 21 with Spring Boot.
 
 - `adr/ADR-005-use-strawberry-for-the-graphql-layer.md`  
-  Decision to use Strawberry as the Python GraphQL library.
+  Decision to use Spring GraphQL for the GraphQL layer.
 
 - `adr/ADR-006-use-postgresql-with-sqlalchemy-and-alembic-for-configuration-storage.md`  
-  Decision to use PostgreSQL with SQLAlchemy and Alembic for persistent configuration storage.
+  Decision to use PostgreSQL with Spring Data JPA and Flyway for persistent configuration storage.
 
 ## Styling
 

@@ -3,7 +3,7 @@
 |Metadata|Value|
 |--------|-----|
 |Date|[2026-03-20]|
-|Status|Proposed|
+|Status|Accepted|
 |Tags|beacon, prometheus, metrics, monitoring|
 
 ## Context
