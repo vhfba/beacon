@@ -49,6 +49,16 @@ docker run -p 5000:8080 \
   beacon-central-server
 ```
 
+### Plugin Bundle Distribution
+
+Put plugin bundles in `plugin-bundles/` using:
+
+- `<plugin-id>-<plugin-version>.zip`
+
+Probe agents can download bundles from:
+
+- `http://localhost:5000/plugins/{pluginId}/{version}/bundle`
+
 ## Project Structure
 
 Following **Onion Architecture**:
@@ -84,6 +94,12 @@ query {
       testType
       intervalSeconds
       enabled
+    }
+    availablePlugins {
+      id
+      version
+      checksum
+      bundleUrl
     }
   }
 }

@@ -7,13 +7,16 @@ public class GetProbeConfigUseCase
 {
     private readonly IProbeRepository _probeRepository;
     private readonly IProbeTestConfigurationRepository _configRepository;
+    private readonly IPluginRepository _pluginRepository;
 
     public GetProbeConfigUseCase(
         IProbeRepository probeRepository,
-        IProbeTestConfigurationRepository configRepository)
+        IProbeTestConfigurationRepository configRepository,
+        IPluginRepository pluginRepository)
     {
         _probeRepository = probeRepository;
         _configRepository = configRepository;
+        _pluginRepository = pluginRepository;
     }
 
     public async Task<ProbeConfigDTO> ExecuteAsync(string probeId, CancellationToken cancellationToken = default)
@@ -26,6 +29,7 @@ public class GetProbeConfigUseCase
         await _probeRepository.UpdateAsync(probe, cancellationToken);
 
         var configs = await _configRepository.GetEnabledByProbeIdAsync(new ProbeId(probeId), cancellationToken);
+        var availablePlugins = await _pluginRepository.GetAvailableAsync(cancellationToken);
 
         return new ProbeConfigDTO
         {
@@ -36,7 +40,12 @@ public class GetProbeConfigUseCase
                 TestType = c.TestType.Name,
                 IntervalSeconds = c.IntervalSeconds,
                 Enabled = c.Enabled
-            }).ToList()
+            }).ToList(),
+            AvailablePlugins = availablePlugins
+                .OrderBy(p => p.Name)
+                .ThenByDescending(p => p.ReleasedAt)
+                .Select(PluginDTO.FromDomain)
+                .ToList()
         };
     }
 }

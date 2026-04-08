@@ -47,6 +47,7 @@ Probe configuration response - narrow scope for probe agents
 type ProbeConfig {
   probeId: String!
   enabledTests: [ProbeTestConfig!]!
+  availablePlugins: [Plugin!]!
 }
 
 """
@@ -60,6 +61,7 @@ type Plugin {
   description: String
   releasedAt: DateTime!
   available: Boolean!
+  bundleUrl: String!
 }
 
 """

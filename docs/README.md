@@ -15,6 +15,9 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 - `graphql-api.md`
   GraphQL endpoint reference with schema summary and example queries/mutations.
 
+- `central-server-completion-plan.md`
+  Objective-to-implementation coverage matrix and prioritized central-server completion plan.
+
 ### Architecture
 
 - `architecture/communication-flow.puml`  

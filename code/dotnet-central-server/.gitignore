@@ -2,6 +2,7 @@
 .vscode/
 bin/
 obj/
+publish/
 *.user
 *.suo
 *.sln.iml
@@ -9,3 +10,7 @@ obj/
 *.db-shm
 *.db-wal
 appsettings.Development.json
+.env
+plugin-bundles/*
+!plugin-bundles/.gitkeep
+!plugin-bundles/README.md

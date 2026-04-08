@@ -161,6 +161,20 @@ docker build -t beacon-central-server .
 docker run -p 5000:8080 -e ConnectionString="Host=host.docker.internal;..." beacon-central-server
 ```
 
+### Plugin Bundles
+
+Plugin bundle artifacts are served by the central server for probe download.
+
+1. Place bundle files in `plugin-bundles/`.
+2. Use naming convention `<plugin-id>-<plugin-version>.zip`.
+3. Download URL format is `/plugins/{pluginId}/{version}/bundle`.
+
+Example:
+
+```bash
+curl -L http://localhost:5000/plugins/plugin-http-v2/2.1.0/bundle -o plugin-http-v2-2.1.0.zip
+```
+
 ## Use Cases
 
 The server implements the following use cases:
@@ -219,6 +233,12 @@ query {
       testType
       intervalSeconds
       enabled
+    }
+    availablePlugins {
+      id
+      version
+      checksum
+      bundleUrl
     }
   }
 }

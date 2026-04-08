@@ -26,15 +26,6 @@ public class RegisterPluginUseCase
         var plugin = new Plugin(input.Id, input.Name, input.Version, input.Checksum, input.Description);
         var created = await _pluginRepository.CreateAsync(plugin, cancellationToken);
 
-        return new PluginDTO
-        {
-            Id = created.Id,
-            Name = created.Name,
-            Version = created.Version,
-            Checksum = created.Checksum,
-            Description = created.Description,
-            ReleasedAt = created.ReleasedAt,
-            Available = created.Available
-        };
+        return PluginDTO.FromDomain(created);
     }
 }

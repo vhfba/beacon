@@ -138,6 +138,7 @@ public partial class InitialCreate : Migration
         migrationBuilder.InsertData(
             table: "test_types",
             columns: new[] { "name", "description" },
+            columnTypes: new[] { "character varying(50)", "character varying(500)" },
             values: new object[,]
             {
                 { "RSSI", "Receive Signal Strength Indicator measurement" },

@@ -11,8 +11,8 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <PublishAot>true</PublishAot>
+  <PropertyGroup>
+    <PublishAot Condition="'$(EnableNativeAot)' == 'true'">true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>

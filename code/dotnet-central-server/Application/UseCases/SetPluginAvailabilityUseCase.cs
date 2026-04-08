@@ -32,15 +32,6 @@ public class SetPluginAvailabilityUseCase
 
         await _pluginRepository.UpdateAsync(plugin, cancellationToken);
 
-        return new PluginDTO
-        {
-            Id = plugin.Id,
-            Name = plugin.Name,
-            Version = plugin.Version,
-            Checksum = plugin.Checksum,
-            Description = plugin.Description,
-            ReleasedAt = plugin.ReleasedAt,
-            Available = plugin.Available
-        };
+        return PluginDTO.FromDomain(plugin);
     }
 }

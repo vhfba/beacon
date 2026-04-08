@@ -9,6 +9,7 @@ The BEACON Central Server exposes a GraphQL API for:
 - GraphQL endpoint: `http://localhost:5000/graphql`
 - GraphQL IDE (development): `http://localhost:5000/graphql`
 - Health check: `http://localhost:5000/health`
+- Plugin bundle download: `http://localhost:5000/plugins/{pluginId}/{version}/bundle`
 
 ## Main Types
 
@@ -28,6 +29,11 @@ The BEACON Central Server exposes a GraphQL API for:
 - `intervalSeconds: Int!`
 - `enabled: Boolean!`
 
+### ProbeConfig
+- `probeId: String!`
+- `enabledTests: [ProbeTestConfig!]!`
+- `availablePlugins: [Plugin!]!`
+
 ### Plugin
 - `id: String!`
 - `name: String!`
@@ -36,6 +42,7 @@ The BEACON Central Server exposes a GraphQL API for:
 - `description: String`
 - `releasedAt: DateTime!`
 - `available: Boolean!`
+- `bundleUrl: String!`
 
 ## Queries
 - `fleetStatus: FleetStatusResponse!`
@@ -149,6 +156,13 @@ query {
       intervalSeconds
       enabled
     }
+    availablePlugins {
+      id
+      name
+      version
+      checksum
+      bundleUrl
+    }
   }
 }
 ```
@@ -192,15 +206,21 @@ mutation {
 }
 ```
 
+### Download Plugin Bundle
+```bash
+curl -L http://localhost:5000/plugins/plugin-http-v2/2.1.0/bundle -o plugin-http-v2-2.1.0.zip
+```
+
 ## Typical Validation Flow
 1. Run `__typename` to verify endpoint health.
 2. Register one probe.
 3. Configure one test with `updateProbeTestConfig`.
 4. Toggle it with `setProbeTestEnabled`.
-5. Fetch `probeConfig(probeId)` to validate enabled tests.
+5. Fetch `probeConfig(probeId)` to validate enabled tests and available plugins.
 6. Register a plugin, then toggle availability with `setPluginAvailability`.
+7. Download a plugin bundle from `/plugins/{pluginId}/{version}/bundle`.
 
 ## Notes
-- `probeConfig` returns only enabled tests for a probe.
+- `probeConfig` returns enabled tests and available plugins for probe-side plugin resolution.
 - `plugins` returns all plugin records, including disabled ones, to support admin toggling.
 - `DateTime` values are serialized as ISO-8601 timestamps.
