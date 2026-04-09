@@ -22,6 +22,7 @@
 
     <!-- HotChocolate GraphQL -->
     <PackageReference Include="HotChocolate.AspNetCore" Version="14.0.0" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="14.0.0" />
     <PackageReference Include="HotChocolate.Types" Version="14.0.0" />
     <PackageReference Include="HotChocolate.Execution" Version="14.0.0" />
     <PackageReference Include="HotChocolate.Language" Version="14.0.0" />

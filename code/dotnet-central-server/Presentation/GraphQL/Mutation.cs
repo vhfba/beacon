@@ -4,11 +4,14 @@ using CentralServer.Application.UseCases;
 using CentralServer.Domain.Models;
 using CentralServer.Presentation.GraphQL.Responses;
 using CentralServer.Presentation.GraphQL.Types;
+using CentralServer.Presentation.Security;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Execution;
 [GraphQLName("Mutation")]
 public class Mutation
 {
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("registerProbe")]
     public async Task<RegisterProbeResponse> RegisterProbeAsync(
         RegisterProbeInputType input,
@@ -39,6 +42,7 @@ public class Mutation
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("updateProbeTestConfig")]
     public async Task<UpdateProbeTestConfigResponse> UpdateProbeTestConfigAsync(
         UpdateProbeTestConfigInputType input,
@@ -69,6 +73,7 @@ public class Mutation
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.ProbeOrAdmin)]
     [GraphQLName("updateProbeStatus")]
     public async Task<UpdateProbeStatusResponse> UpdateProbeStatusAsync(
         string probeId,
@@ -100,6 +105,7 @@ public class Mutation
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("registerPlugin")]
     public async Task<RegisterPluginResponse> RegisterPluginAsync(
         RegisterPluginInputType input,
@@ -130,6 +136,7 @@ public class Mutation
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("setProbeTestEnabled")]
     public async Task<SetProbeTestEnabledResponse> SetProbeTestEnabledAsync(
         SetProbeTestEnabledInputType input,
@@ -160,6 +167,7 @@ public class Mutation
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("setPluginAvailability")]
     public async Task<SetPluginAvailabilityResponse> SetPluginAvailabilityAsync(
         SetPluginAvailabilityInputType input,

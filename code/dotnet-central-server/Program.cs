@@ -4,8 +4,11 @@ using CentralServer.Domain.Repositories;
 using CentralServer.Infrastructure.Persistence;
 using CentralServer.Infrastructure.Persistence.Repositories;
 using CentralServer.Presentation.GraphQL;
+using CentralServer.Presentation.GraphQL.Security;
 using CentralServer.Presentation.GraphQL.Responses;
 using CentralServer.Presentation.GraphQL.Types;
+using CentralServer.Presentation.Security;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using IOPath = System.IO.Path;
 
@@ -50,8 +53,28 @@ builder.Services.AddScoped<RegisterPluginUseCase>();
 builder.Services.AddScoped<GetPluginByIdUseCase>();
 builder.Services.AddScoped<SetProbeTestEnabledUseCase>();
 builder.Services.AddScoped<SetPluginAvailabilityUseCase>();
+
+builder.Services.Configure<GraphQLSecurityOptions>(
+    builder.Configuration.GetSection(GraphQLSecurityOptions.SectionName));
+
+builder.Services
+    .AddAuthentication(ApiKeyAuthenticationDefaults.SchemeName)
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+        ApiKeyAuthenticationDefaults.SchemeName,
+        _ => { });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthorizationPolicies.AdminOnly, policy =>
+        policy.RequireAuthenticatedUser().RequireRole(AuthorizationPolicies.AdminRole));
+
+    options.AddPolicy(AuthorizationPolicies.ProbeOrAdmin, policy =>
+        policy.RequireAuthenticatedUser().RequireRole(AuthorizationPolicies.ProbeRole, AuthorizationPolicies.AdminRole));
+});
+
 builder.Services
     .AddGraphQLServer()
+    .AddAuthorization()
     .AddQueryType<Query>()
     .AddMutationType<Mutation>()
     .AddType<ProbeType>()
@@ -115,7 +138,13 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCors();
-app.MapGraphQL("/graphql");
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<GraphQLRequestHardeningMiddleware>();
+
+app.MapGraphQL("/graphql")
+    .RequireAuthorization(AuthorizationPolicies.ProbeOrAdmin);
+
 app.MapGet("/plugins/{pluginId}/{version}/bundle", async (
     string pluginId,
     string version,
@@ -146,7 +175,9 @@ app.MapGet("/plugins/{pluginId}/{version}/bundle", async (
         fileDownloadName: bundleFileName,
         enableRangeProcessing: true);
 })
-    .WithName("DownloadPluginBundle");
+    .WithName("DownloadPluginBundle")
+    .RequireAuthorization(AuthorizationPolicies.ProbeOrAdmin);
+
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
     .WithName("Health")
     .WithOpenApi();

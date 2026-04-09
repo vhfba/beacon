@@ -11,6 +11,12 @@ The BEACON Central Server exposes a GraphQL API for:
 - Health check: `http://localhost:5000/health`
 - Plugin bundle download: `http://localhost:5000/plugins/{pluginId}/{version}/bundle`
 
+## Authentication
+- Required header for GraphQL and plugin bundle requests: `X-Api-Key`
+- Role keys:
+  - Admin key: can access admin and probe operations
+  - Probe key: can access probe operations (`probeConfig`, `updateProbeStatus`, plugin bundle download)
+
 ## Main Types
 
 ### Probe

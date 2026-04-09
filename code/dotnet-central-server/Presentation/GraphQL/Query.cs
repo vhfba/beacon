@@ -4,11 +4,14 @@ using CentralServer.Application.UseCases;
 using CentralServer.Domain.Models;
 using CentralServer.Presentation.GraphQL.Responses;
 using CentralServer.Presentation.GraphQL.Types;
+using CentralServer.Presentation.Security;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Execution;
 [GraphQLName("Query")]
 public class Query
 {
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("fleetStatus")]
     public async Task<FleetStatusResponse> GetFleetStatusAsync(
         [Service] GetFleetStatusUseCase useCase,
@@ -28,6 +31,7 @@ public class Query
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.ProbeOrAdmin)]
     [GraphQLName("probeConfig")]
     public async Task<ProbeConfigType> GetProbeConfigAsync(
         string probeId,
@@ -49,6 +53,7 @@ public class Query
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("plugins")]
     public async Task<List<PluginType>> GetPluginsAsync(
         [Service] ListPluginsUseCase useCase,
@@ -65,6 +70,7 @@ public class Query
         }
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("plugin")]
     public async Task<PluginType?> GetPluginByIdAsync(
         string id,

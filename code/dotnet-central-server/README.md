@@ -190,6 +190,12 @@ The server implements the following use cases:
 9. **SetProbeTestEnabledUseCase** - Enable or disable an existing test config on a probe
 10. **SetPluginAvailabilityUseCase** - Enable or disable plugin distribution
 
+## Authentication
+
+- GraphQL and plugin bundle endpoints require `X-Api-Key`.
+- Admin role can execute all operations.
+- Probe role can execute probe-facing operations (`probeConfig`, `updateProbeStatus`) and plugin bundle download.
+
 ## API Examples
 
 ### Get Fleet Status

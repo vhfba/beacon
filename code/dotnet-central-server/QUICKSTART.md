@@ -36,6 +36,12 @@
    - GraphQL Endpoint: http://localhost:5000/graphql
    - GraphiQL (dev): http://localhost:5000/graphql
 
+6. **Authenticate requests:**
+  - All GraphQL and plugin bundle requests require `X-Api-Key`.
+  - Development defaults in `appsettings.Development.json`:
+    - Admin key: `dev-admin-key`
+    - Probe key: `dev-probe-key`
+
 ### Docker Deployment
 
 ```bash
