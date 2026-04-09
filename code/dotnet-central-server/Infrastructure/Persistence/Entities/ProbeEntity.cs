@@ -36,7 +36,6 @@ public class ProbeEntity
     public DateTime? LastConfigFetch { get; set; }
 
     [Column("version")]
-    [Timestamp]
     public long Version { get; set; }
 
     public ICollection<ProbeTestConfigEntity> TestConfigurations { get; set; } = new List<ProbeTestConfigEntity>();

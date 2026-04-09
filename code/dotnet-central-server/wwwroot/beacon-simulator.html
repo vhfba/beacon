@@ -1,802 +1,1279 @@
 <!doctype html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BEACON Central API Simulator</title>
+  <title>BEACON API Simulator Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#f5f7ff",
+            "surface": "#ffffff",
+            "surface-2": "#eef2ff",
+            "surface-3": "#e1e7ff",
+            "border-soft": "#d9def1",
+            "primary": "#1a73e8",
+            "primary-strong": "#005bbf",
+            "secondary": "#4f5f86",
+            "ok": "#0f8a5f",
+            "warn": "#b65d00",
+            "danger": "#c62828",
+            "on-surface": "#171c28",
+            "on-muted": "#596179"
+          },
+          fontFamily: {
+            headline: ["Manrope", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            mono: ["ui-monospace", "SFMono-Regular", "Consolas", "monospace"]
+          },
+          boxShadow: {
+            card: "0 10px 26px rgba(14, 25, 50, 0.08)",
+            lift: "0 14px 32px rgba(20, 46, 90, 0.18)"
+          },
+          keyframes: {
+            reveal: {
+              "0%": { opacity: "0", transform: "translateY(8px)" },
+              "100%": { opacity: "1", transform: "translateY(0)" }
+            }
+          },
+          animation: {
+            reveal: "reveal .35s ease-out both"
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
-  :root {
-    --font-sans: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
-    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+    body {
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(700px circle at 0% -15%, rgba(26, 115, 232, 0.12), transparent 55%),
+        radial-gradient(900px circle at 100% 0%, rgba(34, 148, 255, 0.09), transparent 45%),
+        #f5f7ff;
+    }
 
-    --color-background-primary: #101826;
-    --color-background-secondary: #162132;
-    --color-background-tertiary: #0a111d;
-    --color-background-info: #1b2f45;
-    --color-background-success: #123429;
-    --color-background-warning: #3b3014;
-    --color-background-danger: #401e27;
+    .font-headline {
+      font-family: "Manrope", sans-serif;
+    }
 
-    --color-border-primary: #33d2cb;
-    --color-border-secondary: #2a3d59;
-    --color-border-tertiary: #223149;
-    --color-border-danger: #8a3a4a;
+    .material-symbols-outlined {
+      font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+    }
 
-    --color-text-primary: #ebf3ff;
-    --color-text-secondary: #9db2d2;
-    --color-text-info: #8fc6ff;
-    --color-text-success: #85e4ba;
-    --color-text-warning: #ffd68a;
-    --color-text-danger: #ff98aa;
+    .tab {
+      border: 1px solid transparent;
+      background: transparent;
+      color: #596179;
+      border-radius: 0.625rem;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
 
-    --border-radius-md: 11px;
-    --border-radius-lg: 16px;
-  }
+    .tab:hover {
+      background: #e9edff;
+      color: #2f3750;
+    }
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+    .tab.active {
+      background: #1a73e8;
+      border-color: #1a73e8;
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(26, 115, 232, 0.28);
+    }
 
-  body {
-    font-family: var(--font-sans);
-    color: var(--color-text-primary);
-    background:
-      radial-gradient(800px circle at 8% -10%, rgba(57, 103, 255, 0.2) 0%, transparent 45%),
-      radial-gradient(1000px circle at 110% 0%, rgba(36, 170, 155, 0.2) 0%, transparent 40%),
-      linear-gradient(160deg, #0a101c 0%, #0a131f 48%, #0c1524 100%);
-    min-height: 100vh;
-  }
+    .tab-panel {
+      display: none;
+    }
 
-  .app {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px 16px 44px;
-  }
-
-  .topbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    background: linear-gradient(125deg, rgba(17, 29, 45, 0.92), rgba(15, 37, 59, 0.82));
-    border: 1px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-lg);
-    margin-bottom: 14px;
-    box-shadow: 0 18px 30px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(2px);
-  }
-
-  .topbar-logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: linear-gradient(140deg, #1f88ff, #16b6aa);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 10px 18px rgba(12, 113, 165, 0.34);
-  }
-
-  .topbar-logo svg {
-    width: 18px;
-    height: 18px;
-    fill: #fff;
-  }
-
-  .topbar-title {
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    flex: 1;
-  }
-
-  .topbar-subtitle {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    border: 1px solid transparent;
-  }
-
-  .badge-info { background: var(--color-background-info); color: var(--color-text-info); border-color: #29486a; }
-  .badge-success { background: var(--color-background-success); color: var(--color-text-success); border-color: #1f5a45; }
-  .badge-warn { background: var(--color-background-warning); color: var(--color-text-warning); border-color: #6e5721; }
-  .badge-danger { background: var(--color-background-danger); color: var(--color-text-danger); border-color: #7d3a49; }
-  .badge-neutral { background: var(--color-background-secondary); color: var(--color-text-secondary); border-color: var(--color-border-secondary); }
-
-  .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    flex-shrink: 0;
-  }
-
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .full { grid-column: 1 / -1; }
-
-  .card {
-    background: linear-gradient(170deg, rgba(15, 24, 38, 0.95), rgba(14, 23, 36, 0.88));
-    border: 1px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-lg);
-    overflow: hidden;
-    margin-bottom: 12px;
-    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.23);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--color-border-tertiary);
-  }
-
-  .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    letter-spacing: 0.02em;
-  }
-
-  .card-body { padding: 14px; }
-  .row-flex { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  input,
-  select {
-    width: 100%;
-    font: inherit;
-    font-size: 13px;
-    padding: 8px 10px;
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--color-border-secondary);
-    background: #131f31;
-    color: var(--color-text-primary);
-    outline: none;
-    transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-  }
-
-  input:focus,
-  select:focus {
-    border-color: var(--color-border-primary);
-    box-shadow: 0 0 0 3px rgba(51, 210, 203, 0.16);
-    background: #17263d;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--color-border-secondary);
-    background: #15233a;
-    color: var(--color-text-primary);
-    cursor: pointer;
-    transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, filter 0.12s ease;
-    white-space: nowrap;
-  }
-
-  .btn:hover { background: #1a2a44; border-color: #355176; }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-
-  .btn-primary {
-    background: linear-gradient(130deg, #238bff, #19b2a6);
-    border-color: #1e92da;
-    color: #f8fcff;
-  }
-
-  .btn-primary:hover {
-    filter: brightness(1.06);
-    border-color: #27b8ca;
-  }
-
-  .btn-danger {
-    background: #341925;
-    border-color: #894256;
-    color: #ffafbf;
-  }
-
-  .btn-danger:hover { filter: brightness(1.05); }
-  .btn-sm { padding: 5px 11px; font-size: 12px; }
-  .btn-full { width: 100%; justify-content: center; margin-top: 10px; }
-
-  tfoot,
-  thead { background: #132136; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-
-  th {
-    padding: 8px 10px;
-    text-align: left;
-    color: var(--color-text-secondary);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--color-border-tertiary);
-  }
-
-  td {
-    padding: 9px 10px;
-    border-bottom: 1px solid var(--color-border-tertiary);
-    color: var(--color-text-primary);
-  }
-
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #14263e; }
-
-  .empty-row td {
-    color: var(--color-text-secondary);
-    text-align: center;
-    padding: 24px;
-  }
-
-  .mono { font-family: var(--font-mono); font-size: 12px; }
-
-  textarea {
-    width: 100%;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 10px;
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--color-border-secondary);
-    background: #0f192a;
-    color: #dce8ff;
-    resize: vertical;
-    min-height: 180px;
-    outline: none;
-    line-height: 1.5;
-  }
-
-  textarea:focus {
-    border-color: var(--color-border-primary);
-    box-shadow: 0 0 0 3px rgba(51, 210, 203, 0.16);
-  }
-
-  .statusbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: var(--border-radius-md);
-    font-size: 13px;
-    font-weight: 600;
-    border: 1px solid transparent;
-  }
-
-  .statusbar.ok { background: var(--color-background-success); color: var(--color-text-success); border-color: #225845; }
-  .statusbar.error { background: var(--color-background-danger); color: var(--color-text-danger); border-color: #7a3a4a; }
-  .statusbar.idle { background: var(--color-background-secondary); color: var(--color-text-secondary); border-color: var(--color-border-secondary); }
-
-  .conn-row {
-    display: grid;
-    grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
-    gap: 8px;
-    align-items: end;
-  }
-
-  .section-sep { border: none; border-top: 1px solid var(--color-border-tertiary); margin: 12px 0; }
-
-  .tabs {
-    display: flex;
-    gap: 3px;
-    background: #101b2c;
-    border-radius: var(--border-radius-md);
-    padding: 4px;
-    border: 1px solid var(--color-border-tertiary);
-    overflow-x: auto;
-  }
-
-  .tab {
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--color-text-secondary);
-    border: none;
-    background: transparent;
-    transition: color 0.12s ease, background 0.12s ease;
-    white-space: nowrap;
-  }
-
-  .tab:hover { color: #d2e3ff; }
-
-  .tab.active {
-    background: linear-gradient(130deg, rgba(29, 42, 66, 0.92), rgba(32, 64, 93, 0.92));
-    color: #e7f4ff;
-    border: 1px solid #2f4f76;
-  }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }
-  .form-group { display: flex; flex-direction: column; }
-
-  @media (max-width: 860px) {
-    .conn-row { grid-template-columns: 1fr 1fr; }
-  }
-
-  @media (max-width: 640px) {
-    .grid2 { grid-template-columns: 1fr; }
-    .grid4 { grid-template-columns: 1fr 1fr; }
-  }
+    .tab-panel.active {
+      display: block;
+      animation: reveal .22s ease-out;
+    }
   </style>
 </head>
-<body>
+<body class="min-h-screen text-on-surface font-body">
 
-<div class="app">
-
-  <div class="topbar">
-    <div class="topbar-logo">
-      <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3"/><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12A6 6 0 0 1 10 4z" opacity=".5"/></svg>
-    </div>
-    <div style="flex:1">
-      <div class="topbar-title">BEACON Central API Simulator</div>
-      <div class="topbar-subtitle">.NET GraphQL · test operations and inspect responses</div>
-    </div>
-    <div id="globalStatus" class="badge badge-neutral"><span class="dot"></span> Ready</div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Connection</span>
-    </div>
-    <div class="card-body">
-      <div class="conn-row">
-        <div class="form-group">
-          <label for="endpoint">GraphQL endpoint</label>
-          <input id="endpoint" value="/graphql" />
-        </div>
-        <div class="form-group">
-          <label for="apiKey">API key (X-Api-Key)</label>
-          <input id="apiKey" value="dev-admin-key" />
-        </div>
-        <div class="form-group">
-          <label for="apiKeyPreset">Key preset</label>
-          <select id="apiKeyPreset">
-            <option value="admin">Admin</option>
-            <option value="probe">Probe</option>
-          </select>
-        </div>
-        <div class="form-group" style="justify-content:flex-end">
-          <button id="applyKeyPreset" class="btn btn-sm" type="button">Apply preset</button>
-        </div>
-        <div class="form-group" style="justify-content:flex-end">
-          <button id="refreshAll" class="btn btn-primary btn-sm" type="button">&#8635; Refresh</button>
-        </div>
-      </div>
-      <div style="margin-top:10px">
-        <div id="status" class="statusbar idle"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3.5l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span id="statusText">Ready.</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid2">
-    <div class="card" style="margin-bottom:0">
-      <div class="card-header">
-        <span class="card-title">Fleet</span>
-        <span id="fleetCount" class="badge badge-neutral">0 probes</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead><tr><th>ID</th><th>Name</th><th>Location</th><th>IP</th><th>Status</th><th>Heartbeat</th></tr></thead>
-          <tbody id="fleetRows"><tr class="empty-row"><td colspan="6">No probes loaded.</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:0">
-      <div class="card-header">
-        <span class="card-title">Plugins</span>
-        <span id="pluginCount" class="badge badge-neutral">0 plugins</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead><tr><th>ID</th><th>Name</th><th>Version</th><th>Status</th><th></th></tr></thead>
-          <tbody id="pluginRows"><tr class="empty-row"><td colspan="5">No plugins loaded.</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div style="height:12px"></div>
-
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Admin actions</span>
-      <button id="seedDemo" class="btn btn-danger btn-sm" type="button">Seed demo data</button>
-    </div>
-    <div class="card-body">
-      <div class="tabs" id="adminTabs">
-        <button class="tab active" data-tab="register">Register probe</button>
-        <button class="tab" data-tab="plugin">Register plugin</button>
-        <button class="tab" data-tab="config">Test config</button>
-        <button class="tab" data-tab="toggle">Toggle test</button>
-        <button class="tab" data-tab="status">Probe status</button>
-        <button class="tab" data-tab="query">Query</button>
-        <button class="tab" data-tab="bundle">Bundle</button>
+  <header class="fixed top-0 z-50 w-full border-b border-white/40 bg-white/80 backdrop-blur-xl">
+    <div class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-8">
+      <div class="flex items-center gap-8">
+        <span class="font-headline text-xl font-extrabold tracking-tight text-slate-900">BEACON API Simulator</span>
+        <nav class="hidden items-center gap-6 md:flex">
+          <a href="#" class="border-b-2 border-primary px-1 py-4 text-sm font-semibold text-primary">Dashboard</a>
+          <a href="#" class="px-1 py-4 text-sm text-slate-500 transition-colors hover:text-slate-900">GraphQL</a>
+        </nav>
       </div>
 
-      <div style="margin-top:14px">
-
-        <div id="tab-register" class="tab-panel active">
-          <form id="registerForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Probe ID</label><input id="probeId" required value="probe-100"/></div>
-              <div class="form-group"><label>Name</label><input id="probeName" required value="Lab East"/></div>
-              <div class="form-group"><label>Location</label><input id="probeLocation" required value="Building A"/></div>
-              <div class="form-group"><label>IP address</label><input id="probeIp" required value="10.1.1.100"/></div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Register probe</button>
-          </form>
+      <div class="flex items-center gap-4">
+        <button type="button" class="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100">
+          <span class="material-symbols-outlined">help</span>
+        </button>
+        <div id="globalStatus" class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-slate-600">
+          <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
+          Ready
         </div>
+      </div>
+    </div>
+  </header>
 
-        <div id="tab-plugin" class="tab-panel">
-          <form id="registerPluginForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Plugin ID</label><input id="pluginId" required value="plugin-http-v2"/></div>
-              <div class="form-group"><label>Name</label><input id="pluginName" required value="HTTP Probe"/></div>
-              <div class="form-group"><label>Version</label><input id="pluginVersion" required value="2.1.0"/></div>
-              <div class="form-group"><label>Description</label><input id="pluginDescription" value="HTTP endpoint reachability checks"/></div>
-              <div class="form-group full"><label>Checksum</label><input id="pluginChecksum" required value="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" class="mono"/></div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Register plugin</button>
-          </form>
-        </div>
+  <main class="mx-auto w-full max-w-7xl space-y-8 px-4 pb-10 pt-24 sm:px-8">
+    <section class="animate-reveal space-y-2">
+      <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl">System Architecture</h1>
+      <p class="max-w-3xl text-sm text-on-muted sm:text-base">Monitor fleets, manage plugin lifecycle, and execute available BEACON GraphQL operations through a single simulator panel.</p>
+    </section>
 
-        <div id="tab-config" class="tab-panel">
-          <form id="configForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Probe ID</label><input id="cfgProbeId" required value="probe-100"/></div>
-              <div class="form-group"><label>Test type</label><input id="cfgType" required value="PING"/></div>
-              <div class="form-group"><label>Interval (seconds)</label><input id="cfgInterval" type="number" min="5" max="3600" required value="30"/></div>
-              <div class="form-group"><label>Enabled</label>
-                <select id="cfgEnabled"><option value="true">true</option><option value="false">false</option></select>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Update config</button>
-          </form>
-        </div>
+    <section class="grid grid-cols-1 gap-6 md:grid-cols-4 animate-reveal">
+      <div class="md:col-span-3 rounded-xl border border-border-soft bg-surface p-5 shadow-card sm:p-6">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div class="md:col-span-2">
+            <label for="endpoint" class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-on-muted">GraphQL Endpoint</label>
+            <input id="endpoint" value="/graphql" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+          </div>
 
-        <div id="tab-toggle" class="tab-panel">
-          <form id="testToggleForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Probe ID</label><input id="toggleProbeId" required value="probe-100"/></div>
-              <div class="form-group"><label>Test type</label><input id="toggleType" required value="PING"/></div>
-              <div class="form-group"><label>Enabled</label>
-                <select id="toggleEnabled"><option value="true">true</option><option value="false">false</option></select>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Apply toggle</button>
-          </form>
-        </div>
+          <div>
+            <label for="apiKey" class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-on-muted">API Key</label>
+            <input id="apiKey" value="" placeholder="Enter API key" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" type="password" />
+          </div>
 
-        <div id="tab-status" class="tab-panel">
-          <form id="statusForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Probe ID</label><input id="statusProbeId" required value="probe-100"/></div>
-              <div class="form-group"><label>Status</label>
-                <select id="statusValue">
-                  <option value="REGISTERED">REGISTERED</option>
-                  <option value="ACTIVE">ACTIVE</option>
-                  <option value="INACTIVE">INACTIVE</option>
-                  <option value="DECOMMISSIONED">DECOMMISSIONED</option>
-                </select>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Update status</button>
-          </form>
-        </div>
-
-        <div id="tab-query" class="tab-panel">
-          <div class="grid2">
-            <form id="probeConfigForm">
-              <div class="card-title" style="margin-bottom:8px;font-size:13px">Get probe config</div>
-              <div class="form-group"><label>Probe ID</label><input id="probeConfigProbeId" required value="probe-100"/></div>
-              <button type="submit" class="btn btn-primary btn-full">Fetch config</button>
-            </form>
-            <form id="pluginByIdForm">
-              <div class="card-title" style="margin-bottom:8px;font-size:13px">Get plugin by ID</div>
-              <div class="form-group"><label>Plugin ID</label><input id="pluginByIdValue" required value="plugin-http-v2"/></div>
-              <button type="submit" class="btn btn-primary btn-full">Fetch plugin</button>
-            </form>
+          <div>
+            <label for="apiKeyPreset" class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-on-muted">Key Preset</label>
+            <select id="apiKeyPreset" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+              <option value="admin">Admin</option>
+              <option value="probe">Probe</option>
+            </select>
           </div>
         </div>
 
-        <div id="tab-bundle" class="tab-panel">
-          <form id="bundleDownloadForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Plugin ID</label><input id="bundlePluginId" required value="plugin-http-v2"/></div>
-              <div class="form-group"><label>Version</label><input id="bundleVersion" required value="2.1.0"/></div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Download bundle</button>
-          </form>
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <button id="applyKeyPreset" type="button" class="inline-flex h-10 items-center gap-2 rounded-lg border border-border-soft bg-white px-4 text-sm font-semibold text-secondary transition-colors hover:bg-surface-2">
+            Apply Preset
+          </button>
+          <button id="refreshAll" type="button" class="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-lift transition-all hover:bg-primary-strong active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px]">refresh</span>
+            Refresh
+          </button>
+          <button id="seedDemo" type="button" class="inline-flex h-10 items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100">
+            Seed Demo Data
+          </button>
         </div>
 
+        <div class="mt-4">
+          <div id="status" class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600">
+            <span class="material-symbols-outlined text-base">schedule</span>
+            <span id="statusText">Ready.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center rounded-xl border border-dashed border-border-soft bg-white p-6 text-center shadow-card">
+        <div>
+          <div class="font-headline text-3xl font-extrabold text-primary">GraphQL</div>
+          <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-on-muted">Live Simulator Mode</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 items-start gap-8 lg:grid-cols-3 animate-reveal">
+      <div class="space-y-8 lg:col-span-2">
+        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
+          <div class="flex items-center justify-between border-b border-surface-2 bg-white px-6 py-4">
+            <h2 class="font-headline text-lg font-bold">Fleet Management</h2>
+            <span id="fleetCount" class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">0 probes</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-surface-2/60 text-[11px] uppercase tracking-widest text-on-muted">
+                <tr>
+                  <th class="px-6 py-3 font-semibold">ID</th>
+                  <th class="px-6 py-3 font-semibold">Name</th>
+                  <th class="px-6 py-3 font-semibold">Location</th>
+                  <th class="px-6 py-3 font-semibold">IP Address</th>
+                  <th class="px-6 py-3 font-semibold">Status</th>
+                  <th class="px-6 py-3 font-semibold">Heartbeat</th>
+                  <th class="px-6 py-3 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="fleetRows" class="divide-y divide-surface-2 text-sm">
+                <tr>
+                  <td class="px-6 py-6 text-center text-on-muted" colspan="7">No probes loaded.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="fleetActionsPanel" class="border-t border-surface-2 bg-surface-2 p-5">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-on-muted">Selected probe</div>
+                <div id="selectedProbeLabel" class="font-headline text-lg font-bold text-on-surface">No probe selected</div>
+              </div>
+              <div class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">In-Table Controls</div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <form id="statusForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+                <input id="statusProbeId" type="hidden" />
+                <div class="text-sm font-bold text-on-surface">Update Probe Status</div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="statusValue">Status</label>
+                  <select id="statusValue" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+                    <option value="REGISTERED">REGISTERED</option>
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                    <option value="DECOMMISSIONED">DECOMMISSIONED</option>
+                  </select>
+                </div>
+                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Update Status</button>
+              </form>
+
+              <form id="panelConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+                <input id="panelCfgProbeId" type="hidden" />
+                <div class="text-sm font-bold text-on-surface">Update Test Config</div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgType">Test Type</label>
+                  <input id="panelCfgType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgInterval">Interval (sec)</label>
+                    <input id="panelCfgInterval" type="number" min="5" max="3600" value="30" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgEnabled">Enabled</label>
+                    <select id="panelCfgEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+                      <option value="true">true</option>
+                      <option value="false">false</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Config</button>
+              </form>
+
+              <form id="testToggleForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+                <input id="toggleProbeId" type="hidden" />
+                <div class="text-sm font-bold text-on-surface">Toggle Test</div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleType">Test Type</label>
+                  <input id="toggleType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleEnabled">Enabled</label>
+                  <select id="toggleEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+                    <option value="true">true</option>
+                    <option value="false">false</option>
+                  </select>
+                </div>
+                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Toggle</button>
+              </form>
+
+              <form id="probeConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+                <input id="probeConfigProbeId" type="hidden" />
+                <div class="text-sm font-bold text-on-surface">Query Probe Config</div>
+                <p class="text-xs text-on-muted">Fetch current tests and available plugins for selected probe.</p>
+                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Fetch Probe Config</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-border-soft bg-surface-2 p-6 shadow-card">
+          <div class="mb-4 flex items-center gap-3 overflow-x-auto pb-2" id="adminTabs">
+            <button class="tab active" data-tab="register" type="button">Register Probe</button>
+            <button class="tab" data-tab="plugin" type="button">Register Plugin</button>
+            <button class="tab" data-tab="config" type="button">Update Config</button>
+          </div>
+
+          <div class="rounded-lg border border-border-soft bg-white p-5">
+            <div id="tab-register" class="tab-panel active">
+              <form id="registerForm" class="space-y-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeId">Probe ID</label>
+                    <input id="probeId" required value="probe-100" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeName">Name</label>
+                    <input id="probeName" required value="Lab East" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeLocation">Location</label>
+                    <input id="probeLocation" required value="Building A" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeIp">IP Address</label>
+                    <input id="probeIp" required value="10.1.1.100" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                </div>
+                <div class="flex justify-end">
+                  <button type="submit" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Register Probe</button>
+                </div>
+              </form>
+            </div>
+
+            <div id="tab-plugin" class="tab-panel">
+              <form id="registerPluginForm" class="space-y-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginId">Plugin ID</label>
+                    <input id="pluginId" required value="plugin-http-v2" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginName">Name</label>
+                    <input id="pluginName" required value="HTTP Probe" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginVersion">Version</label>
+                    <input id="pluginVersion" required value="2.1.0" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginDescription">Description</label>
+                    <input id="pluginDescription" value="HTTP endpoint reachability checks" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginChecksum">Checksum</label>
+                  <input id="pluginChecksum" required value="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 font-mono text-xs focus:ring-2 focus:ring-primary/25" />
+                </div>
+                <div class="flex justify-end">
+                  <button type="submit" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Register Plugin</button>
+                </div>
+              </form>
+            </div>
+
+            <div id="tab-config" class="tab-panel">
+              <form id="configForm" class="space-y-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgProbeId">Probe ID</label>
+                    <input id="cfgProbeId" required value="probe-100" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgType">Test Type</label>
+                    <input id="cfgType" required value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgInterval">Interval (seconds)</label>
+                    <input id="cfgInterval" type="number" min="5" max="3600" required value="30" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgEnabled">Enabled</label>
+                    <select id="cfgEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+                      <option value="true">true</option>
+                      <option value="false">false</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex justify-end">
+                  <button type="submit" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Update Config</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-8">
+        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
+          <div class="flex items-center justify-between border-b border-surface-2 bg-white px-6 py-4">
+            <h2 class="font-headline text-lg font-bold">Plugins</h2>
+            <span id="pluginCount" class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-on-muted">0 plugins</span>
+          </div>
+
+          <div id="pluginRows" class="divide-y divide-surface-2">
+            <div class="p-6 text-sm text-on-muted">No plugins loaded.</div>
+          </div>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
+          <div class="flex items-center justify-between border-b border-surface-2 bg-white px-6 py-4">
+            <h2 class="font-headline text-lg font-bold">Plugin Tools</h2>
+            <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">Query + Bundle</span>
+          </div>
+
+          <div class="space-y-4 p-5">
+            <div class="grid grid-cols-1 gap-3">
+              <form id="pluginByIdForm" class="space-y-3 rounded-lg border border-border-soft bg-surface-2 p-4">
+                <div class="text-sm font-bold text-on-surface">Plugin Query Panel</div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginByIdValue">Plugin</label>
+                  <select id="pluginByIdValue" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+                    <option value="">No plugins available</option>
+                  </select>
+                </div>
+                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Fetch Plugin</button>
+              </form>
+
+              <form id="bundleDownloadForm" class="space-y-3 rounded-lg border border-border-soft bg-surface-2 p-4">
+                <div class="text-sm font-bold text-on-surface">Bundle Download Panel</div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="bundlePluginId">Plugin</label>
+                  <select id="bundlePluginId" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+                    <option value="">No plugins available</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="bundleVersion">Version</label>
+                  <input id="bundleVersion" required value="2.1.0" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                </div>
+                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Download Bundle</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
+          <div class="flex items-center justify-between bg-slate-900 px-6 py-4">
+            <span class="text-xs font-bold uppercase tracking-widest text-white">Response Output</span>
+            <button id="clearOutput" type="button" class="rounded-md border border-white/20 bg-slate-800 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-200 transition-colors hover:bg-slate-700">Clear</button>
+          </div>
+          <textarea id="output" class="h-80 w-full resize-y border-none bg-slate-950 p-6 font-mono text-xs leading-relaxed text-emerald-400 focus:ring-0" readonly spellcheck="false">{}</textarea>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mt-6 border-t border-slate-200 bg-slate-50 py-8">
+    <div class="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-4 px-4 text-sm text-slate-500 sm:px-8 md:flex-row">
+      <p>BEACON Central API Simulator</p>
+      <div class="flex items-center gap-6">
+        <a href="#" class="transition-colors hover:text-primary">Documentation</a>
+        <a href="#" class="transition-colors hover:text-primary">Support</a>
       </div>
     </div>
-  </div>
+  </footer>
 
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Response output</span>
-      <button id="clearOutput" class="btn btn-sm" type="button">Clear</button>
-    </div>
-    <div class="card-body">
-      <textarea id="output" readonly>{}</textarea>
-    </div>
-  </div>
+  <script>
+    const ui = {
+      endpoint: document.getElementById("endpoint"),
+      apiKey: document.getElementById("apiKey"),
+      apiKeyPreset: document.getElementById("apiKeyPreset"),
+      applyKeyPreset: document.getElementById("applyKeyPreset"),
+      status: document.getElementById("status"),
+      statusText: document.getElementById("statusText"),
+      globalStatus: document.getElementById("globalStatus"),
+      output: document.getElementById("output"),
+      fleetRows: document.getElementById("fleetRows"),
+      pluginRows: document.getElementById("pluginRows"),
+      fleetCount: document.getElementById("fleetCount"),
+      pluginCount: document.getElementById("pluginCount"),
+      selectedProbeLabel: document.getElementById("selectedProbeLabel"),
+      refreshAll: document.getElementById("refreshAll"),
+      seedDemo: document.getElementById("seedDemo"),
+      registerForm: document.getElementById("registerForm"),
+      registerPluginForm: document.getElementById("registerPluginForm"),
+      configForm: document.getElementById("configForm"),
+      panelConfigForm: document.getElementById("panelConfigForm"),
+      testToggleForm: document.getElementById("testToggleForm"),
+      statusForm: document.getElementById("statusForm"),
+      probeConfigForm: document.getElementById("probeConfigForm"),
+      pluginByIdForm: document.getElementById("pluginByIdForm"),
+      bundleDownloadForm: document.getElementById("bundleDownloadForm"),
+      clearOutput: document.getElementById("clearOutput")
+    };
 
-</div>
+    const DEMO_PLUGINS = [
+      {
+        id: "plugin-rssi-v1",
+        name: "RSSI Monitor",
+        version: "1.0.0",
+        checksum: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        description: "Signal strength monitor"
+      },
+      {
+        id: "plugin-http-v2",
+        name: "HTTP Probe",
+        version: "2.1.0",
+        checksum: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        description: "HTTP endpoint reachability checks"
+      }
+    ];
 
-<script>
-const ui={
-  endpoint:document.getElementById("endpoint"),
-  apiKey:document.getElementById("apiKey"),
-  apiKeyPreset:document.getElementById("apiKeyPreset"),
-  applyKeyPreset:document.getElementById("applyKeyPreset"),
-  status:document.getElementById("status"),
-  statusText:document.getElementById("statusText"),
-  globalStatus:document.getElementById("globalStatus"),
-  output:document.getElementById("output"),
-  fleetRows:document.getElementById("fleetRows"),
-  pluginRows:document.getElementById("pluginRows"),
-  fleetCount:document.getElementById("fleetCount"),
-  pluginCount:document.getElementById("pluginCount"),
-  refreshAll:document.getElementById("refreshAll"),
-  seedDemo:document.getElementById("seedDemo"),
-  registerForm:document.getElementById("registerForm"),
-  registerPluginForm:document.getElementById("registerPluginForm"),
-  configForm:document.getElementById("configForm"),
-  testToggleForm:document.getElementById("testToggleForm"),
-  statusForm:document.getElementById("statusForm"),
-  probeConfigForm:document.getElementById("probeConfigForm"),
-  pluginByIdForm:document.getElementById("pluginByIdForm"),
-  bundleDownloadForm:document.getElementById("bundleDownloadForm"),
-  clearOutput:document.getElementById("clearOutput")
-};
+    const DEMO_PROBES = [
+      {
+        id: "probe-001",
+        name: "Main Floor",
+        location: "Room 101",
+        ipAddress: "192.168.1.100",
+        status: "ACTIVE",
+        tests: [
+          { testType: "PING", intervalSeconds: 30, enabled: true },
+          { testType: "HTTP", intervalSeconds: 60, enabled: true }
+        ]
+      },
+      {
+        id: "probe-002",
+        name: "Lobby Probe",
+        location: "Entrance",
+        ipAddress: "192.168.1.101",
+        status: "ACTIVE",
+        tests: [
+          { testType: "RSSI", intervalSeconds: 20, enabled: true },
+          { testType: "PING", intervalSeconds: 45, enabled: true }
+        ]
+      },
+      {
+        id: "probe-003",
+        name: "West Wing",
+        location: "Building A, Room 204",
+        ipAddress: "192.168.1.102",
+        status: "INACTIVE",
+        tests: [
+          { testType: "HTTP", intervalSeconds: 120, enabled: true },
+          { testType: "IPERF", intervalSeconds: 300, enabled: true }
+        ]
+      }
+    ];
 
-const DEMO_PLUGINS=[
-  {id:"plugin-rssi-v1",name:"RSSI Monitor",version:"1.0.0",checksum:"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",description:"Signal strength monitor"},
-  {id:"plugin-http-v2",name:"HTTP Probe",version:"2.1.0",checksum:"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",description:"HTTP endpoint reachability checks"}
-];
-const DEMO_PROBES=[
-  {id:"probe-001",name:"Main Floor",location:"Room 101",ipAddress:"192.168.1.100",status:"ACTIVE",tests:[{testType:"PING",intervalSeconds:30,enabled:true},{testType:"HTTP",intervalSeconds:60,enabled:true}]},
-  {id:"probe-002",name:"Lobby Probe",location:"Entrance",ipAddress:"192.168.1.101",status:"ACTIVE",tests:[{testType:"RSSI",intervalSeconds:20,enabled:true},{testType:"PING",intervalSeconds:45,enabled:true}]},
-  {id:"probe-003",name:"West Wing",location:"Building A, Room 204",ipAddress:"192.168.1.102",status:"INACTIVE",tests:[{testType:"HTTP",intervalSeconds:120,enabled:true},{testType:"IPERF",intervalSeconds:300,enabled:true}]}
-];
-const KEY_PRESETS={admin:"dev-admin-key",probe:"dev-probe-key"};
+    const KEY_PRESETS = {
+      admin: "",
+      probe: ""
+    };
 
-function statusBadgeClass(s){
-  if(s==="ACTIVE")return"badge-success";
-  if(s==="INACTIVE"||s==="DECOMMISSIONED")return"badge-warn";
-  return"badge-info";
-}
+    let selectedProbeId = "";
+    let currentFleetProbes = [];
 
-function setStatus(msg,isError){
-  ui.statusText.textContent=msg;
-  ui.status.className="statusbar "+(isError?"error":"ok");
-  ui.globalStatus.className="badge "+(isError?"badge-danger":"badge-success");
-  ui.globalStatus.innerHTML='<span class="dot"></span> '+(isError?"Error":"OK");
-}
-function setOutput(data){ui.output.value=JSON.stringify(data,null,2);}
-function td(v){return`<td>${v??""}</td>`;}
-function authHeaders(h){const x={...(h||{})};const k=ui.apiKey.value.trim();if(k)x["X-Api-Key"]=k;return x;}
+    const STATUS_CLASS = {
+      idle: "flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600",
+      ok: "flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700",
+      error: "flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700"
+    };
 
-function applyApiKeyPreset(){
-  const v=KEY_PRESETS[ui.apiKeyPreset.value];
-  if(v){ui.apiKey.value=v;setStatus(`Applied ${ui.apiKeyPreset.value} key preset.`,false);}
-}
+    const GLOBAL_STATUS_CLASS = {
+      idle: "inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-slate-600",
+      ok: "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700",
+      error: "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-rose-700"
+    };
 
-async function gql(query,variables){
-  const endpoint=ui.endpoint.value.trim()||"/graphql";
-  const res=await fetch(endpoint,{method:"POST",headers:authHeaders({"Content-Type":"application/json"}),body:JSON.stringify({query,variables:variables||{}})});
-  const payload=await res.json();
-  if(!res.ok||payload.errors)throw new Error(JSON.stringify(payload.errors||payload,null,2));
-  return payload.data;
-}
-
-function isDupe(e){const v=(e||"").toLowerCase();return v.includes("already")||v.includes("exists")||v.includes("duplicate");}
-
-function renderFleet(probes){
-  ui.fleetRows.innerHTML="";
-  ui.fleetCount.textContent=(probes?.length||0)+" probe"+(probes?.length===1?"":"s");
-  if(!probes||!probes.length){ui.fleetRows.innerHTML='<tr class="empty-row"><td colspan="6">No probes found.</td></tr>';return;}
-  for(const p of probes){
-    const sc=statusBadgeClass(p.status);
-    ui.fleetRows.insertAdjacentHTML("beforeend",`<tr>
-      ${td(`<span class="mono">${p.id}</span>`)}
-      ${td(p.name)}
-      ${td(p.location)}
-      ${td(`<span class="mono">${p.ipAddress}</span>`)}
-      <td><span class="badge ${sc}">${p.status}</span></td>
-      ${td(p.lastHeartbeat||"—")}
-    </tr>`);
-  }
-}
-
-function renderPlugins(plugins){
-  ui.pluginRows.innerHTML="";
-  ui.pluginCount.textContent=(plugins?.length||0)+" plugin"+(plugins?.length===1?"":"s");
-  if(!plugins||!plugins.length){ui.pluginRows.innerHTML='<tr class="empty-row"><td colspan="5">No plugins found.</td></tr>';return;}
-  for(const p of plugins){
-    const avail=p.available;
-    ui.pluginRows.insertAdjacentHTML("beforeend",`<tr>
-      ${td(`<span class="mono">${p.id}</span>`)}
-      ${td(p.name)}
-      ${td(p.version)}
-      <td><span class="badge ${avail?"badge-success":"badge-neutral"}">${avail?"available":"disabled"}</span></td>
-      <td><button type="button" class="btn btn-sm ${avail?"btn-danger":""}" data-plugin-id="${p.id}" data-next-available="${!avail}">${avail?"Disable":"Enable"}</button></td>
-    </tr>`);
-  }
-}
-
-async function refreshAll(){
-  setStatus("Loading...",false);
-  ui.refreshAll.disabled=true;
-  try{
-    const [fd,pd]=await Promise.all([
-      gql(`query{fleetStatus{probes{id name location ipAddress status lastHeartbeat}}}`),
-      gql(`query{plugins{id name version checksum description releasedAt available}}`)
-    ]);
-    renderFleet(fd.fleetStatus.probes);
-    renderPlugins(pd.plugins);
-    setOutput({fleet:fd,plugins:pd});
-    setStatus("Fleet and plugins loaded.",false);
-  }catch(e){
-    setStatus("Failed to refresh data.",true);
-    setOutput({error:String(e)});
-  }finally{ui.refreshAll.disabled=false;}
-}
-
-async function seedDemoData(){
-  const rplug=`mutation RegisterPlugin($input:RegisterPluginInputTypeInput!){registerPlugin(input:$input){success message plugin{id name version}}}`;
-  const rprobe=`mutation RegisterProbe($input:RegisterProbeInputTypeInput!){registerProbe(input:$input){success message probe{id}}}`;
-  const ucfg=`mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}`;
-  const ust=`mutation UpdateProbeStatus($probeId:String!,$status:String!){updateProbeStatus(probeId:$probeId,status:$status){success message probe{id status}}}`;
-  const sum={registeredPlugins:0,registeredProbes:0,configuredTests:0,statusUpdates:0,skipped:[],errors:[]};
-  setStatus("Seeding demo data…",false);
-  for(const pl of DEMO_PLUGINS){
-    try{const d=await gql(rplug,{input:pl});if(d.registerPlugin?.success)sum.registeredPlugins++;else sum.skipped.push(`plugin ${pl.id}`);}
-    catch(e){const m=String(e);if(isDupe(m))sum.skipped.push(`plugin ${pl.id}: already exists`);else sum.errors.push(`plugin ${pl.id}: ${m}`);}
-  }
-  for(const p of DEMO_PROBES){
-    try{const r=await gql(rprobe,{input:{id:p.id,name:p.name,location:p.location,ipAddress:p.ipAddress}});if(r.registerProbe?.success)sum.registeredProbes++;else sum.skipped.push(`probe ${p.id}`);}
-    catch(e){const m=String(e);if(isDupe(m))sum.skipped.push(`probe ${p.id}: already exists`);else sum.errors.push(`probe ${p.id}: ${m}`);}
-    for(const t of p.tests){
-      try{const c=await gql(ucfg,{input:{probeId:p.id,testType:t.testType,intervalSeconds:t.intervalSeconds,enabled:t.enabled}});if(c.updateProbeTestConfig?.success)sum.configuredTests++;}
-      catch(e){sum.errors.push(`config ${p.id}/${t.testType}: ${String(e)}`);}
+    function esc(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
-    try{const s=await gql(ust,{probeId:p.id,status:p.status});if(s.updateProbeStatus?.success)sum.statusUpdates++;}
-    catch(e){sum.errors.push(`status ${p.id}: ${String(e)}`);}
-  }
-  await refreshAll();
-  setOutput(sum);
-  setStatus(sum.errors.length?"Seed completed with errors.":"Seed completed.",sum.errors.length>0);
-}
 
-document.getElementById("adminTabs").addEventListener("click",e=>{
-  const btn=e.target.closest(".tab");
-  if(!btn)return;
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
-});
+    function statusBadgeClass(status) {
+      if (status === "ACTIVE") {
+        return "bg-emerald-100 text-emerald-700";
+      }
 
-ui.refreshAll.addEventListener("click",refreshAll);
-ui.seedDemo.addEventListener("click",seedDemoData);
-ui.applyKeyPreset.addEventListener("click",applyApiKeyPreset);
+      if (status === "INACTIVE" || status === "DECOMMISSIONED") {
+        return "bg-amber-100 text-amber-700";
+      }
 
-ui.registerForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const vars={input:{id:document.getElementById("probeId").value.trim(),name:document.getElementById("probeName").value.trim(),location:document.getElementById("probeLocation").value.trim(),ipAddress:document.getElementById("probeIp").value.trim()}};
-  try{const d=await gql(`mutation RegisterProbe($input:RegisterProbeInputTypeInput!){registerProbe(input:$input){success message probe{id name location ipAddress status createdAt}}}`,vars);setOutput(d);setStatus("Probe registered.",false);await refreshAll();}
-  catch(e){setStatus("Registration failed.",true);setOutput({error:String(e)});}
-});
+      return "bg-sky-100 text-sky-700";
+    }
 
-ui.registerPluginForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const vars={input:{id:document.getElementById("pluginId").value.trim(),name:document.getElementById("pluginName").value.trim(),version:document.getElementById("pluginVersion").value.trim(),checksum:document.getElementById("pluginChecksum").value.trim(),description:document.getElementById("pluginDescription").value.trim()}};
-  try{const d=await gql(`mutation RegisterPlugin($input:RegisterPluginInputTypeInput!){registerPlugin(input:$input){success message plugin{id name version available}}}`,vars);setOutput(d);if(d.registerPlugin?.success){setStatus("Plugin registered.",false);await refreshAll();}else setStatus("Plugin registration rejected.",true);}
-  catch(e){setStatus("Plugin registration failed.",true);setOutput({error:String(e)});}
-});
+    function setStatus(message, isError) {
+      ui.statusText.textContent = message;
+      ui.status.className = isError ? STATUS_CLASS.error : STATUS_CLASS.ok;
+      ui.globalStatus.className = isError ? GLOBAL_STATUS_CLASS.error : GLOBAL_STATUS_CLASS.ok;
+      ui.globalStatus.innerHTML = "<span class=\"h-1.5 w-1.5 rounded-full " + (isError ? "bg-rose-500" : "bg-emerald-500") + "\"></span>" + (isError ? "Error" : "OK");
+    }
 
-ui.configForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const vars={input:{probeId:document.getElementById("cfgProbeId").value.trim(),testType:document.getElementById("cfgType").value.trim(),intervalSeconds:Number(document.getElementById("cfgInterval").value),enabled:document.getElementById("cfgEnabled").value==="true"}};
-  try{const d=await gql(`mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}`,vars);setOutput(d);setStatus("Config updated.",false);}
-  catch(e){setStatus("Config update failed.",true);setOutput({error:String(e)});}
-});
+    function resetStatus() {
+      ui.status.className = STATUS_CLASS.idle;
+      ui.statusText.textContent = "Ready.";
+      ui.globalStatus.className = GLOBAL_STATUS_CLASS.idle;
+      ui.globalStatus.innerHTML = "<span class=\"h-1.5 w-1.5 rounded-full bg-slate-500\"></span>Ready";
+    }
 
-ui.testToggleForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const vars={input:{probeId:document.getElementById("toggleProbeId").value.trim(),testType:document.getElementById("toggleType").value.trim(),enabled:document.getElementById("toggleEnabled").value==="true"}};
-  try{const d=await gql(`mutation SetProbeTestEnabled($input:SetProbeTestEnabledInputTypeInput!){setProbeTestEnabled(input:$input){success message config{probeId testType intervalSeconds enabled}}}`,vars);setOutput(d);if(d.setProbeTestEnabled?.success)setStatus("Test toggle applied.",false);else setStatus("Toggle rejected.",true);}
-  catch(e){setStatus("Toggle failed.",true);setOutput({error:String(e)});}
-});
+    function setOutput(data) {
+      ui.output.value = JSON.stringify(data, null, 2);
+    }
 
-ui.pluginRows.addEventListener("click",async e=>{
-  const btn=e.target.closest("button[data-plugin-id]");
-  if(!btn)return;
-  const pluginId=btn.getAttribute("data-plugin-id");
-  const nextAvailable=btn.getAttribute("data-next-available")==="true";
-  try{const d=await gql(`mutation SetPluginAvailability($input:SetPluginAvailabilityInputTypeInput!){setPluginAvailability(input:$input){success message plugin{id name version available}}}`,{input:{pluginId,available:nextAvailable}});setOutput(d);if(d.setPluginAvailability?.success){setStatus(`Plugin ${pluginId} updated.`,false);await refreshAll();}else setStatus(`Toggle rejected.`,true);}
-  catch(e){setStatus(`Plugin toggle failed.`,true);setOutput({error:String(e)});}
-});
+    function authHeaders(headers) {
+      const output = { ...(headers || {}) };
+      const key = ui.apiKey.value.trim();
 
-ui.statusForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const vars={probeId:document.getElementById("statusProbeId").value.trim(),status:document.getElementById("statusValue").value};
-  try{const d=await gql(`mutation UpdateProbeStatus($probeId:String!,$status:String!){updateProbeStatus(probeId:$probeId,status:$status){success message probe{id status lastHeartbeat}}}`,vars);setOutput(d);setStatus("Probe status updated.",false);await refreshAll();}
-  catch(e){setStatus("Status update failed.",true);setOutput({error:String(e)});}
-});
+      if (key) {
+        output["X-Api-Key"] = key;
+      }
 
-ui.probeConfigForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const vars={probeId:document.getElementById("probeConfigProbeId").value.trim()};
-  try{const d=await gql(`query ProbeConfig($probeId:String!){probeConfig(probeId:$probeId){probeId enabledTests{probeId testType intervalSeconds enabled}availablePlugins{id name version checksum available bundleUrl}}}`,vars);setOutput(d);setStatus("Probe config loaded.",false);}
-  catch(e){setStatus("Probe config request failed.",true);setOutput({error:String(e)});}
-});
+      return output;
+    }
 
-ui.pluginByIdForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const vars={id:document.getElementById("pluginByIdValue").value.trim()};
-  try{const d=await gql(`query PluginById($id:String!){plugin(id:$id){id name version checksum description releasedAt available bundleUrl}}`,vars);setOutput(d);setStatus("Plugin lookup completed.",false);}
-  catch(e){setStatus("Plugin lookup failed.",true);setOutput({error:String(e)});}
-});
+    function applyApiKeyPreset() {
+      const value = KEY_PRESETS[ui.apiKeyPreset.value];
 
-ui.bundleDownloadForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const pluginId=document.getElementById("bundlePluginId").value.trim();
-  const version=document.getElementById("bundleVersion").value.trim();
-  const url=`/plugins/${encodeURIComponent(pluginId)}/${encodeURIComponent(version)}/bundle`;
-  try{
-    const res=await fetch(url,{method:"GET",headers:authHeaders()});
-    if(!res.ok)throw new Error((await res.text())||`HTTP ${res.status}`);
-    const blob=await res.blob();
-    const dl=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=dl;a.download=`${pluginId}-${version}.zip`;
-    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(dl);
-    setOutput({downloadUrl:url,pluginId,version,status:"downloaded"});
-    setStatus("Bundle downloaded.",false);
-  }catch(e){setStatus("Bundle download failed.",true);setOutput({error:String(e),downloadUrl:url});}
-});
+      if (!value) {
+        setStatus(
+          "No preset configured for " + ui.apiKeyPreset.value + ". Enter key manually.",
+          true
+        );
+        return;
+      }
 
-ui.clearOutput.addEventListener("click",()=>{setOutput({});ui.status.className="statusbar idle";ui.statusText.textContent="Ready.";ui.globalStatus.className="badge badge-neutral";ui.globalStatus.innerHTML='<span class="dot"></span> Ready';});
+      ui.apiKey.value = value;
+      setStatus("Applied " + ui.apiKeyPreset.value + " key preset.", false);
+    }
 
-refreshAll();
-</script>
+    async function gql(query, variables) {
+      const endpoint = ui.endpoint.value.trim() || "/graphql";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ query, variables: variables || {} })
+      });
 
+      const raw = await response.text();
+      let payload = null;
+
+      if (raw.trim()) {
+        try {
+          payload = JSON.parse(raw);
+        } catch {
+          payload = null;
+        }
+      }
+
+      if (!response.ok) {
+        if (payload?.errors) {
+          throw new Error(JSON.stringify(payload.errors, null, 2));
+        }
+
+        const preview = raw.trim().length
+          ? raw.trim().slice(0, 600)
+          : "Empty response body";
+
+        throw new Error(
+          "HTTP " + response.status + " " + response.statusText +
+          " from " + endpoint + ". Response preview: " + preview
+        );
+      }
+
+      if (!payload) {
+        throw new Error(
+          "Expected JSON from " + endpoint + " but received an empty or non-JSON response."
+        );
+      }
+
+      if (payload.errors) {
+        throw new Error(JSON.stringify(payload.errors, null, 2));
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(payload, "data")) {
+        throw new Error("GraphQL response did not include a 'data' field.");
+      }
+
+      return payload.data;
+    }
+
+    function isDupe(errorValue) {
+      const value = String(errorValue || "").toLowerCase();
+      return value.includes("already") || value.includes("exists") || value.includes("duplicate");
+    }
+
+    function syncSelectOptions(selectId, options, emptyLabel) {
+      const select = document.getElementById(selectId);
+
+      if (!select || select.tagName !== "SELECT") {
+        return;
+      }
+
+      const previousValue = select.value;
+      select.innerHTML = "";
+
+      if (!options.length) {
+        select.insertAdjacentHTML("beforeend", "<option value=\"\">" + esc(emptyLabel) + "</option>");
+        return;
+      }
+
+      for (const option of options) {
+        select.insertAdjacentHTML(
+          "beforeend",
+          "<option value=\"" + esc(option.value) + "\">" + esc(option.label) + "</option>"
+        );
+      }
+
+      if (options.some((option) => option.value === previousValue)) {
+        select.value = previousValue;
+      }
+    }
+
+    function setSelectedProbe(probeId) {
+      const probe = currentFleetProbes.find((item) => item.id === probeId);
+
+      if (!probe) {
+        selectedProbeId = "";
+        document.getElementById("statusProbeId").value = "";
+        document.getElementById("panelCfgProbeId").value = "";
+        document.getElementById("toggleProbeId").value = "";
+        document.getElementById("probeConfigProbeId").value = "";
+        ui.selectedProbeLabel.textContent = "No probe selected";
+        return;
+      }
+
+      selectedProbeId = probe.id;
+      document.getElementById("statusProbeId").value = probe.id;
+      document.getElementById("panelCfgProbeId").value = probe.id;
+      document.getElementById("toggleProbeId").value = probe.id;
+      document.getElementById("probeConfigProbeId").value = probe.id;
+      document.getElementById("cfgProbeId").value = probe.id;
+      document.getElementById("statusValue").value = probe.status;
+      ui.selectedProbeLabel.textContent = probe.name + " (" + probe.id + ")";
+    }
+
+    function syncProbeSelectors(probes) {
+      currentFleetProbes = probes || [];
+
+      if (!currentFleetProbes.length) {
+        setSelectedProbe("");
+        return;
+      }
+
+      const candidateId = currentFleetProbes.some((probe) => probe.id === selectedProbeId)
+        ? selectedProbeId
+        : currentFleetProbes[0].id;
+
+      setSelectedProbe(candidateId);
+    }
+
+    function syncPluginSelectors(plugins) {
+      const options = (plugins || []).map((plugin) => ({
+        value: plugin.id,
+        label: plugin.name + " (" + plugin.id + ")"
+      }));
+
+      syncSelectOptions("pluginByIdValue", options, "No plugins available");
+      syncSelectOptions("bundlePluginId", options, "No plugins available");
+    }
+
+    function renderFleet(probes) {
+      ui.fleetRows.innerHTML = "";
+      ui.fleetCount.textContent = (probes?.length || 0) + " probe" + (probes?.length === 1 ? "" : "s");
+      syncProbeSelectors(probes || []);
+
+      if (!probes || !probes.length) {
+        ui.fleetRows.innerHTML = "<tr><td class=\"px-6 py-6 text-center text-on-muted\" colspan=\"7\">No probes found.</td></tr>";
+        return;
+      }
+
+      for (const probe of probes) {
+        const statusClass = statusBadgeClass(probe.status);
+        const isSelected = probe.id === selectedProbeId;
+        ui.fleetRows.insertAdjacentHTML(
+          "beforeend",
+          "<tr class=\"transition-colors hover:bg-surface-2 cursor-pointer " + (isSelected ? "bg-surface-2" : "") + "\" data-probe-id=\"" + esc(probe.id) + "\">" +
+            "<td class=\"px-6 py-4 font-mono text-xs text-on-muted\">" + esc(probe.id) + "</td>" +
+            "<td class=\"px-6 py-4 font-medium\">" + esc(probe.name) + "</td>" +
+            "<td class=\"px-6 py-4\">" + esc(probe.location) + "</td>" +
+            "<td class=\"px-6 py-4 font-mono text-xs\">" + esc(probe.ipAddress) + "</td>" +
+            "<td class=\"px-6 py-4\"><span class=\"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold " + statusClass + "\">" + esc(probe.status) + "</span></td>" +
+            "<td class=\"px-6 py-4 text-xs text-on-muted\">" + esc(probe.lastHeartbeat || "-") + "</td>" +
+            "<td class=\"px-6 py-4\">" +
+              "<div class=\"flex gap-2\">" +
+                "<button type=\"button\" class=\"rounded border border-border-soft bg-white px-2.5 py-1 text-[11px] font-bold text-secondary hover:bg-surface-2\" data-probe-manage=\"" + esc(probe.id) + "\">Manage</button>" +
+                "<button type=\"button\" class=\"rounded border border-border-soft bg-white px-2.5 py-1 text-[11px] font-bold text-secondary hover:bg-surface-2\" data-probe-query=\"" + esc(probe.id) + "\">Query</button>" +
+              "</div>" +
+            "</td>" +
+          "</tr>"
+        );
+      }
+    }
+
+    function renderPlugins(plugins) {
+      ui.pluginRows.innerHTML = "";
+      ui.pluginCount.textContent = (plugins?.length || 0) + " plugin" + (plugins?.length === 1 ? "" : "s");
+      syncPluginSelectors(plugins || []);
+
+      if (!plugins || !plugins.length) {
+        ui.pluginRows.innerHTML = "<div class=\"p-6 text-sm text-on-muted\">No plugins found.</div>";
+        return;
+      }
+
+      for (const plugin of plugins) {
+        const available = !!plugin.available;
+        const statusClass = available ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600";
+        const buttonClass = available
+          ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+          : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100";
+
+        ui.pluginRows.insertAdjacentHTML(
+          "beforeend",
+          "<div class=\"flex items-center justify-between gap-4 p-5 transition-colors hover:bg-surface-2\">" +
+            "<div class=\"min-w-0\">" +
+              "<div class=\"truncate text-sm font-bold\">" + esc(plugin.name) + "</div>" +
+              "<div class=\"mt-1 truncate font-mono text-[11px] uppercase tracking-wide text-on-muted\">" + esc(plugin.version) + " - ID: " + esc(plugin.id) + "</div>" +
+              "<span class=\"mt-2 inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest " + statusClass + "\">" + (available ? "Active" : "Disabled") + "</span>" +
+            "</div>" +
+            "<button type=\"button\" class=\"rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors " + buttonClass + "\" data-plugin-id=\"" + esc(plugin.id) + "\" data-next-available=\"" + (!available) + "\">" +
+              (available ? "Disable" : "Enable") +
+            "</button>" +
+          "</div>"
+        );
+      }
+    }
+
+    async function refreshAll() {
+      setStatus("Loading data...", false);
+      ui.refreshAll.disabled = true;
+
+      try {
+        const [fleetData, pluginData] = await Promise.all([
+          gql("query{fleetStatus{probes{id name location ipAddress status lastHeartbeat}}}"),
+          gql("query{plugins{id name version checksum description releasedAt available}}")
+        ]);
+
+        renderFleet(fleetData.fleetStatus.probes);
+        renderPlugins(pluginData.plugins);
+        setOutput({ fleet: fleetData, plugins: pluginData });
+        setStatus("Fleet and plugins loaded.", false);
+      } catch (error) {
+        setStatus("Failed to refresh data.", true);
+        setOutput({ error: String(error) });
+      } finally {
+        ui.refreshAll.disabled = false;
+      }
+    }
+
+    async function seedDemoData() {
+      const registerPluginMutation = "mutation RegisterPlugin($input:RegisterPluginInputTypeInput!){registerPlugin(input:$input){success message plugin{id name version}}}";
+      const registerProbeMutation = "mutation RegisterProbe($input:RegisterProbeInputTypeInput!){registerProbe(input:$input){success message probe{id}}}";
+      const updateConfigMutation = "mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}";
+      const updateStatusMutation = "mutation UpdateProbeStatus($probeId:String!,$status:String!){updateProbeStatus(probeId:$probeId,status:$status){success message probe{id status}}}";
+
+      const summary = {
+        registeredPlugins: 0,
+        registeredProbes: 0,
+        configuredTests: 0,
+        statusUpdates: 0,
+        skipped: [],
+        errors: []
+      };
+
+      setStatus("Seeding demo data...", false);
+
+      for (const plugin of DEMO_PLUGINS) {
+        try {
+          const result = await gql(registerPluginMutation, { input: plugin });
+
+          if (result.registerPlugin?.success) {
+            summary.registeredPlugins += 1;
+          } else {
+            summary.skipped.push("plugin " + plugin.id);
+          }
+        } catch (error) {
+          const message = String(error);
+
+          if (isDupe(message)) {
+            summary.skipped.push("plugin " + plugin.id + ": already exists");
+          } else {
+            summary.errors.push("plugin " + plugin.id + ": " + message);
+          }
+        }
+      }
+
+      for (const probe of DEMO_PROBES) {
+        try {
+          const result = await gql(registerProbeMutation, {
+            input: {
+              id: probe.id,
+              name: probe.name,
+              location: probe.location,
+              ipAddress: probe.ipAddress
+            }
+          });
+
+          if (result.registerProbe?.success) {
+            summary.registeredProbes += 1;
+          } else {
+            summary.skipped.push("probe " + probe.id);
+          }
+        } catch (error) {
+          const message = String(error);
+
+          if (isDupe(message)) {
+            summary.skipped.push("probe " + probe.id + ": already exists");
+          } else {
+            summary.errors.push("probe " + probe.id + ": " + message);
+          }
+        }
+
+        for (const test of probe.tests) {
+          try {
+            const result = await gql(updateConfigMutation, {
+              input: {
+                probeId: probe.id,
+                testType: test.testType,
+                intervalSeconds: test.intervalSeconds,
+                enabled: test.enabled
+              }
+            });
+
+            if (result.updateProbeTestConfig?.success) {
+              summary.configuredTests += 1;
+            }
+          } catch (error) {
+            summary.errors.push("config " + probe.id + "/" + test.testType + ": " + String(error));
+          }
+        }
+
+        try {
+          const result = await gql(updateStatusMutation, { probeId: probe.id, status: probe.status });
+
+          if (result.updateProbeStatus?.success) {
+            summary.statusUpdates += 1;
+          }
+        } catch (error) {
+          summary.errors.push("status " + probe.id + ": " + String(error));
+        }
+      }
+
+      await refreshAll();
+      setOutput(summary);
+      setStatus(summary.errors.length ? "Seed completed with errors." : "Seed completed.", summary.errors.length > 0);
+    }
+
+    document.getElementById("adminTabs").addEventListener("click", (event) => {
+      const button = event.target.closest(".tab");
+
+      if (!button) {
+        return;
+      }
+
+      document.querySelectorAll(".tab").forEach((tabButton) => tabButton.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.remove("active"));
+
+      button.classList.add("active");
+      const panel = document.getElementById("tab-" + button.dataset.tab);
+
+      if (panel) {
+        panel.classList.add("active");
+      }
+    });
+
+    ui.refreshAll.addEventListener("click", refreshAll);
+    ui.seedDemo.addEventListener("click", seedDemoData);
+    ui.applyKeyPreset.addEventListener("click", applyApiKeyPreset);
+
+    ui.registerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = {
+        input: {
+          id: document.getElementById("probeId").value.trim(),
+          name: document.getElementById("probeName").value.trim(),
+          location: document.getElementById("probeLocation").value.trim(),
+          ipAddress: document.getElementById("probeIp").value.trim()
+        }
+      };
+
+      try {
+        const data = await gql(
+          "mutation RegisterProbe($input:RegisterProbeInputTypeInput!){registerProbe(input:$input){success message probe{id name location ipAddress status createdAt}}}",
+          variables
+        );
+        setOutput(data);
+        setStatus("Probe registered.", false);
+        await refreshAll();
+      } catch (error) {
+        setStatus("Registration failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.registerPluginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = {
+        input: {
+          id: document.getElementById("pluginId").value.trim(),
+          name: document.getElementById("pluginName").value.trim(),
+          version: document.getElementById("pluginVersion").value.trim(),
+          checksum: document.getElementById("pluginChecksum").value.trim(),
+          description: document.getElementById("pluginDescription").value.trim()
+        }
+      };
+
+      try {
+        const data = await gql(
+          "mutation RegisterPlugin($input:RegisterPluginInputTypeInput!){registerPlugin(input:$input){success message plugin{id name version available}}}",
+          variables
+        );
+        setOutput(data);
+
+        if (data.registerPlugin?.success) {
+          setStatus("Plugin registered.", false);
+          await refreshAll();
+        } else {
+          setStatus("Plugin registration rejected.", true);
+        }
+      } catch (error) {
+        setStatus("Plugin registration failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.configForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = {
+        input: {
+          probeId: document.getElementById("cfgProbeId").value.trim(),
+          testType: document.getElementById("cfgType").value.trim(),
+          intervalSeconds: Number(document.getElementById("cfgInterval").value),
+          enabled: document.getElementById("cfgEnabled").value === "true"
+        }
+      };
+
+      try {
+        const data = await gql(
+          "mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}",
+          variables
+        );
+        setOutput(data);
+        setStatus("Config updated.", false);
+      } catch (error) {
+        setStatus("Config update failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.testToggleForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = {
+        input: {
+          probeId: document.getElementById("toggleProbeId").value.trim(),
+          testType: document.getElementById("toggleType").value.trim(),
+          enabled: document.getElementById("toggleEnabled").value === "true"
+        }
+      };
+
+      if (!variables.input.probeId) {
+        setStatus("Select a probe in Fleet first.", true);
+        return;
+      }
+
+      try {
+        const data = await gql(
+          "mutation SetProbeTestEnabled($input:SetProbeTestEnabledInputTypeInput!){setProbeTestEnabled(input:$input){success message config{probeId testType intervalSeconds enabled}}}",
+          variables
+        );
+        setOutput(data);
+
+        if (data.setProbeTestEnabled?.success) {
+          setStatus("Test toggle applied.", false);
+        } else {
+          setStatus("Toggle rejected.", true);
+        }
+      } catch (error) {
+        setStatus("Toggle failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.pluginRows.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-plugin-id]");
+
+      if (!button) {
+        return;
+      }
+
+      const pluginId = button.getAttribute("data-plugin-id");
+      const nextAvailable = button.getAttribute("data-next-available") === "true";
+
+      try {
+        const data = await gql(
+          "mutation SetPluginAvailability($input:SetPluginAvailabilityInputTypeInput!){setPluginAvailability(input:$input){success message plugin{id name version available}}}",
+          { input: { pluginId, available: nextAvailable } }
+        );
+        setOutput(data);
+
+        if (data.setPluginAvailability?.success) {
+          setStatus("Plugin " + pluginId + " updated.", false);
+          await refreshAll();
+        } else {
+          setStatus("Toggle rejected.", true);
+        }
+      } catch (error) {
+        setStatus("Plugin toggle failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.fleetRows.addEventListener("click", (event) => {
+      const manageButton = event.target.closest("button[data-probe-manage]");
+
+      if (manageButton) {
+        setSelectedProbe(manageButton.getAttribute("data-probe-manage") || "");
+        renderFleet(currentFleetProbes);
+        return;
+      }
+
+      const queryButton = event.target.closest("button[data-probe-query]");
+
+      if (queryButton) {
+        setSelectedProbe(queryButton.getAttribute("data-probe-query") || "");
+        renderFleet(currentFleetProbes);
+        ui.probeConfigForm.requestSubmit();
+        return;
+      }
+
+      const row = event.target.closest("tr[data-probe-id]");
+
+      if (!row) {
+        return;
+      }
+
+      setSelectedProbe(row.getAttribute("data-probe-id") || "");
+      renderFleet(currentFleetProbes);
+    });
+
+    ui.statusForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = {
+        probeId: document.getElementById("statusProbeId").value.trim(),
+        status: document.getElementById("statusValue").value
+      };
+
+      if (!variables.probeId) {
+        setStatus("Select a probe in Fleet first.", true);
+        return;
+      }
+
+      try {
+        const data = await gql(
+          "mutation UpdateProbeStatus($probeId:String!,$status:String!){updateProbeStatus(probeId:$probeId,status:$status){success message probe{id status lastHeartbeat}}}",
+          variables
+        );
+        setOutput(data);
+        setStatus("Probe status updated.", false);
+        await refreshAll();
+      } catch (error) {
+        setStatus("Status update failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.panelConfigForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = {
+        input: {
+          probeId: document.getElementById("panelCfgProbeId").value.trim(),
+          testType: document.getElementById("panelCfgType").value.trim(),
+          intervalSeconds: Number(document.getElementById("panelCfgInterval").value),
+          enabled: document.getElementById("panelCfgEnabled").value === "true"
+        }
+      };
+
+      if (!variables.input.probeId) {
+        setStatus("Select a probe in Fleet first.", true);
+        return;
+      }
+
+      try {
+        const data = await gql(
+          "mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}",
+          variables
+        );
+        setOutput(data);
+        setStatus("Test config updated.", false);
+      } catch (error) {
+        setStatus("Test config update failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.probeConfigForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = { probeId: document.getElementById("probeConfigProbeId").value.trim() };
+
+      if (!variables.probeId) {
+        setStatus("Select a probe in Fleet first.", true);
+        return;
+      }
+
+      try {
+        const data = await gql(
+          "query ProbeConfig($probeId:String!){probeConfig(probeId:$probeId){probeId enabledTests{probeId testType intervalSeconds enabled}availablePlugins{id name version checksum available bundleUrl}}}",
+          variables
+        );
+        setOutput(data);
+        setStatus("Probe config loaded.", false);
+      } catch (error) {
+        setStatus("Probe config request failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.pluginByIdForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const variables = { id: document.getElementById("pluginByIdValue").value.trim() };
+
+      try {
+        const data = await gql(
+          "query PluginById($id:String!){plugin(id:$id){id name version checksum description releasedAt available bundleUrl}}",
+          variables
+        );
+        setOutput(data);
+        setStatus("Plugin lookup completed.", false);
+      } catch (error) {
+        setStatus("Plugin lookup failed.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
+    ui.bundleDownloadForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const pluginId = document.getElementById("bundlePluginId").value.trim();
+      const version = document.getElementById("bundleVersion").value.trim();
+      const url = "/plugins/" + encodeURIComponent(pluginId) + "/" + encodeURIComponent(version) + "/bundle";
+
+      try {
+        const response = await fetch(url, { method: "GET", headers: authHeaders() });
+
+        if (!response.ok) {
+          throw new Error((await response.text()) || "HTTP " + response.status);
+        }
+
+        const blob = await response.blob();
+        const downloadLink = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = downloadLink;
+        anchor.download = pluginId + "-" + version + ".zip";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(downloadLink);
+
+        setOutput({ downloadUrl: url, pluginId, version, status: "downloaded" });
+        setStatus("Bundle downloaded.", false);
+      } catch (error) {
+        setStatus("Bundle download failed.", true);
+        setOutput({ error: String(error), downloadUrl: url });
+      }
+    });
+
+    ui.clearOutput.addEventListener("click", () => {
+      setOutput({});
+      resetStatus();
+    });
+
+    resetStatus();
+    refreshAll();
+  </script>
 </body>
 </html>
