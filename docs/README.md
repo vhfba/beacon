@@ -15,6 +15,9 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 - `graphql-api.md`
   Central API reference for GraphQL plus operational REST endpoints (monitoring, probe runtime state, heartbeat, bundles).
 
+- `deploy.md`
+  End-to-end deployment guide for central-server and monitoring-stack, including `.env` configuration and verification steps.
+
 ### Architecture
 
 - `architecture/communication-flow.puml`  

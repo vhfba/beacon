@@ -167,3 +167,5 @@ async Task SeedData(CentralServerDbContext db)
 {
     await Task.CompletedTask;
 }
+
+public partial class Program;

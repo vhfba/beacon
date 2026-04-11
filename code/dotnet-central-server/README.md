@@ -161,6 +161,19 @@ docker build -t beacon-central-server .
 docker run -p 5000:8080 -e ConnectionString="Host=host.docker.internal;..." beacon-central-server
 ```
 
+### Testing
+
+Run all Central Server tests:
+
+```bash
+dotnet test tests/CentralServer.Tests/CentralServer.Tests.csproj
+```
+
+Test coverage includes:
+- Domain model invariants and behavior transitions
+- Application use-case business rules and error flows
+- Integration checks for health, auth-gated endpoints, monitoring service discovery, and GraphQL hardening
+
 ### Plugin Bundles
 
 Plugin bundle artifacts are served by the central server for probe download.
