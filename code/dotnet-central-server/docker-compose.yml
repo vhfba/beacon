@@ -28,6 +28,13 @@ services:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-beacon_central};Username=${POSTGRES_USER:-beacon};Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required};"
       Auth__AdminApiKey: ${AUTH_ADMIN_API_KEY:?AUTH_ADMIN_API_KEY is required}
       Auth__ProbeApiKey: ${AUTH_PROBE_API_KEY:?AUTH_PROBE_API_KEY is required}
+      Monitoring__Prometheus__ServiceDiscoveryToken: ${PROMETHEUS_SD_TOKEN:?PROMETHEUS_SD_TOKEN is required}
+      Monitoring__Prometheus__DefaultProbeMetricsPort: ${PROBE_METRICS_PORT:-9464}
+      Monitoring__Prometheus__DefaultMetricsPath: ${PROBE_METRICS_PATH:-/metrics}
+      Monitoring__Grafana__EmbedBaseUrl: ${GRAFANA_EMBED_BASE_URL:-http://localhost:3001}
+      Monitoring__Grafana__ApiBaseUrl: ${GRAFANA_API_BASE_URL:-http://host.docker.internal:3001}
+      Monitoring__Grafana__DashboardBaseUid: ${GRAFANA_DASHBOARD_BASE_UID:-beacon-probe-health}
+      Monitoring__Grafana__ApiToken: ${GRAFANA_API_TOKEN:-}
     ports:
       - "${CENTRAL_SERVER_PORT:-5000}:8080"
     volumes:

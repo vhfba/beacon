@@ -62,7 +62,7 @@ public class Probe
     public void RecordHeartbeat()
     {
         LastHeartbeat = DateTime.UtcNow;
-        if (Status == ProbeStatus.Registered)
+        if (Status != ProbeStatus.Active && Status != ProbeStatus.Decommissioned)
             UpdateStatus(ProbeStatus.Active);
     }
     public void RecordConfigFetch()

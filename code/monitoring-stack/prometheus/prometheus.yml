@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+  external_labels:
+    project: beacon
+
+rule_files:
+  - /etc/prometheus/rules/recording.rules.yml
+  - /etc/prometheus/rules/alerts.rules.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - prometheus:9090
+        labels:
+          component: monitoring-stack
+
+  - job_name: beacon-probes
+    metrics_path: /metrics
+    http_sd_configs:
+      - url: http://host.docker.internal:5000/monitoring/prometheus/service-discovery?token=dev-prom-sd-token
+        refresh_interval: 30s

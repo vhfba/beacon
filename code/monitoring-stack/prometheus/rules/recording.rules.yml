@@ -1,0 +1,18 @@
+groups:
+  - name: beacon-recording
+    interval: 15s
+    rules:
+      - record: beacon:probe_targets_total
+        expr: count(up{job="beacon-probes"})
+
+      - record: beacon:probe_targets_up
+        expr: sum(up{job="beacon-probes"})
+
+      - record: beacon:probe_targets_down
+        expr: count(up{job="beacon-probes"} == 0)
+
+      - record: beacon:probe_scrape_success_ratio:15m
+        expr: avg_over_time(up{job="beacon-probes"}[15m])
+
+      - record: beacon:probe_scrape_samples:avg5m
+        expr: avg_over_time(scrape_samples_scraped{job="beacon-probes"}[5m])

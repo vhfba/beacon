@@ -1,10 +1,12 @@
-@startuml
+@startuml communication-flow
 title BEACON - Communication Architecture
 
 actor Admin
 
 package "Central Server" {
   rectangle "GraphQL API" as gql
+  rectangle "Probe Runtime API\n/runtime-state + /heartbeat" as runtime
+  rectangle "Monitoring API\nservice-discovery + thresholds + embed" as mon
   rectangle "Config Manager" as cfg
 }
 
@@ -27,15 +29,28 @@ Admin --> gql : Configure probes\n(view status, enable tests)
 
 p1agent --> gql : Fetch config\n(tests, interval)
 gql --> p1agent : Config response
+p1agent --> runtime : Poll runtime-state
+runtime --> p1agent : status + canEmitMetrics + enabledTests
+p1agent --> runtime : Send heartbeat
+runtime --> p1agent : heartbeat accepted/rejected
 
 p2agent --> gql : Fetch config\n(tests, interval)
 gql --> p2agent : Config response
+p2agent --> runtime : Poll runtime-state
+runtime --> p2agent : status + canEmitMetrics + enabledTests
+p2agent --> runtime : Send heartbeat
+runtime --> p2agent : heartbeat accepted/rejected
 
 p1agent --> p1metrics : Update metrics
 p2agent --> p2metrics : Update metrics
 
+prom --> mon : Fetch service discovery
+mon --> prom : ACTIVE targets only
 prom --> p1metrics : Scrape metrics (HTTP pull)
 prom --> p2metrics : Scrape metrics (HTTP pull)
+
+Admin --> mon : Set thresholds / Open embed
+mon --> graf : Embed URL + dashboard sync
 
 graf --> prom : Query metrics
 prom --> graf : Return time-series data

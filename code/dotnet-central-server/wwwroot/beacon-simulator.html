@@ -166,9 +166,6 @@
             <span class="material-symbols-outlined text-[18px]">refresh</span>
             Refresh
           </button>
-          <button id="seedDemo" type="button" class="inline-flex h-10 items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100">
-            Seed Demo Data
-          </button>
         </div>
 
         <div class="mt-4">
@@ -184,6 +181,36 @@
           <div class="font-headline text-3xl font-extrabold text-primary">GraphQL</div>
           <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-on-muted">Live Simulator Mode</p>
         </div>
+      </div>
+    </section>
+
+    <section class="animate-reveal rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-sky-50 p-5 shadow-card sm:p-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 class="font-headline text-2xl font-extrabold tracking-tight text-slate-900">Monitoring Hub</h2>
+          <p class="mt-1 max-w-2xl text-sm text-on-muted">Open embedded Grafana dashboards and apply Wi-Fi threshold profiles quickly from one place.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[minmax(220px,1fr)_auto_auto] md:items-end">
+        <div>
+          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="monitorSiteQuick">Site</label>
+          <input id="monitorSiteQuick" value="Building A" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+        </div>
+        <button id="openMonitoringDashboardQuick" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold uppercase tracking-wide text-white shadow-lift transition-all hover:bg-primary-strong active:scale-[0.98]">
+          <span class="material-symbols-outlined text-base">monitoring</span>
+          Open Dashboard
+        </button>
+        <button id="openMonitoringConfig" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border-soft bg-white px-4 text-xs font-bold uppercase tracking-wide text-secondary transition-colors hover:bg-surface-2">
+          <span class="material-symbols-outlined text-base">tune</span>
+          Config
+        </button>
+      </div>
+
+      <div id="monitoringQuickStatus" class="mt-3 text-xs font-semibold text-on-muted">Tip: use an Admin API key, then click Open Dashboard.</div>
+
+      <div id="monitoringFrameWrapQuick" class="mt-4 hidden rounded-xl border border-indigo-100 bg-white p-2">
+        <iframe id="monitoringFrameQuick" class="h-[520px] w-full rounded-lg border border-surface-3" src="about:blank" loading="lazy"></iframe>
       </div>
     </section>
 
@@ -205,89 +232,18 @@
                   <th class="px-6 py-3 font-semibold">IP Address</th>
                   <th class="px-6 py-3 font-semibold">Status</th>
                   <th class="px-6 py-3 font-semibold">Heartbeat</th>
-                  <th class="px-6 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody id="fleetRows" class="divide-y divide-surface-2 text-sm">
                 <tr>
-                  <td class="px-6 py-6 text-center text-on-muted" colspan="7">No probes loaded.</td>
+                  <td class="px-6 py-6 text-center text-on-muted" colspan="6">No probes loaded.</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div id="fleetActionsPanel" class="border-t border-surface-2 bg-surface-2 p-5">
-            <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-on-muted">Selected probe</div>
-                <div id="selectedProbeLabel" class="font-headline text-lg font-bold text-on-surface">No probe selected</div>
-              </div>
-              <div class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">In-Table Controls</div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <form id="statusForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-                <input id="statusProbeId" type="hidden" />
-                <div class="text-sm font-bold text-on-surface">Update Probe Status</div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="statusValue">Status</label>
-                  <select id="statusValue" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-                    <option value="REGISTERED">REGISTERED</option>
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="INACTIVE">INACTIVE</option>
-                    <option value="DECOMMISSIONED">DECOMMISSIONED</option>
-                  </select>
-                </div>
-                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Update Status</button>
-              </form>
-
-              <form id="panelConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-                <input id="panelCfgProbeId" type="hidden" />
-                <div class="text-sm font-bold text-on-surface">Update Test Config</div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgType">Test Type</label>
-                  <input id="panelCfgType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgInterval">Interval (sec)</label>
-                    <input id="panelCfgInterval" type="number" min="5" max="3600" value="30" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgEnabled">Enabled</label>
-                    <select id="panelCfgEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-                      <option value="true">true</option>
-                      <option value="false">false</option>
-                    </select>
-                  </div>
-                </div>
-                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Config</button>
-              </form>
-
-              <form id="testToggleForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-                <input id="toggleProbeId" type="hidden" />
-                <div class="text-sm font-bold text-on-surface">Toggle Test</div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleType">Test Type</label>
-                  <input id="toggleType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleEnabled">Enabled</label>
-                  <select id="toggleEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-                    <option value="true">true</option>
-                    <option value="false">false</option>
-                  </select>
-                </div>
-                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Toggle</button>
-              </form>
-
-              <form id="probeConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-                <input id="probeConfigProbeId" type="hidden" />
-                <div class="text-sm font-bold text-on-surface">Query Probe Config</div>
-                <p class="text-xs text-on-muted">Fetch current tests and available plugins for selected probe.</p>
-                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Fetch Probe Config</button>
-              </form>
-            </div>
+          <div class="border-t border-surface-2 bg-surface-2 px-6 py-3 text-xs font-semibold text-on-muted">
+            Click a probe row to open its control panel.
           </div>
         </div>
 
@@ -315,8 +271,12 @@
                     <input id="probeLocation" required value="Building A" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
                   </div>
                   <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeIp">IP Address</label>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeIp">IP Address / Host</label>
                     <input id="probeIp" required value="10.1.1.100" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeMetricsPort">Metrics Port</label>
+                    <input id="probeMetricsPort" type="number" min="1" max="65535" required value="9464" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
                   </div>
                 </div>
                 <div class="flex justify-end">
@@ -447,6 +407,167 @@
     </section>
   </main>
 
+  <div id="fleetActionsBackdrop" class="fixed inset-0 z-40 hidden bg-slate-900/45 backdrop-blur-[1px]"></div>
+
+  <section id="fleetActionsPanel" class="fixed left-1/2 top-1/2 z-50 hidden max-h-[calc(100vh-2rem)] w-[min(860px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border-soft bg-surface p-5 shadow-lift">
+    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-wider text-on-muted">Selected probe</div>
+        <div id="selectedProbeLabel" class="font-headline text-lg font-bold text-on-surface">No probe selected</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">Probe Controls</div>
+        <button id="fleetActionsClose" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border-soft bg-white text-on-muted transition-colors hover:bg-surface-2" aria-label="Close probe controls">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <form id="statusForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+        <input id="statusProbeId" type="hidden" />
+        <div class="text-sm font-bold text-on-surface">Update Probe Status</div>
+        <div>
+          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="statusValue">Status</label>
+          <select id="statusValue" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+            <option value="REGISTERED">REGISTERED</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="DECOMMISSIONED">DECOMMISSIONED</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Update Status</button>
+      </form>
+
+      <form id="panelConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+        <input id="panelCfgProbeId" type="hidden" />
+        <div class="text-sm font-bold text-on-surface">Update Test Config</div>
+        <div>
+          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgType">Test Type</label>
+          <input id="panelCfgType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgInterval">Interval (sec)</label>
+            <input id="panelCfgInterval" type="number" min="5" max="3600" value="30" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgEnabled">Enabled</label>
+            <select id="panelCfgEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Config</button>
+      </form>
+
+      <form id="testToggleForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+        <input id="toggleProbeId" type="hidden" />
+        <div class="text-sm font-bold text-on-surface">Toggle Test</div>
+        <div>
+          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleType">Test Type</label>
+          <input id="toggleType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleEnabled">Enabled</label>
+          <select id="toggleEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Toggle</button>
+      </form>
+
+      <form id="probeConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
+        <input id="probeConfigProbeId" type="hidden" />
+        <div class="text-sm font-bold text-on-surface">Query Probe Config</div>
+        <p class="text-xs text-on-muted">Fetch current tests and available plugins for selected probe.</p>
+        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Fetch Probe Config</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="monitorConfigBackdrop" class="fixed inset-0 z-40 hidden bg-slate-900/45 backdrop-blur-[1px]"></div>
+
+  <section id="monitorConfigPanel" class="fixed left-1/2 top-1/2 z-50 hidden max-h-[calc(100vh-2rem)] w-[min(760px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border-soft bg-surface p-5 shadow-lift">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-wider text-on-muted">Grafana Dashboard Settings</div>
+        <div class="font-headline text-lg font-bold text-on-surface">Threshold Configuration</div>
+      </div>
+      <button id="monitorConfigClose" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border-soft bg-white text-on-muted transition-colors hover:bg-surface-2" aria-label="Close threshold config">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+
+    <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-[minmax(220px,1fr)_auto] md:items-end">
+      <div>
+        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="monitorSite">Site</label>
+        <input id="monitorSite" value="Building A" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+      </div>
+      <button id="loadThresholds" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border-soft bg-white px-4 text-xs font-bold uppercase tracking-wide text-secondary transition-colors hover:bg-surface-2">
+        <span class="material-symbols-outlined text-base">download</span>
+        Load Thresholds
+      </button>
+    </div>
+
+    <form id="thresholdForm" class="space-y-3 rounded-lg border border-border-soft bg-surface-2 p-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrRssiYellow">RSSI Yellow</label>
+          <input id="thrRssiYellow" type="number" step="0.1" value="-70" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrRssiGreen">RSSI Green</label>
+          <input id="thrRssiGreen" type="number" step="0.1" value="-60" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrSnrYellow">SNR Yellow</label>
+          <input id="thrSnrYellow" type="number" step="0.1" value="20" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrSnrGreen">SNR Green</label>
+          <input id="thrSnrGreen" type="number" step="0.1" value="30" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrLinkYellow">Link Yellow %</label>
+          <input id="thrLinkYellow" type="number" step="0.1" value="60" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrLinkGreen">Link Green %</label>
+          <input id="thrLinkGreen" type="number" step="0.1" value="80" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrPingWarn">Ping Loss Warn %</label>
+          <input id="thrPingWarn" type="number" step="0.1" value="2" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrPingCritical">Ping Loss Critical %</label>
+          <input id="thrPingCritical" type="number" step="0.1" value="5" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrDlWarn">iPerf DL Warn Mbps</label>
+          <input id="thrDlWarn" type="number" step="0.1" value="100" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrDlGood">iPerf DL Good Mbps</label>
+          <input id="thrDlGood" type="number" step="0.1" value="200" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrUlWarn">iPerf UL Warn Mbps</label>
+          <input id="thrUlWarn" type="number" step="0.1" value="60" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrUlGood">iPerf UL Good Mbps</label>
+          <input id="thrUlGood" type="number" step="0.1" value="120" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+        </div>
+      </div>
+
+      <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Save and Apply Thresholds</button>
+    </form>
+  </section>
+
   <footer class="mt-6 border-t border-slate-200 bg-slate-50 py-8">
     <div class="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-4 px-4 text-sm text-slate-500 sm:px-8 md:flex-row">
       <p>BEACON Central API Simulator</p>
@@ -468,12 +589,14 @@
       globalStatus: document.getElementById("globalStatus"),
       output: document.getElementById("output"),
       fleetRows: document.getElementById("fleetRows"),
+      fleetActionsPanel: document.getElementById("fleetActionsPanel"),
+      fleetActionsBackdrop: document.getElementById("fleetActionsBackdrop"),
+      fleetActionsClose: document.getElementById("fleetActionsClose"),
       pluginRows: document.getElementById("pluginRows"),
       fleetCount: document.getElementById("fleetCount"),
       pluginCount: document.getElementById("pluginCount"),
       selectedProbeLabel: document.getElementById("selectedProbeLabel"),
       refreshAll: document.getElementById("refreshAll"),
-      seedDemo: document.getElementById("seedDemo"),
       registerForm: document.getElementById("registerForm"),
       registerPluginForm: document.getElementById("registerPluginForm"),
       configForm: document.getElementById("configForm"),
@@ -483,61 +606,20 @@
       probeConfigForm: document.getElementById("probeConfigForm"),
       pluginByIdForm: document.getElementById("pluginByIdForm"),
       bundleDownloadForm: document.getElementById("bundleDownloadForm"),
-      clearOutput: document.getElementById("clearOutput")
+      clearOutput: document.getElementById("clearOutput"),
+      monitorSiteQuick: document.getElementById("monitorSiteQuick"),
+      openMonitoringDashboardQuick: document.getElementById("openMonitoringDashboardQuick"),
+      openMonitoringConfig: document.getElementById("openMonitoringConfig"),
+      monitoringQuickStatus: document.getElementById("monitoringQuickStatus"),
+      monitoringFrameWrapQuick: document.getElementById("monitoringFrameWrapQuick"),
+      monitoringFrameQuick: document.getElementById("monitoringFrameQuick"),
+      monitorSite: document.getElementById("monitorSite"),
+      loadThresholds: document.getElementById("loadThresholds"),
+      thresholdForm: document.getElementById("thresholdForm"),
+      monitorConfigBackdrop: document.getElementById("monitorConfigBackdrop"),
+      monitorConfigPanel: document.getElementById("monitorConfigPanel"),
+      monitorConfigClose: document.getElementById("monitorConfigClose")
     };
-
-    const DEMO_PLUGINS = [
-      {
-        id: "plugin-rssi-v1",
-        name: "RSSI Monitor",
-        version: "1.0.0",
-        checksum: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        description: "Signal strength monitor"
-      },
-      {
-        id: "plugin-http-v2",
-        name: "HTTP Probe",
-        version: "2.1.0",
-        checksum: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        description: "HTTP endpoint reachability checks"
-      }
-    ];
-
-    const DEMO_PROBES = [
-      {
-        id: "probe-001",
-        name: "Main Floor",
-        location: "Room 101",
-        ipAddress: "192.168.1.100",
-        status: "ACTIVE",
-        tests: [
-          { testType: "PING", intervalSeconds: 30, enabled: true },
-          { testType: "HTTP", intervalSeconds: 60, enabled: true }
-        ]
-      },
-      {
-        id: "probe-002",
-        name: "Lobby Probe",
-        location: "Entrance",
-        ipAddress: "192.168.1.101",
-        status: "ACTIVE",
-        tests: [
-          { testType: "RSSI", intervalSeconds: 20, enabled: true },
-          { testType: "PING", intervalSeconds: 45, enabled: true }
-        ]
-      },
-      {
-        id: "probe-003",
-        name: "West Wing",
-        location: "Building A, Room 204",
-        ipAddress: "192.168.1.102",
-        status: "INACTIVE",
-        tests: [
-          { testType: "HTTP", intervalSeconds: 120, enabled: true },
-          { testType: "IPERF", intervalSeconds: 300, enabled: true }
-        ]
-      }
-    ];
 
     const KEY_PRESETS = {
       admin: "",
@@ -546,6 +628,9 @@
 
     let selectedProbeId = "";
     let currentFleetProbes = [];
+    const HEARTBEAT_STALE_SECONDS = 45;
+    const FLEET_AUTO_REFRESH_MS = 10000;
+    let refreshInFlight = false;
 
     const STATUS_CLASS = {
       idle: "flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600",
@@ -578,6 +663,37 @@
       }
 
       return "bg-sky-100 text-sky-700";
+    }
+
+    function heartbeatState(lastHeartbeatValue, statusValue) {
+      const normalizedStatus = String(statusValue || "").toUpperCase();
+      if (normalizedStatus === "DECOMMISSIONED") {
+        return { label: "DECOMMISSIONED", className: "bg-rose-100 text-rose-700", detail: "inactive" };
+      }
+
+      if (normalizedStatus === "INACTIVE") {
+        return { label: "INACTIVE", className: "bg-amber-100 text-amber-700", detail: "disabled" };
+      }
+
+      if (!lastHeartbeatValue) {
+        return { label: "UNKNOWN", className: "bg-slate-200 text-slate-700", detail: "-" };
+      }
+
+      const parsed = new Date(lastHeartbeatValue);
+      if (Number.isNaN(parsed.getTime())) {
+        return { label: "UNKNOWN", className: "bg-slate-200 text-slate-700", detail: String(lastHeartbeatValue) };
+      }
+
+      const ageSeconds = Math.max(0, Math.floor((Date.now() - parsed.getTime()) / 1000));
+      const detail = ageSeconds < 60
+        ? ageSeconds + "s ago"
+        : Math.floor(ageSeconds / 60) + "m ago";
+
+      if (ageSeconds <= HEARTBEAT_STALE_SECONDS) {
+        return { label: "ONLINE", className: "bg-emerald-100 text-emerald-700", detail };
+      }
+
+      return { label: "STALE", className: "bg-amber-100 text-amber-700", detail };
     }
 
     function setStatus(message, isError) {
@@ -675,9 +791,177 @@
       return payload.data;
     }
 
-    function isDupe(errorValue) {
-      const value = String(errorValue || "").toLowerCase();
-      return value.includes("already") || value.includes("exists") || value.includes("duplicate");
+    async function apiRequest(url, options) {
+      const response = await fetch(url, {
+        ...(options || {}),
+        headers: authHeaders((options && options.headers) || {})
+      });
+
+      const raw = await response.text();
+      let payload = null;
+
+      if (raw.trim()) {
+        try {
+          payload = JSON.parse(raw);
+        } catch {
+          payload = null;
+        }
+      }
+
+      if (!response.ok) {
+        const message = payload?.detail || payload?.message || raw || ("HTTP " + response.status);
+        throw new Error(String(message));
+      }
+
+      return payload;
+    }
+
+    function collectThresholdProfile() {
+      return {
+        rssiYellowDbm: Number(document.getElementById("thrRssiYellow").value),
+        rssiGreenDbm: Number(document.getElementById("thrRssiGreen").value),
+        snrYellowDb: Number(document.getElementById("thrSnrYellow").value),
+        snrGreenDb: Number(document.getElementById("thrSnrGreen").value),
+        linkQualityYellowPercent: Number(document.getElementById("thrLinkYellow").value),
+        linkQualityGreenPercent: Number(document.getElementById("thrLinkGreen").value),
+        pingLossWarnPercent: Number(document.getElementById("thrPingWarn").value),
+        pingLossCriticalPercent: Number(document.getElementById("thrPingCritical").value),
+        iperfDownloadWarnMbps: Number(document.getElementById("thrDlWarn").value),
+        iperfDownloadGoodMbps: Number(document.getElementById("thrDlGood").value),
+        iperfUploadWarnMbps: Number(document.getElementById("thrUlWarn").value),
+        iperfUploadGoodMbps: Number(document.getElementById("thrUlGood").value)
+      };
+    }
+
+    function applyThresholdProfile(profile) {
+      if (!profile) {
+        return;
+      }
+
+      document.getElementById("thrRssiYellow").value = profile.rssiYellowDbm;
+      document.getElementById("thrRssiGreen").value = profile.rssiGreenDbm;
+      document.getElementById("thrSnrYellow").value = profile.snrYellowDb;
+      document.getElementById("thrSnrGreen").value = profile.snrGreenDb;
+      document.getElementById("thrLinkYellow").value = profile.linkQualityYellowPercent;
+      document.getElementById("thrLinkGreen").value = profile.linkQualityGreenPercent;
+      document.getElementById("thrPingWarn").value = profile.pingLossWarnPercent;
+      document.getElementById("thrPingCritical").value = profile.pingLossCriticalPercent;
+      document.getElementById("thrDlWarn").value = profile.iperfDownloadWarnMbps;
+      document.getElementById("thrDlGood").value = profile.iperfDownloadGoodMbps;
+      document.getElementById("thrUlWarn").value = profile.iperfUploadWarnMbps;
+      document.getElementById("thrUlGood").value = profile.iperfUploadGoodMbps;
+    }
+
+    function getMonitoringSite() {
+      const quickSite = ui.monitorSiteQuick?.value?.trim();
+      const configSite = ui.monitorSite?.value?.trim();
+      return quickSite || configSite || "default";
+    }
+
+    function syncMonitoringSiteInputs(site) {
+      if (!site) {
+        return;
+      }
+
+      if (ui.monitorSiteQuick) {
+        ui.monitorSiteQuick.value = site;
+      }
+
+      if (ui.monitorSite) {
+        ui.monitorSite.value = site;
+      }
+    }
+
+    function updateBodyScrollLock() {
+      const probeOpen = ui.fleetActionsPanel && !ui.fleetActionsPanel.classList.contains("hidden");
+      const monitorOpen = ui.monitorConfigPanel && !ui.monitorConfigPanel.classList.contains("hidden");
+      document.body.classList.toggle("overflow-hidden", Boolean(probeOpen || monitorOpen));
+    }
+
+    function closeMonitoringConfigPanel() {
+      if (ui.monitorConfigPanel) {
+        ui.monitorConfigPanel.classList.add("hidden");
+      }
+
+      if (ui.monitorConfigBackdrop) {
+        ui.monitorConfigBackdrop.classList.add("hidden");
+      }
+
+      updateBodyScrollLock();
+    }
+
+    function openMonitoringConfigPanel() {
+      syncMonitoringSiteInputs(getMonitoringSite());
+
+      if (ui.monitorConfigPanel) {
+        ui.monitorConfigPanel.classList.remove("hidden");
+      }
+
+      if (ui.monitorConfigBackdrop) {
+        ui.monitorConfigBackdrop.classList.remove("hidden");
+      }
+
+      updateBodyScrollLock();
+    }
+
+    async function openMonitoringDashboard() {
+      const site = getMonitoringSite();
+
+      try {
+        const payload = await apiRequest("/monitoring/grafana/embed-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ site })
+        });
+
+        syncMonitoringSiteInputs(payload.site);
+
+        if (ui.monitoringFrameQuick && ui.monitoringFrameWrapQuick) {
+          ui.monitoringFrameQuick.src = payload.embedUrl;
+          ui.monitoringFrameWrapQuick.classList.remove("hidden");
+        }
+
+        if (ui.monitoringQuickStatus) {
+          ui.monitoringQuickStatus.textContent = "Embedded dashboard loaded for site '" + payload.site + "'.";
+        }
+
+        setOutput(payload);
+        setStatus("Embedded dashboard loaded for site '" + payload.site + "'.", false);
+      } catch (error) {
+        if (ui.monitoringQuickStatus) {
+          ui.monitoringQuickStatus.textContent = "Failed to open dashboard. Confirm Admin API key and Grafana availability.";
+        }
+
+        setStatus("Failed to open embedded dashboard.", true);
+        setOutput({ error: String(error) });
+      }
+    }
+
+    async function loadThresholdProfile() {
+      const site = getMonitoringSite();
+
+      try {
+        const payload = await apiRequest("/monitoring/thresholds/" + encodeURIComponent(site), {
+          method: "GET"
+        });
+
+        applyThresholdProfile(payload.profile);
+        syncMonitoringSiteInputs(payload.site);
+
+        if (ui.monitoringQuickStatus) {
+          ui.monitoringQuickStatus.textContent = "Threshold profile loaded for site '" + payload.site + "'.";
+        }
+
+        setOutput(payload);
+        setStatus("Threshold profile loaded for site '" + payload.site + "'.", false);
+      } catch (error) {
+        if (ui.monitoringQuickStatus) {
+          ui.monitoringQuickStatus.textContent = "Failed to load thresholds. Confirm Admin API key.";
+        }
+
+        setStatus("Failed to load threshold profile.", true);
+        setOutput({ error: String(error) });
+      }
     }
 
     function syncSelectOptions(selectId, options, emptyLabel) {
@@ -727,7 +1011,41 @@
       document.getElementById("probeConfigProbeId").value = probe.id;
       document.getElementById("cfgProbeId").value = probe.id;
       document.getElementById("statusValue").value = probe.status;
+      syncMonitoringSiteInputs(probe.location);
+
       ui.selectedProbeLabel.textContent = probe.name + " (" + probe.id + ")";
+    }
+
+    function closeProbePanel() {
+      if (ui.fleetActionsPanel) {
+        ui.fleetActionsPanel.classList.add("hidden");
+      }
+
+      if (ui.fleetActionsBackdrop) {
+        ui.fleetActionsBackdrop.classList.add("hidden");
+      }
+
+      updateBodyScrollLock();
+    }
+
+    function openProbePanel(probeId) {
+      setSelectedProbe(probeId);
+
+      if (!selectedProbeId) {
+        closeProbePanel();
+        return false;
+      }
+
+      if (ui.fleetActionsPanel) {
+        ui.fleetActionsPanel.classList.remove("hidden");
+      }
+
+      if (ui.fleetActionsBackdrop) {
+        ui.fleetActionsBackdrop.classList.remove("hidden");
+      }
+
+      updateBodyScrollLock();
+      return true;
     }
 
     function syncProbeSelectors(probes) {
@@ -761,13 +1079,14 @@
       syncProbeSelectors(probes || []);
 
       if (!probes || !probes.length) {
-        ui.fleetRows.innerHTML = "<tr><td class=\"px-6 py-6 text-center text-on-muted\" colspan=\"7\">No probes found.</td></tr>";
+        ui.fleetRows.innerHTML = "<tr><td class=\"px-6 py-6 text-center text-on-muted\" colspan=\"6\">No probes found.</td></tr>";
         return;
       }
 
       for (const probe of probes) {
         const statusClass = statusBadgeClass(probe.status);
         const isSelected = probe.id === selectedProbeId;
+        const heartbeat = heartbeatState(probe.lastHeartbeat, probe.status);
         ui.fleetRows.insertAdjacentHTML(
           "beforeend",
           "<tr class=\"transition-colors hover:bg-surface-2 cursor-pointer " + (isSelected ? "bg-surface-2" : "") + "\" data-probe-id=\"" + esc(probe.id) + "\">" +
@@ -776,11 +1095,10 @@
             "<td class=\"px-6 py-4\">" + esc(probe.location) + "</td>" +
             "<td class=\"px-6 py-4 font-mono text-xs\">" + esc(probe.ipAddress) + "</td>" +
             "<td class=\"px-6 py-4\"><span class=\"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold " + statusClass + "\">" + esc(probe.status) + "</span></td>" +
-            "<td class=\"px-6 py-4 text-xs text-on-muted\">" + esc(probe.lastHeartbeat || "-") + "</td>" +
             "<td class=\"px-6 py-4\">" +
-              "<div class=\"flex gap-2\">" +
-                "<button type=\"button\" class=\"rounded border border-border-soft bg-white px-2.5 py-1 text-[11px] font-bold text-secondary hover:bg-surface-2\" data-probe-manage=\"" + esc(probe.id) + "\">Manage</button>" +
-                "<button type=\"button\" class=\"rounded border border-border-soft bg-white px-2.5 py-1 text-[11px] font-bold text-secondary hover:bg-surface-2\" data-probe-query=\"" + esc(probe.id) + "\">Query</button>" +
+              "<div class=\"flex flex-col gap-1\">" +
+                "<span class=\"inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[11px] font-semibold " + heartbeat.className + "\">" + esc(heartbeat.label) + "</span>" +
+                "<span class=\"text-[11px] text-on-muted\">" + esc(heartbeat.detail) + "</span>" +
               "</div>" +
             "</td>" +
           "</tr>"
@@ -822,6 +1140,11 @@
     }
 
     async function refreshAll() {
+      if (refreshInFlight) {
+        return;
+      }
+
+      refreshInFlight = true;
       setStatus("Loading data...", false);
       ui.refreshAll.disabled = true;
 
@@ -840,105 +1163,8 @@
         setOutput({ error: String(error) });
       } finally {
         ui.refreshAll.disabled = false;
+        refreshInFlight = false;
       }
-    }
-
-    async function seedDemoData() {
-      const registerPluginMutation = "mutation RegisterPlugin($input:RegisterPluginInputTypeInput!){registerPlugin(input:$input){success message plugin{id name version}}}";
-      const registerProbeMutation = "mutation RegisterProbe($input:RegisterProbeInputTypeInput!){registerProbe(input:$input){success message probe{id}}}";
-      const updateConfigMutation = "mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}";
-      const updateStatusMutation = "mutation UpdateProbeStatus($probeId:String!,$status:String!){updateProbeStatus(probeId:$probeId,status:$status){success message probe{id status}}}";
-
-      const summary = {
-        registeredPlugins: 0,
-        registeredProbes: 0,
-        configuredTests: 0,
-        statusUpdates: 0,
-        skipped: [],
-        errors: []
-      };
-
-      setStatus("Seeding demo data...", false);
-
-      for (const plugin of DEMO_PLUGINS) {
-        try {
-          const result = await gql(registerPluginMutation, { input: plugin });
-
-          if (result.registerPlugin?.success) {
-            summary.registeredPlugins += 1;
-          } else {
-            summary.skipped.push("plugin " + plugin.id);
-          }
-        } catch (error) {
-          const message = String(error);
-
-          if (isDupe(message)) {
-            summary.skipped.push("plugin " + plugin.id + ": already exists");
-          } else {
-            summary.errors.push("plugin " + plugin.id + ": " + message);
-          }
-        }
-      }
-
-      for (const probe of DEMO_PROBES) {
-        try {
-          const result = await gql(registerProbeMutation, {
-            input: {
-              id: probe.id,
-              name: probe.name,
-              location: probe.location,
-              ipAddress: probe.ipAddress
-            }
-          });
-
-          if (result.registerProbe?.success) {
-            summary.registeredProbes += 1;
-          } else {
-            summary.skipped.push("probe " + probe.id);
-          }
-        } catch (error) {
-          const message = String(error);
-
-          if (isDupe(message)) {
-            summary.skipped.push("probe " + probe.id + ": already exists");
-          } else {
-            summary.errors.push("probe " + probe.id + ": " + message);
-          }
-        }
-
-        for (const test of probe.tests) {
-          try {
-            const result = await gql(updateConfigMutation, {
-              input: {
-                probeId: probe.id,
-                testType: test.testType,
-                intervalSeconds: test.intervalSeconds,
-                enabled: test.enabled
-              }
-            });
-
-            if (result.updateProbeTestConfig?.success) {
-              summary.configuredTests += 1;
-            }
-          } catch (error) {
-            summary.errors.push("config " + probe.id + "/" + test.testType + ": " + String(error));
-          }
-        }
-
-        try {
-          const result = await gql(updateStatusMutation, { probeId: probe.id, status: probe.status });
-
-          if (result.updateProbeStatus?.success) {
-            summary.statusUpdates += 1;
-          }
-        } catch (error) {
-          summary.errors.push("status " + probe.id + ": " + String(error));
-        }
-      }
-
-      await refreshAll();
-      setOutput(summary);
-      setStatus(summary.errors.length ? "Seed completed with errors." : "Seed completed.", summary.errors.length > 0);
     }
 
     document.getElementById("adminTabs").addEventListener("click", (event) => {
@@ -960,18 +1186,40 @@
     });
 
     ui.refreshAll.addEventListener("click", refreshAll);
-    ui.seedDemo.addEventListener("click", seedDemoData);
     ui.applyKeyPreset.addEventListener("click", applyApiKeyPreset);
 
     ui.registerForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+
+      const rawProbeHost = document.getElementById("probeIp").value.trim();
+      const rawProbePort = document.getElementById("probeMetricsPort").value.trim();
+      const parsedPort = Number(rawProbePort);
+
+      if (!rawProbeHost) {
+        setStatus("Probe host/IP is required.", true);
+        return;
+      }
+
+      if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+        setStatus("Probe metrics port must be an integer between 1 and 65535.", true);
+        return;
+      }
+
+      let normalizedHost = rawProbeHost;
+      if (/^[^\[\]]+:[0-9]+$/.test(normalizedHost)) {
+        normalizedHost = normalizedHost.replace(/:[0-9]+$/, "");
+      }
+
+      const hostWithPort = normalizedHost.includes(":") && !normalizedHost.startsWith("[")
+        ? "[" + normalizedHost + "]:" + parsedPort
+        : normalizedHost + ":" + parsedPort;
 
       const variables = {
         input: {
           id: document.getElementById("probeId").value.trim(),
           name: document.getElementById("probeName").value.trim(),
           location: document.getElementById("probeLocation").value.trim(),
-          ipAddress: document.getElementById("probeIp").value.trim()
+          ipAddress: hostWithPort
         }
       };
 
@@ -1110,31 +1358,29 @@
     });
 
     ui.fleetRows.addEventListener("click", (event) => {
-      const manageButton = event.target.closest("button[data-probe-manage]");
-
-      if (manageButton) {
-        setSelectedProbe(manageButton.getAttribute("data-probe-manage") || "");
-        renderFleet(currentFleetProbes);
-        return;
-      }
-
-      const queryButton = event.target.closest("button[data-probe-query]");
-
-      if (queryButton) {
-        setSelectedProbe(queryButton.getAttribute("data-probe-query") || "");
-        renderFleet(currentFleetProbes);
-        ui.probeConfigForm.requestSubmit();
-        return;
-      }
-
       const row = event.target.closest("tr[data-probe-id]");
 
       if (!row) {
         return;
       }
 
-      setSelectedProbe(row.getAttribute("data-probe-id") || "");
+      openProbePanel(row.getAttribute("data-probe-id") || "");
       renderFleet(currentFleetProbes);
+    });
+
+    if (ui.fleetActionsClose) {
+      ui.fleetActionsClose.addEventListener("click", closeProbePanel);
+    }
+
+    if (ui.fleetActionsBackdrop) {
+      ui.fleetActionsBackdrop.addEventListener("click", closeProbePanel);
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeProbePanel();
+        closeMonitoringConfigPanel();
+      }
     });
 
     ui.statusForm.addEventListener("submit", async (event) => {
@@ -1267,12 +1513,80 @@
       }
     });
 
+    if (ui.loadThresholds) {
+      ui.loadThresholds.addEventListener("click", loadThresholdProfile);
+    }
+
+    if (ui.openMonitoringDashboardQuick) {
+      ui.openMonitoringDashboardQuick.addEventListener("click", () => {
+        openMonitoringDashboard();
+      });
+    }
+
+    if (ui.openMonitoringConfig) {
+      ui.openMonitoringConfig.addEventListener("click", openMonitoringConfigPanel);
+    }
+
+    if (ui.monitorConfigClose) {
+      ui.monitorConfigClose.addEventListener("click", closeMonitoringConfigPanel);
+    }
+
+    if (ui.monitorConfigBackdrop) {
+      ui.monitorConfigBackdrop.addEventListener("click", closeMonitoringConfigPanel);
+    }
+
+    ui.thresholdForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const site = getMonitoringSite();
+      const profile = collectThresholdProfile();
+
+      try {
+        const payload = await apiRequest("/monitoring/thresholds/" + encodeURIComponent(site), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(profile)
+        });
+
+        setOutput(payload);
+        syncMonitoringSiteInputs(payload.site);
+
+        if (payload?.grafana?.embedUrl) {
+          if (ui.monitoringFrameQuick && ui.monitoringFrameWrapQuick) {
+            ui.monitoringFrameQuick.src = payload.grafana.embedUrl;
+            ui.monitoringFrameWrapQuick.classList.remove("hidden");
+          }
+        }
+
+        if (ui.monitoringQuickStatus) {
+          ui.monitoringQuickStatus.textContent = "Thresholds saved and applied for site '" + payload.site + "'.";
+        }
+
+        setStatus("Thresholds saved for site '" + payload.site + "'.", false);
+      } catch (error) {
+        if (ui.monitoringQuickStatus) {
+          ui.monitoringQuickStatus.textContent = "Failed to save thresholds. Check Admin API key and backend logs.";
+        }
+
+        setStatus("Failed to save thresholds.", true);
+        setOutput({ error: String(error) });
+      }
+    });
+
     ui.clearOutput.addEventListener("click", () => {
       setOutput({});
       resetStatus();
     });
 
     resetStatus();
+
+    if (ui.apiKey.value.trim()) {
+      loadThresholdProfile();
+    }
+
+    syncMonitoringSiteInputs(getMonitoringSite());
+    setInterval(refreshAll, FLEET_AUTO_REFRESH_MS);
+
     refreshAll();
   </script>
 </body>

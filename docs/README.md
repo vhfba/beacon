@@ -13,15 +13,12 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 ### API Documentation
 
 - `graphql-api.md`
-  GraphQL endpoint reference with schema summary and example queries/mutations.
-
-- `central-server-completion-plan.md`
-  Objective-to-implementation coverage matrix and prioritized central-server completion plan.
+  Central API reference for GraphQL plus operational REST endpoints (monitoring, probe runtime state, heartbeat, bundles).
 
 ### Architecture
 
 - `architecture/communication-flow.puml`  
-  Communication flow between admin, central server, probes, and monitoring stack.
+  Communication flow between admin, central server, probes, and monitoring stack, including runtime-state and heartbeat.
 
 - `architecture/plugin-testing-architecture.puml`  
   Plugin-based testing flow inside probe agents and server-side plugin repository usage.
@@ -46,6 +43,9 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
 
 - `architecture/use-case-get-probe-config-sequence.puml`  
   Sequence flow for probe config polling via GetProbeConfigUseCase.
+
+- `architecture/use-case-probe-heartbeat-sequence.puml`  
+  Sequence flow for probe heartbeat updates and liveness status propagation.
 
 - `architecture/use-case-update-probe-test-config-sequence.puml`  
   Sequence flow for interval/enabled updates via UpdateProbeTestConfigUseCase.
@@ -94,13 +94,25 @@ This folder contains the architecture and C4 model diagrams for the BEACON proje
   Decision to use GraphQL for Admin and probe configuration workflows.
 
 - `adr/ADR-004-use-java-spring-boot-for-the-central-server.md`  
-  Decision to implement the central server in Java 21 with Spring Boot.
+  Historical decision superseded by ADR-007.
 
 - `adr/ADR-005-use-strawberry-for-the-graphql-layer.md`  
-  Decision to use Spring GraphQL for the GraphQL layer.
+  Historical decision superseded by .NET migration ADRs.
 
 - `adr/ADR-006-use-postgresql-with-sqlalchemy-and-alembic-for-configuration-storage.md`  
-  Decision to use PostgreSQL with Spring Data JPA and Flyway for persistent configuration storage.
+  Historical decision superseded by .NET migration ADRs.
+
+- `adr/ADR-007-use-dotnet-9-with-csharp-for-the-central-server.md`  
+  Decision to migrate the central server from Java/Spring to .NET 9/C#.
+
+- `adr/ADR-008-use-hotchocolate-graphql-for-dotnet.md`  
+  Decision to use HotChocolate as GraphQL framework in ASP.NET Core.
+
+- `adr/ADR-009-use-rest-endpoints-for-operational-monitoring-and-probe-runtime-control.md`  
+  Decision to complement GraphQL with REST for Prometheus service discovery, dashboard embed/session, and probe runtime APIs.
+
+- `adr/ADR-010-use-heartbeat-based-probe-liveness-and-active-only-scraping.md`  
+  Decision to use heartbeat updates for liveness and restrict scraping to ACTIVE probes.
 
 ## Styling
 

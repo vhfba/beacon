@@ -1,0 +1,43 @@
+groups:
+  - name: beacon-alerts
+    interval: 15s
+    rules:
+      - alert: BeaconProbeUnreachable
+        expr: up{job="beacon-probes"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: beacon-monitoring
+        annotations:
+          summary: Probe endpoint unreachable
+          description: Probe {{ $labels.probe_id }} on {{ $labels.instance }} is failing scrapes.
+
+      - alert: BeaconProbeScrapeFailuresSustained
+        expr: beacon:probe_scrape_success_ratio:15m < 0.80
+        for: 10m
+        labels:
+          severity: warning
+          service: beacon-monitoring
+        annotations:
+          summary: Sustained probe scrape instability
+          description: Probe {{ $labels.probe_id }} on {{ $labels.instance }} has less than 80% successful scrapes over 15 minutes.
+
+      - alert: BeaconProbeMetricsMissingOrStale
+        expr: (up{job="beacon-probes"} == 1) and (avg_over_time(scrape_samples_scraped{job="beacon-probes"}[10m]) < 1)
+        for: 10m
+        labels:
+          severity: warning
+          service: beacon-monitoring
+        annotations:
+          summary: Probe metrics missing or stale
+          description: Probe {{ $labels.probe_id }} on {{ $labels.instance }} is reachable but exposing no samples for 10 minutes.
+
+      - alert: BeaconProbeTargetsMissing
+        expr: absent(up{job="beacon-probes"})
+        for: 10m
+        labels:
+          severity: warning
+          service: beacon-monitoring
+        annotations:
+          summary: No probe targets configured
+          description: Prometheus has no active targets for the beacon-probes job.

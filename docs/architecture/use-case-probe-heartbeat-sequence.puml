@@ -1,0 +1,28 @@
+@startuml use-case-probe-heartbeat-sequence
+title Use Case - Probe Heartbeat and Liveness Update
+
+autonumber
+
+actor "Probe Agent" as probe
+boundary "REST Endpoint\nPOST /probes/{probeId}/heartbeat" as endpoint
+database "IProbeRepository" as probes
+database "PostgreSQL" as db
+
+probe -> endpoint : POST /probes/{probeId}/heartbeat\nX-Api-Key: probe-key
+endpoint -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe by id
+db --> probes : probe row
+probes --> endpoint : Probe
+
+alt Probe not found
+  endpoint --> probe : 404 Not Found
+else Probe is decommissioned
+  endpoint --> probe : 409 Conflict\n(decommissioned cannot heartbeat)
+else Probe accepted
+  endpoint -> probes : UpdateAsync(RecordHeartbeat)
+  probes -> db : UPDATE last_heartbeat,status
+  db --> probes : updated
+  endpoint --> probe : 200 OK\nstatus + lastHeartbeatUtc
+end
+
+@enduml

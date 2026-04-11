@@ -1,25 +1,33 @@
-@startuml
+@startuml use-cases-diagram
 title BEACON - Use Cases
 
 left to right direction
 
 actor Admin as admin
 actor "Probe agent" as probe
+actor Prometheus as prom
+actor Grafana as graf
 
 rectangle "Central server" as central {
-  usecase "Register probe" as UC_Register 
+  usecase "Register probe" as UC_Register
   usecase "Register plugin" as UC_RegPlugin
-  usecase "View fleet status" as UC_Fleet 
-  usecase "Enable / disable tests" as UC_Enable 
-  usecase "Set schedule interval" as UC_Schedule 
+  usecase "View fleet status" as UC_Fleet
+  usecase "Enable / disable tests" as UC_Enable
+  usecase "Set schedule interval" as UC_Schedule
+  usecase "Set probe status" as UC_Status
 
-  usecase "Poll configuration" as UC_Poll 
-  usecase "Fetch plugin / download bundle" as UC_Plugin 
+  usecase "Poll configuration" as UC_Poll
+  usecase "Poll runtime state" as UC_Runtime
+  usecase "Send heartbeat" as UC_Heartbeat
+  usecase "Fetch plugin / download bundle" as UC_Plugin
+
+  usecase "Provide scrape targets\n(ACTIVE probes only)" as UC_SD
+  usecase "Set threshold profile" as UC_Thresholds
+  usecase "Open Grafana embed session" as UC_Embed
 }
 
 rectangle "Monitoring stack" as monitoring {
-  usecase "View dashboards" as UC_Dash 
-  usecase "Manage alert rules" as UC_Alerts 
+  usecase "View dashboards" as UC_Dash
 }
 
 admin --> UC_Register
@@ -27,10 +35,17 @@ admin --> UC_RegPlugin
 admin --> UC_Fleet
 admin --> UC_Enable
 admin --> UC_Schedule
+admin --> UC_Status
+admin --> UC_Thresholds
+admin --> UC_Embed
 admin --> UC_Dash
-admin --> UC_Alerts
 
 probe --> UC_Poll
+probe --> UC_Runtime
+probe --> UC_Heartbeat
 probe --> UC_Plugin
+
+prom --> UC_SD
+graf --> UC_Dash
 
 @enduml

@@ -1,0 +1,11 @@
+- targets:
+    - prometheus:9090
+  labels:
+    probe_id: local-smoke-prometheus
+    site: local-dev
+
+- targets:
+    - host.docker.internal:9464
+  labels:
+    probe_id: probe-mock-01
+    site: building-a-floor-1
