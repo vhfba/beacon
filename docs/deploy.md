@@ -18,8 +18,8 @@ for local Docker-based environments.
 ## 2. Configure Central Server Environment
 
 Location:
-- `code/dotnet-central-server/.env`
-- template: `code/dotnet-central-server/.env.example`
+- `code/central-server/.env`
+- template: `code/central-server/.env.example`
 
 Minimum required values:
 
@@ -67,7 +67,7 @@ Recommended alignment with central server:
 
 ## 4. Start Central Server
 
-From `code/dotnet-central-server`:
+From `code/central-server`:
 
 ```powershell
 docker compose up -d --build
@@ -167,7 +167,7 @@ docker compose up -d --build --force-recreate
 Stop central:
 
 ```powershell
-cd code/dotnet-central-server
+cd code/central-server
 docker compose down
 ```
 

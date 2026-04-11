@@ -5,7 +5,7 @@ This folder contains a practical monitoring MVP for BEACON based on Prometheus a
 Goals of this MVP:
 - Keep monitoring pull-based: Prometheus scrapes probe `/metrics` endpoints.
 - Keep the stack local-friendly and reproducible.
-- Keep target management centralized via dotnet-central-server service discovery.
+- Keep target management centralized via central-server service discovery.
 - Provide minimal, useful starter alerting and dashboards.
 
 ## What Is Included
@@ -57,7 +57,7 @@ docker compose down -v
 
 ## Add Or Remove Probe Targets
 
-Primary flow: register probes in dotnet-central-server.
+Primary flow: register probes in central-server.
 
 Prometheus now discovers probe targets from:
 - `GET /monitoring/prometheus/service-discovery` on central-server

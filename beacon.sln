@@ -5,13 +5,13 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "code", "code", "{314C6247-30EA-3492-19B6-DF847E3B326F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-central-server", "dotnet-central-server", "{C08FDBD2-77D5-1C3F-E397-54B7D255C8B7}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "central-server", "central-server", "{C08FDBD2-77D5-1C3F-E397-54B7D255C8B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentralServer", "code\dotnet-central-server\CentralServer.csproj", "{8A47AE89-D936-93D7-E1D8-C44D7C6772D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentralServer", "code\central-server\CentralServer.csproj", "{8A47AE89-D936-93D7-E1D8-C44D7C6772D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F19A1778-F734-07FA-D078-2715E0D7C239}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentralServer.Tests", "code\dotnet-central-server\tests\CentralServer.Tests\CentralServer.Tests.csproj", "{C6278A99-1A2D-4023-9815-1E3C282E808C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentralServer.Tests", "code\central-server\tests\CentralServer.Tests\CentralServer.Tests.csproj", "{C6278A99-1A2D-4023-9815-1E3C282E808C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
