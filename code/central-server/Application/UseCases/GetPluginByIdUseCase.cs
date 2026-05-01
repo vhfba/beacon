@@ -1,6 +1,7 @@
 namespace CentralServer.Application.UseCases;
 
 using CentralServer.Application.DTOs;
+using CentralServer.Application.Mappings;
 using CentralServer.Domain.Repositories;
 
 public class GetPluginByIdUseCase
@@ -18,6 +19,6 @@ public class GetPluginByIdUseCase
         if (plugin == null)
             return null;
 
-        return PluginDTO.FromDomain(plugin);
+        return plugin.ToDto();
     }
 }

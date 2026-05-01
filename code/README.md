@@ -1,22 +1,38 @@
-# Code Workspace
+# BEACON Workspace
 
-This folder contains runtime code separated by component:
+The `code/` folder contains the runnable parts of the platform.
 
-- `central-server/`: (Legacy) Java 21/Spring Boot API, configuration store, and orchestration logic. **[Deprecated]**
-  - See [ADR-004](../docs/adr/ADR-004-use-java-spring-boot-for-the-central-server.md) for decision history
-  
-- `central-server/`: **.NET 9 / C# implementation** - New central server (recommended)
-  - Optimized for Linux containers, minimal resource footprint
-  - HotChocolate GraphQL, Entity Framework Core, PostgreSQL
-  - See [ADR-007](../docs/adr/ADR-007-use-dotnet-9-with-csharp-for-the-central-server.md) for migration rationale
-  - [Quick Start Guide](central-server/QUICKSTART.md)
+## Components
 
-- `probe-agent/`: lightweight runtime for Raspberry Pi probes.
+- [central-server](./central-server/README.md)
+  .NET 9 control plane for probe registry, plugin distribution, runtime orchestration, action queueing, and Prometheus metric export.
+- [probe-agent](./probe-agent/README.md)
+  Lightweight probe runtime that polls config, executes plugins, reports metrics, and performs on-demand actions.
+- [monitoring-stack](./monitoring-stack/README.md)
+  Prometheus and Grafana deployment for fleet observability.
 
-- `monitoring-stack/`: deployment artifacts for Prometheus/Grafana/Alertmanager.
+## Current Platform Shape
 
-## Migration Status
+BEACON currently works as a central aggregation model:
 
-The BEACON platform is transitioning from Java/Spring Boot to .NET 9 for the central server component. Both implementations currently coexist for reference and gradual migration purposes.
+1. probes authenticate to central-server
+2. probes pull config and pending actions over GraphQL
+3. probes download plugin bundles from central-server
+4. probes push heartbeat and metric snapshots back to central-server
+5. Prometheus scrapes central-server `/metrics`
+6. Grafana visualizes Prometheus data
 
-**Use `central-server/` for new deployments and development.**
+## Main Use Cases
+
+- register and manage probes
+- register and distribute scheduled or action plugins
+- assign plugins to probes
+- configure scheduled checks such as `PING`, `HTTP`, `IPERF`, and `WIFI`
+- trigger on-demand actions such as `WIFI_SCAN_ACTION`
+- aggregate probe metrics centrally for monitoring dashboards
+
+## Documentation Map
+
+- Cross-repo docs: [docs/README.md](../docs/README.md)
+- API reference: [docs/graphql-api.md](../docs/graphql-api.md)
+- Deployment: [docs/deploy.md](../docs/deploy.md)

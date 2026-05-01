@@ -1,6 +1,7 @@
 namespace CentralServer.Application.DTOs;
 
 using System.ComponentModel.DataAnnotations;
+using CentralServer.Domain.Models;
 
 public record RegisterPluginInput
 {
@@ -22,4 +23,12 @@ public record RegisterPluginInput
 
     [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
     public string? Description { get; init; }
+
+    [StringLength(2048, ErrorMessage = "Bundle download URL cannot exceed 2048 characters")]
+    [Url(ErrorMessage = "Bundle download URL must be a valid absolute URI")]
+    public string? BundleDownloadUrl { get; init; }
+
+    public string? DashboardJson { get; init; }
+
+    public PluginExecutionMode ExecutionMode { get; init; } = PluginExecutionMode.Scheduled;
 }

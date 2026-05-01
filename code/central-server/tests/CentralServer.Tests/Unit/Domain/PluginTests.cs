@@ -37,11 +37,20 @@ public class PluginTests
     {
         var plugin = new Plugin("plugin-dns", "DNS Plugin", "2.1.0", "sha256");
 
+        Assert.Equal(PluginExecutionMode.Scheduled, plugin.ExecutionMode);
+
         plugin.Retire();
         Assert.False(plugin.Available);
 
         plugin.Restore();
         Assert.True(plugin.Available);
+    }
+
+    [Fact]
+    public void Constructor_InvalidBundleUrl_ThrowsDomainException()
+    {
+        Assert.Throws<DomainException>(() =>
+            new Plugin("plugin-dns", "DNS Plugin", "2.1.0", "sha256", bundleDownloadUrl: "invalid-url"));
     }
 
     [Fact]
@@ -55,15 +64,21 @@ public class PluginTests
             version: "1.2.3",
             checksum: "abc123",
             description: "HTTP checks",
+            bundleDownloadUrl: "https://cdn.example.com/plugins/http-1.2.3.zip",
+            dashboardJson: "{\"profile\":true}",
             releasedAt: releasedAt,
-            available: false);
+            available: false,
+            executionMode: PluginExecutionMode.Action);
 
         Assert.Equal("plugin-http", plugin.Id);
         Assert.Equal("HTTP", plugin.Name);
         Assert.Equal("1.2.3", plugin.Version);
         Assert.Equal("abc123", plugin.Checksum);
         Assert.Equal("HTTP checks", plugin.Description);
+        Assert.Equal("https://cdn.example.com/plugins/http-1.2.3.zip", plugin.BundleDownloadUrl);
+        Assert.Equal("{\"profile\":true}", plugin.DashboardJson);
         Assert.Equal(releasedAt, plugin.ReleasedAt);
         Assert.False(plugin.Available);
+        Assert.Equal(PluginExecutionMode.Action, plugin.ExecutionMode);
     }
 }

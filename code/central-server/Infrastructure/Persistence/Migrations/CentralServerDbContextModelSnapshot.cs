@@ -33,16 +33,29 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("available");
 
+                    b.Property<string>("BundleDownloadUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("bundle_download_url");
+
                     b.Property<string>("Checksum")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("checksum");
 
+                    b.Property<string>("DashboardJson")
+                        .HasColumnType("text")
+                        .HasColumnName("dashboard_json");
+
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("description");
+
+                    b.Property<int>("ExecutionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("execution_mode");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -65,6 +78,9 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                     b.HasIndex("Available")
                         .HasDatabaseName("idx_plugins_available");
 
+                    b.HasIndex("BundleDownloadUrl")
+                        .HasDatabaseName("idx_plugins_bundle_download_url");
+
                     b.HasIndex("Name")
                         .HasDatabaseName("idx_plugins_name");
 
@@ -79,12 +95,84 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                     b.ToTable("plugins");
                 });
 
+            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeActionExecutionEntity", b =>
+                {
+                    b.Property<string>("ExecutionId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("execution_id");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at_utc");
+
+                    b.Property<DateTime?>("DeliveredAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("delivered_at_utc");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
+                        .HasColumnName("error_message");
+
+                    b.Property<string>("PluginId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("plugin_id");
+
+                    b.Property<string>("ProbeId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("probe_id");
+
+                    b.Property<DateTime>("RequestedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("requested_at_utc");
+
+                    b.Property<DateTime?>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at_utc");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TriggeredBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("triggered_by");
+
+                    b.HasKey("ExecutionId");
+
+                    b.HasIndex("PluginId");
+
+                    b.HasIndex("ProbeId")
+                        .HasDatabaseName("idx_probe_action_probe_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("idx_probe_action_status");
+
+                    b.HasIndex("ProbeId", "Status", "RequestedAtUtc")
+                        .IsDescending(false, false, true)
+                        .HasDatabaseName("idx_probe_action_probe_status_requested");
+
+                    b.ToTable("probe_action_executions");
+                });
+
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("id");
+
+                    b.Property<string>("AgentVersion")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("agent_version");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -104,6 +192,14 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_heartbeat");
 
+                    b.Property<DateTime?>("LastMetricsPush")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_metrics_push");
+
+                    b.Property<DateTime?>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -116,6 +212,11 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
+                    b.Property<string>("Ssid")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("ssid");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -123,8 +224,6 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         .HasColumnName("status");
 
                     b.Property<long>("Version")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("bigint")
                         .HasColumnName("version");
 
@@ -146,6 +245,33 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("idx_probes_status");
 
                     b.ToTable("probes");
+                });
+
+            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbePluginAssignmentEntity", b =>
+                {
+                    b.Property<string>("ProbeId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("probe_id");
+
+                    b.Property<string>("PluginId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("plugin_id");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("assigned_at");
+
+                    b.HasKey("ProbeId", "PluginId");
+
+                    b.HasIndex("PluginId")
+                        .HasDatabaseName("idx_probe_plugin_plugin_id");
+
+                    b.HasIndex("ProbeId")
+                        .HasDatabaseName("idx_probe_plugin_probe_id");
+
+                    b.ToTable("probe_plugin_assignments");
                 });
 
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeTestConfigEntity", b =>
@@ -224,6 +350,44 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeActionExecutionEntity", b =>
+                {
+                    b.HasOne("CentralServer.Infrastructure.Persistence.Entities.PluginEntity", "Plugin")
+                        .WithMany()
+                        .HasForeignKey("PluginId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", "Probe")
+                        .WithMany()
+                        .HasForeignKey("ProbeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plugin");
+
+                    b.Navigation("Probe");
+                });
+
+            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbePluginAssignmentEntity", b =>
+                {
+                    b.HasOne("CentralServer.Infrastructure.Persistence.Entities.PluginEntity", "Plugin")
+                        .WithMany("ProbeAssignments")
+                        .HasForeignKey("PluginId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", "Probe")
+                        .WithMany("PluginAssignments")
+                        .HasForeignKey("ProbeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plugin");
+
+                    b.Navigation("Probe");
+                });
+
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeTestConfigEntity", b =>
                 {
                     b.HasOne("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", "Probe")
@@ -243,8 +407,15 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                     b.Navigation("TestTypeEntity");
                 });
 
+            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.PluginEntity", b =>
+                {
+                    b.Navigation("ProbeAssignments");
+                });
+
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", b =>
                 {
+                    b.Navigation("PluginAssignments");
+
                     b.Navigation("TestConfigurations");
                 });
 

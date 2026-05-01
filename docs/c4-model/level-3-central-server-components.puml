@@ -1,55 +1,59 @@
 @startuml
-title BEACON - Component Diagram (C3) · Central Server
+title BEACON - Component Diagram (C3) - Central Server
 
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
 Person(admin, "Admin")
 Person_Ext(probe, "Probe Agent")
+System_Ext(prom, "Prometheus", "Scrapes /metrics")
+System_Ext(grafana, "Grafana", "Dashboard UI and HTTP API")
 
 System_Boundary(central, "Central Server") {
 
-  Container_Boundary(gqlapi, "GraphQL API") {
-    Component(qresolver, "Query Resolver", "GraphQL Resolver", "Probe status and metrics summary queries")
-    Component(mresolver, "Mutation Resolver", "GraphQL Resolver", "Enable/disable tests and set schedule interval")
-    Component(auth, "Auth Middleware", "Middleware", "API key/token validation")
-    Component(schema, "Schema", "GraphQL SDL", "Type definitions and request validation")
+  Container_Boundary(presentation, "Presentation") {
+    Component(graphql, "GraphQL Resolvers", "HotChocolate", "Admin and probe queries and mutations")
+    Component(security, "Auth + GraphQL Hardening", "ASP.NET Core middleware", "API key auth, authorization policies, and query guardrails")
+    Component(bundleEndpoint, "Plugin Bundle Endpoint", "Minimal API endpoint", "Serves validated plugin zip archives")
+    Component(monitoringEndpoints, "Monitoring Endpoints", "Minimal API endpoints", "/metrics export and Grafana embed session")
   }
 
-  Container_Boundary(cfgmgr, "Config Manager") {
-    Component(registry, "Probe Registry", "Service", "Tracks registered probes and last-seen heartbeat")
-    Component(testcfg, "Test Config Service", "Service", "Stores enabled plugins and scheduling interval")
+  Container_Boundary(application, "Application") {
+    Component(useCases, "Use Case Layer", "Application services", "Fleet, plugin, assignment, action, and metrics workflows")
+    Component(runtimeCoordinator, "ProbeRuntimeCoordinator", "Application service", "Auto-registers probes and records passive heartbeat updates")
+    Component(dashboardAutomation, "PluginDashboardAutomationService", "Application service", "Validates and imports plugin-provided dashboard JSON")
   }
 
-  Container_Boundary(pluginrepo, "Plugin Repository") {
-    Component(pluginstore, "Plugin Store", "Service", "Serves plugin bundles")
-    Component(manifest, "Plugin Manifest", "Service", "Resolves plugin name/version/checksum metadata")
+  Container_Boundary(infrastructure, "Infrastructure") {
+    Component(repositories, "Repository Adapters", "EF Core adapters", "Persist probes, plugins, assignments, and action executions in PostgreSQL")
+    Component(metricsStore, "Probe Metrics Store", "Redis or in-memory adapter", "Stores latest probe-reported metric snapshots")
+    Component(grafanaSync, "GrafanaDashboardSyncService", "HTTP client adapter", "Imports or updates Grafana dashboards")
   }
 
-  ComponentDb(db, "Config Store", "SQLite/PostgreSQL", "Configuration and plugin metadata persistence")
+  ComponentDb(db, "PostgreSQL", "Relational database", "Primary persistence")
+  ComponentDb(redis, "Redis", "Key-value store", "Metric snapshot cache with TTL")
 }
 
-Rel(auth, qresolver, "Pass if valid")
-Rel(auth, mresolver, "Pass if valid")
-Rel(schema, qresolver, "Validate queries")
-Rel(schema, mresolver, "Validate mutations")
+Rel(admin, security, "Authenticated admin access", "HTTP")
+Rel(probe, security, "Authenticated probe access", "HTTP")
+Rel(security, graphql, "Authorizes GraphQL requests")
+Rel(graphql, useCases, "Execute queries and mutations")
+Rel(graphql, runtimeCoordinator, "Heartbeat workflow")
+Rel(bundleEndpoint, repositories, "Validate plugin metadata and availability")
+Rel(monitoringEndpoints, metricsStore, "Export aggregated metrics")
+Rel(monitoringEndpoints, grafanaSync, "Ensure site dashboards and build embed URLs")
 
-Rel(qresolver, registry, "Query probe list and last-seen state")
-Rel(qresolver, testcfg, "Query enabled tests")
-Rel(mresolver, testcfg, "Update test configuration")
-Rel(mresolver, registry, "Register/deregister probe")
-Rel(testcfg, db, "Read/write")
-Rel(registry, db, "Read/write")
-Rel(pluginstore, db, "Read plugin bundle metadata")
-Rel(manifest, db, "Read manifest rows")
-Rel(manifest, pluginstore, "Resolve bundle reference")
+Rel(runtimeCoordinator, repositories, "Read/write probe state")
+Rel(useCases, repositories, "Persist domain state")
+Rel(useCases, metricsStore, "Store or read metric snapshots")
+Rel(useCases, dashboardAutomation, "Apply plugin dashboard automation during plugin workflows")
+Rel(dashboardAutomation, grafanaSync, "Upsert Grafana dashboards")
 
-Rel(admin, auth, "GraphQL mutations and queries", "HTTP")
-Rel(probe, auth, "Fetch config and register", "HTTP")
-Rel(probe, manifest, "Check latest plugin metadata")
-Rel(probe, pluginstore, "Download plugin bundle")
+Rel(repositories, db, "Read/write")
+Rel(metricsStore, redis, "Read/write snapshots")
+Rel(grafanaSync, grafana, "Grafana HTTP API")
 
-note right of auth
-  planned
-end note
+Rel(prom, monitoringEndpoints, "Scrape /metrics", "HTTP GET")
+Rel(probe, bundleEndpoint, "Download plugin bundles")
+Rel(probe, graphql, "Probe config, runtime, heartbeat, actions, and metrics")
 
 @enduml

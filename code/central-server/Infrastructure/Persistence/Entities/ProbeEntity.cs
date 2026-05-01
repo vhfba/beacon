@@ -22,6 +22,14 @@ public class ProbeEntity
     [StringLength(45)]
     public string IpAddress { get; set; } = string.Empty;
 
+    [Column("ssid")]
+    [StringLength(128)]
+    public string? Ssid { get; set; }
+
+    [Column("agent_version")]
+    [StringLength(100)]
+    public string? AgentVersion { get; set; }
+
     [Column("status")]
     [StringLength(50)]
     public string Status { get; set; } = "Registered";
@@ -35,8 +43,16 @@ public class ProbeEntity
     [Column("last_config_fetch")]
     public DateTime? LastConfigFetch { get; set; }
 
+    [Column("last_metrics_push")]
+    public DateTime? LastMetricsPush { get; set; }
+
+    [Column("last_seen_at")]
+    public DateTime? LastSeenAt { get; set; }
+
     [Column("version")]
     public long Version { get; set; }
 
     public ICollection<ProbeTestConfigEntity> TestConfigurations { get; set; } = new List<ProbeTestConfigEntity>();
+
+    public ICollection<ProbePluginAssignmentEntity> PluginAssignments { get; set; } = new List<ProbePluginAssignmentEntity>();
 }

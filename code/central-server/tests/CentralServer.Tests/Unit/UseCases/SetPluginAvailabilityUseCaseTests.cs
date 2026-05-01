@@ -11,8 +11,9 @@ public class SetPluginAvailabilityUseCaseTests
     public async Task ExecuteAsync_AvailableFalse_RetiresPlugin()
     {
         var pluginRepo = new InMemoryPluginRepository();
+        var unitOfWork = new NoOpUnitOfWork();
         await pluginRepo.CreateAsync(new Plugin("plugin-http", "HTTP Plugin", "1.0.0", "sha256"));
-        var useCase = new SetPluginAvailabilityUseCase(pluginRepo);
+        var useCase = new SetPluginAvailabilityUseCase(pluginRepo, unitOfWork);
 
         var result = await useCase.ExecuteAsync(new SetPluginAvailabilityInput
         {
@@ -25,18 +26,21 @@ public class SetPluginAvailabilityUseCaseTests
         var persisted = await pluginRepo.GetByIdAsync("plugin-http");
         Assert.NotNull(persisted);
         Assert.False(persisted!.Available);
+        Assert.Equal(1, unitOfWork.SaveChangesCallCount);
     }
 
     [Fact]
     public async Task ExecuteAsync_MissingPlugin_ThrowsDomainException()
     {
         var pluginRepo = new InMemoryPluginRepository();
-        var useCase = new SetPluginAvailabilityUseCase(pluginRepo);
+        var unitOfWork = new NoOpUnitOfWork();
+        var useCase = new SetPluginAvailabilityUseCase(pluginRepo, unitOfWork);
 
         await Assert.ThrowsAsync<DomainException>(() => useCase.ExecuteAsync(new SetPluginAvailabilityInput
         {
             PluginId = "missing-plugin",
             Available = true
         }));
+        Assert.Equal(0, unitOfWork.SaveChangesCallCount);
     }
 }

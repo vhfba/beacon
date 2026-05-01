@@ -1,16 +1,20 @@
 namespace CentralServer.Application.UseCases;
 
+using CentralServer.Application.Abstractions;
 using CentralServer.Application.DTOs;
+using CentralServer.Application.Mappings;
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
 
 public class SetPluginAvailabilityUseCase
 {
     private readonly IPluginRepository _pluginRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SetPluginAvailabilityUseCase(IPluginRepository pluginRepository)
+    public SetPluginAvailabilityUseCase(IPluginRepository pluginRepository, IUnitOfWork unitOfWork)
     {
         _pluginRepository = pluginRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<PluginDTO> ExecuteAsync(
@@ -31,7 +35,8 @@ public class SetPluginAvailabilityUseCase
         }
 
         await _pluginRepository.UpdateAsync(plugin, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return PluginDTO.FromDomain(plugin);
+        return plugin.ToDto();
     }
 }

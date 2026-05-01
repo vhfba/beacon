@@ -11,11 +11,7 @@ public sealed class MonitoringOptions
 
 public sealed class PrometheusMonitoringOptions
 {
-    public string ServiceDiscoveryToken { get; init; } = string.Empty;
-
-    public int DefaultProbeMetricsPort { get; init; } = 9464;
-
-    public string DefaultMetricsPath { get; init; } = "/metrics";
+    public string MetricsEndpointPath { get; init; } = "/metrics";
 }
 
 public sealed class GrafanaMonitoringOptions

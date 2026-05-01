@@ -1,6 +1,7 @@
 namespace CentralServer.Application.UseCases;
 
 using CentralServer.Application.DTOs;
+using CentralServer.Application.Mappings;
 using CentralServer.Domain.Repositories;
 public class ListPluginsUseCase
 {
@@ -14,6 +15,6 @@ public class ListPluginsUseCase
     public async Task<List<PluginDTO>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         var plugins = await _pluginRepository.GetAllAsync(cancellationToken);
-        return plugins.Select(PluginDTO.FromDomain).ToList();
+        return plugins.Select(plugin => plugin.ToDto()).ToList();
     }
 }

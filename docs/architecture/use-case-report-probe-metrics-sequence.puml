@@ -1,0 +1,29 @@
+@startuml
+title Use Case - Report Probe Metrics (ReportProbeMetricsUseCase)
+
+autonumber
+
+actor "Probe Agent" as probe
+boundary "GraphQL Mutation\nreportProbeMetrics" as gql
+control "ReportProbeMetricsUseCase" as uc
+database "IProbeRepository" as probes
+database "IProbeMetricsStore" as metricsStore
+database "Redis" as redis
+database "PostgreSQL" as db
+
+probe -> gql : reportProbeMetrics(input)
+gql -> uc : ExecuteAsync(input)
+uc -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe
+db --> probes : probe row
+uc -> uc : Normalize metric names,\nkinds, and labels
+uc -> metricsStore : StoreProbeMetricsAsync(probeId, samples, receivedAtUtc)
+metricsStore -> redis : SET latest snapshot with TTL
+redis --> metricsStore : ok
+uc -> probes : UpdateAsync(RecordMetricsPush)
+probes -> db : UPDATE last_metrics_push
+db --> probes : updated
+uc --> gql : ReportProbeMetricsResultDTO
+gql --> probe : ReportProbeMetricsResponse(success=true)
+
+@enduml

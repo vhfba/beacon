@@ -3,29 +3,21 @@ title BEACON - System Context (C1)
 
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-Person(admin, "Admin")
-System(beacon, "BEACON", "IoT Wi-Fi analytics cluster")
+Person(admin, "Admin", "Manages probes, plugins, actions, and dashboards")
+System(beacon, "BEACON Platform", "Distributed probe management and network observability platform")
 
-System_Ext(wifi, "Building Wi-Fi Infrastructure", "Wi-Fi environment that probes measure")
-System_Ext(iperf, "iPerf Server", "Throughput and latency test endpoint")
-System_Ext(ntp, "NTP / DNS", "Time sync and name resolution services")
+System_Ext(targets, "Site Wi-Fi and Network Targets", "Access points, gateways, HTTP targets, and iPerf endpoints measured by probes")
+System_Ext(grafanaUsers, "Dashboard Consumers", "Users who view shared Grafana dashboards or embeds")
 
-Rel(admin, beacon, "Configure probes and view dashboards", "GraphQL + Grafana")
-Rel(beacon, wifi, "Collect Wi-Fi metrics")
-Rel(beacon, iperf, "Run active throughput and latency tests")
-Rel(beacon, ntp, "Time sync and name resolution")
+Rel(admin, beacon, "Registers probes, assigns plugins, configures checks, triggers actions, and opens embeds", "GraphQL + HTTP")
+Rel(grafanaUsers, beacon, "Consume monitoring dashboards", "Grafana UI / embeds")
+Rel(beacon, targets, "Executes scheduled and on-demand network checks")
 
 note right of beacon
-  Deployables inside BEACON:
-  • Raspberry Pi probe agents
-  • GraphQL API + config store
-  • Prometheus + Grafana stack
-end note
-
-note right of iperf
-  Optional component for active testing.
-  Only needed if you want to run
-  throughput or latency tests.
+  Main deployables:
+  - central-server (.NET 9)
+  - probe-agent (Python)
+  - monitoring-stack (Prometheus + Grafana)
 end note
 
 @enduml

@@ -3,6 +3,7 @@ namespace CentralServer.Infrastructure.Persistence.Repositories;
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
 using CentralServer.Infrastructure.Persistence.Entities;
+using CentralServer.Infrastructure.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
 public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRepository
 {
@@ -22,7 +23,7 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
             .Include(pc => pc.TestTypeEntity)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToDomain).ToList();
+        return entities.Select(entity => entity.ToDomain()).ToList();
     }
 
     public async Task<IReadOnlyList<ProbeTestConfiguration>> GetEnabledByProbeIdAsync(
@@ -34,7 +35,7 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
             .Include(pc => pc.TestTypeEntity)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToDomain).ToList();
+        return entities.Select(entity => entity.ToDomain()).ToList();
     }
 
     public async Task<ProbeTestConfiguration?> GetAsync(
@@ -47,7 +48,7 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
             .Include(pc => pc.TestTypeEntity)
             .FirstOrDefaultAsync(cancellationToken);
 
-        return entity != null ? MapToDomain(entity) : null;
+        return entity?.ToDomain();
     }
 
     public async Task UpdateAsync(ProbeTestConfiguration config, CancellationToken cancellationToken = default)
@@ -65,10 +66,7 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
             _context.ProbeTestConfigurations.Add(entity);
         }
 
-        entity.IntervalSeconds = config.IntervalSeconds;
-        entity.Enabled = config.Enabled;
-
-        await _context.SaveChangesAsync(cancellationToken);
+        config.ApplyToEntity(entity);
     }
 
     public async Task DeleteAsync(ProbeId probeId, string testTypeName, CancellationToken cancellationToken = default)
@@ -78,17 +76,5 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
             ?? throw new InvalidOperationException($"Configuration not found for probe {probeId} and test type {testTypeName}");
 
         _context.ProbeTestConfigurations.Remove(entity);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    private static ProbeTestConfiguration MapToDomain(ProbeTestConfigEntity entity)
-    {
-        var testType = new TestType(entity.TestType, entity.TestTypeEntity?.Description ?? "Unknown test type");
-        return new ProbeTestConfiguration(
-            new ProbeId(entity.ProbeId),
-            testType,
-            entity.IntervalSeconds,
-            entity.Enabled
-        );
     }
 }

@@ -17,8 +17,10 @@ scrape_configs:
         labels:
           component: monitoring-stack
 
-  - job_name: beacon-probes
+  - job_name: beacon-central-server
     metrics_path: /metrics
-    http_sd_configs:
-      - url: http://host.docker.internal:5000/monitoring/prometheus/service-discovery?token=dev-prom-sd-token
-        refresh_interval: 30s
+    static_configs:
+      - targets:
+          - host.docker.internal:5000
+        labels:
+          component: central-server
