@@ -25,13 +25,13 @@ The central server is the BEACON control plane. It owns probe inventory, plugin 
 The service follows an onion-style layout:
 
 - `Domain/`
-  Business entities and repository contracts.
+  Business entities, enums, value objects, exceptions, and repository contracts.
 - `Application/`
-  Use cases, DTOs, services, and abstractions.
+  Use cases, DTOs, and services grouped by feature area such as `Probes`, `Plugins`, `Actions`, and `Monitoring`.
 - `Infrastructure/`
-  Persistence, metrics storage, and external adapters.
+  Persistence, metrics storage, and external adapters colocated with the subsystem they configure.
 - `Presentation/`
-  GraphQL resolvers, HTTP endpoints, auth, and simulator assets.
+  GraphQL queries, mutations, types, HTTP endpoints, auth, and simulator assets grouped by feature.
 
 The main composition happens in [Program.cs](/C:/Users/joaom/Faculdade/beacon/code/central-server/Program.cs), where the app wires persistence, metrics, GraphQL security, monitoring endpoints, static assets, and plugin bundle delivery.
 
