@@ -1,1593 +1,1627 @@
 <!doctype html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BEACON API Simulator Dashboard</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BEACON — API Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F4F6FB;
+  --surface:#FFFFFF;
+  --surface-2:#F8F9FD;
+  --border:rgba(0,0,0,0.08);
+  --border-md:rgba(0,0,0,0.13);
+  --text:#111827;
+  --muted:#6B7280;
+  --hint:#9CA3AF;
+  --accent:#4F6AF5;
+  --accent-h:#3A55D6;
+  --accent-bg:#EEF2FF;
+  --success:#10B981;
+  --success-bg:#ECFDF5;
+  --warn:#F59E0B;
+  --warn-bg:#FFFBEB;
+  --danger:#EF4444;
+  --danger-bg:#FEF2F2;
+  --sky-bg:#EFF6FF;
+  --sky:#3B82F6;
+  --radius:8px;
+  --radius-lg:12px;
+  --h:56px;
+  --drawer:260px;
+  --panel:480px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg:0 4px 24px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0F1117;--surface:#1A1D27;--surface-2:#13151E;
+    --border:rgba(255,255,255,0.07);--border-md:rgba(255,255,255,0.12);
+    --text:#F1F5F9;--muted:#94A3B8;--hint:#64748B;
+    --accent:#6B83F8;--accent-h:#8498FA;--accent-bg:#1E2340;
+    --success:#34D399;--success-bg:#022C22;
+    --warn:#FCD34D;--warn-bg:#1C1500;
+    --danger:#F87171;--danger-bg:#2C0F0F;
+    --sky-bg:#0C1A33;--sky:#60A5FA;
+    --shadow:0 1px 3px rgba(0,0,0,0.3);--shadow-lg:0 4px 24px rgba(0,0,0,0.5);
+  }
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font:inherit;border:none;background:none}
+input,select,textarea{font:inherit}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent);border-color:var(--accent)!important}
 
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+/* ── typography ── */
+.label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
 
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "background": "#f5f7ff",
-            "surface": "#ffffff",
-            "surface-2": "#eef2ff",
-            "surface-3": "#e1e7ff",
-            "border-soft": "#d9def1",
-            "primary": "#1a73e8",
-            "primary-strong": "#005bbf",
-            "secondary": "#4f5f86",
-            "ok": "#0f8a5f",
-            "warn": "#b65d00",
-            "danger": "#c62828",
-            "on-surface": "#171c28",
-            "on-muted": "#596179"
-          },
-          fontFamily: {
-            headline: ["Manrope", "sans-serif"],
-            body: ["Inter", "sans-serif"],
-            mono: ["ui-monospace", "SFMono-Regular", "Consolas", "monospace"]
-          },
-          boxShadow: {
-            card: "0 10px 26px rgba(14, 25, 50, 0.08)",
-            lift: "0 14px 32px rgba(20, 46, 90, 0.18)"
-          },
-          keyframes: {
-            reveal: {
-              "0%": { opacity: "0", transform: "translateY(8px)" },
-              "100%": { opacity: "1", transform: "translateY(0)" }
-            }
-          },
-          animation: {
-            reveal: "reveal .35s ease-out both"
-          }
-        }
-      }
-    };
-  </script>
+/* ── header ── */
+#hdr{position:fixed;inset-block-start:0;inset-inline:0;z-index:50;height:var(--h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:0}
+#logo{display:flex;align-items:center;gap:8px;margin-inline-end:24px;flex-shrink:0}
+#logo-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#logo-mark svg{width:14px;height:14px;fill:#fff}
+#logo-name{font-weight:600;font-size:15px;color:var(--text);letter-spacing:-.01em}
+nav{display:flex;height:var(--h);gap:2px}
+.ntab{height:var(--h);padding:0 16px;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
+.ntab:hover{color:var(--text)}
+.ntab.active{color:var(--accent);border-color:var(--accent)}
+#hdr-right{margin-inline-start:auto;display:flex;align-items:center;gap:8px}
+#conn-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:border-color .15s;user-select:none;max-width:220px;overflow:hidden}
+#conn-pill:hover{border-color:var(--border-md)}
+#conn-dot{width:6px;height:6px;border-radius:50%;background:var(--hint);flex-shrink:0}
+#conn-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--muted);transition:background .15s,color .15s;flex-shrink:0}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+.icon-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#log-btn{display:flex;align-items:center;gap:4px;padding:0 10px;height:32px;border-radius:6px;font-size:12px;font-weight:500;color:var(--muted);transition:background .15s,color .15s}
+#log-btn:hover{background:var(--surface-2);color:var(--text)}
+#log-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
-  <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background:
-        radial-gradient(700px circle at 0% -15%, rgba(26, 115, 232, 0.12), transparent 55%),
-        radial-gradient(900px circle at 100% 0%, rgba(34, 148, 255, 0.09), transparent 45%),
-        #f5f7ff;
-    }
+/* ── settings panel ── */
+#settings{position:fixed;inset-block-start:var(--h);inset-inline:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:none;box-shadow:var(--shadow-lg)}
+#settings.open{display:block}
+#settings-overlay{position:fixed;inset:0;z-index:35;display:none}
+#settings-overlay.open{display:block}
+.settings-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.inp{height:36px;padding:0 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-size:13px;transition:border-color .15s}
+.inp:hover{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+select.inp{padding-right:28px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3AF' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius);font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap;cursor:pointer;border:1px solid transparent}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-h)}
+.btn-ghost{background:var(--surface-2);color:var(--text);border-color:var(--border-md)}
+.btn-ghost:hover{background:var(--bg)}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
+.btn-danger:hover{background:color-mix(in srgb,var(--danger) 15%,transparent)}
+.btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-    .font-headline {
-      font-family: "Manrope", sans-serif;
-    }
+/* ── views ── */
+main{padding-top:var(--h);transition:padding-bottom .25s}
+main.drawer-open{padding-bottom:var(--drawer)}
+.view{display:none;max-width:1200px;margin:0 auto;padding:28px 20px}
+.view.active{display:block}
+.view-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.view-title{font-size:18px;font-weight:600;color:var(--text)}
+.view-sub{font-size:13px;color:var(--muted);margin-top:2px}
 
-    .material-symbols-outlined {
-      font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
-    }
+/* ── stat cards ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600}
+.stat-value.ok{color:var(--success)}
+.stat-value.warn{color:var(--warn)}
 
-    .tab {
-      border: 1px solid transparent;
-      background: transparent;
-      color: #596179;
-      border-radius: 0.625rem;
-      padding: 0.55rem 0.8rem;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-      white-space: nowrap;
-    }
+/* ── table card ── */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+.t-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--surface-2);border-bottom:1px solid var(--border)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+tbody tr.selected{background:var(--accent-bg)}
+td{padding:12px 14px;vertical-align:middle}
+.probe-name{font-weight:500;color:var(--text)}
+.probe-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:1px}
+.t-footer{padding:10px 14px;font-size:12px;color:var(--hint);border-top:1px solid var(--border);background:var(--surface-2)}
 
-    .tab:hover {
-      background: #e9edff;
-      color: #2f3750;
-    }
+/* ── badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-ok{background:var(--success-bg);color:var(--success)}
+.badge-warn{background:var(--warn-bg);color:color-mix(in srgb,var(--warn) 80%,#000)}
+.badge-danger{background:var(--danger-bg);color:var(--danger)}
+.badge-sky{background:var(--sky-bg);color:var(--sky)}
+.badge-gray{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.badge-accent{background:var(--accent-bg);color:var(--accent)}
 
-    .tab.active {
-      background: #1a73e8;
-      border-color: #1a73e8;
-      color: #ffffff;
-      box-shadow: 0 8px 18px rgba(26, 115, 232, 0.28);
-    }
+/* ── panel (slide-in) ── */
+#panel-overlay{position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.25);backdrop-filter:blur(2px);display:none;opacity:0;transition:opacity .2s}
+#panel-overlay.open{display:block;opacity:1}
+#probe-panel{position:fixed;inset-block:var(--h) 0;inset-inline-end:0;z-index:45;width:min(var(--panel),100vw);background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+#probe-panel.open{transform:translateX(0)}
+#panel-hdr{padding:16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface-2)}
+#panel-name{font-size:16px;font-weight:600;color:var(--text)}
+#panel-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:2px}
+.panel-hdr-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.panel-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
 
-    .tab-panel {
-      display: none;
-    }
+/* ── form sections ── */
+.form-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px}
+.form-section+.form-section{margin-top:0}
+.section-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
+.section-desc{font-size:12px;color:var(--muted);margin-bottom:10px;margin-top:-6px}
+.form-row{display:flex;gap:8px;flex-wrap:wrap}
+.form-col{display:flex;flex-direction:column;gap:4px;flex:1;min-width:100px}
+.form-col.full{flex-basis:100%;min-width:0}
+.form-col label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.form-col .inp{width:100%}
+.form-col select.inp{width:100%}
+textarea.inp{height:auto;padding:8px 10px;resize:vertical}
 
-    .tab-panel.active {
-      display: block;
-      animation: reveal .22s ease-out;
-    }
-  </style>
+/* ── plugin cards ── */
+.plugin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.plugin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.plugin-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.plugin-card-name{font-size:13px;font-weight:500;color:var(--text)}
+.plugin-card-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:2px}
+.plugin-card-desc{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.plugin-card-actions{display:flex;gap:6px;margin-top:auto}
+.plugin-card-actions .btn{flex:1;justify-content:center;height:30px;font-size:12px}
+
+/* ── tool cards (plugin tools) ── */
+.tool-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:20px}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow)}
+.tool-card-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px}
+.tool-inline{display:flex;gap:6px;align-items:center}
+.tool-inline select.inp{flex:1}
+.tool-inline .inp{flex:1}
+.tool-inline .btn{flex-shrink:0}
+.tool-summary{font-size:12px;color:var(--muted)}
+.actions-layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:20px}
+.stack-list{display:grid;gap:8px}
+.stack-item{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+.stack-item-title{font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.stack-item-sub,.stack-item-meta{font-size:12px;color:var(--muted);margin-top:4px}
+.history-list{display:grid;gap:8px;padding:14px 16px}
+
+/* ── monitoring ── */
+.monitor-layout{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+@media(max-width:800px){.monitor-layout{grid-template-columns:1fr}}
+.thr-body{padding:14px}
+.thr-group-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);margin:12px 0 6px}
+.thr-group-title:first-child{margin-top:0}
+.thr-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.thr-pair .form-col label{font-size:10px}
+.thr-pair .inp{height:32px;font-size:12px}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;min-height:420px;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.dash-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--hint);padding:40px}
+.dash-placeholder svg{width:48px;height:48px;opacity:.25;stroke:var(--hint)}
+.dash-placeholder p{font-size:13px;text-align:center;max-width:200px}
+.dash-placeholder small{font-size:11px;color:var(--hint);text-align:center}
+#monitor-frame{width:100%;height:520px;border:none;display:none}
+
+/* ── modals ── */
+.modal-wrap{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-wrap.open{display:flex}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px)}
+.modal{position:relative;background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:600}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{display:flex;gap:8px;padding-top:4px}
+.modal-footer .btn{flex:1;justify-content:center}
+
+/* ── output drawer ── */
+#output-drawer{position:fixed;inset-block-end:0;inset-inline:0;z-index:48;height:var(--drawer);background:#0D1117;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+#output-drawer.open{transform:translateY(0)}
+#drawer-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:36px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.drawer-hdr-left{display:flex;align-items:center;gap:10px}
+.drawer-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.35)}
+#log-time{font-size:11px;color:rgba(255,255,255,.2);font-family:'JetBrains Mono',monospace}
+#output{flex:1;background:transparent;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4ADE80;resize:none;border:none;outline:none;line-height:1.6}
+.drawer-btn{height:22px;padding:0 8px;border-radius:4px;font-size:11px;font-weight:500;background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);cursor:pointer;transition:all .15s}
+.drawer-btn:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.7)}
+
+/* ── toasts ── */
+#toast-root{position:fixed;top:68px;right:16px;z-index:70;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:320px}
+.toast{pointer-events:auto;display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--radius-lg);font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);animation:tIn .2s ease forwards}
+.toast svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
+.toast-ok{background:var(--success-bg);color:color-mix(in srgb,var(--success) 80%,#000);border:1px solid color-mix(in srgb,var(--success) 25%,transparent)}
+.toast-err{background:var(--danger-bg);color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 25%,transparent)}
+.toast-info{background:var(--accent-bg);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+.toast-warn{background:var(--warn-bg);color:color-mix(in srgb,var(--warn) 85%,#000);border:1px solid color-mix(in srgb,var(--warn) 25%,transparent)}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
+
+/* ── empty state ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:48px 24px;color:var(--hint)}
+.empty svg{width:36px;height:36px;stroke:var(--border-md);fill:none;stroke-width:1.5}
+.empty p{font-size:13px;text-align:center}
+.empty small{font-size:12px;color:var(--hint)}
+
+/* ── spinning refresh icon ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin .8s linear infinite}
+
+/* ── multi-select ── */
+select[multiple]{height:140px;padding:4px}
+select[multiple] option{padding:4px 6px;border-radius:4px}
+
+/* ── responsive ── */
+@media(max-width:640px){
+  .stats-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+  .stats-row .stat-card:first-child{grid-column:1/-1}
+  #hdr{padding:0 12px;gap:0}
+  .ntab{padding:0 10px;font-size:12px}
+  .view{padding:16px 12px}
+  #probe-panel{width:100vw}
+}
+</style>
 </head>
-<body class="min-h-screen text-on-surface font-body">
+<body>
 
-  <header class="fixed top-0 z-50 w-full border-b border-white/40 bg-white/80 backdrop-blur-xl">
-    <div class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-8">
-      <div class="flex items-center gap-8">
-        <span class="font-headline text-xl font-extrabold tracking-tight text-slate-900">BEACON API Simulator</span>
-        <nav class="hidden items-center gap-6 md:flex">
-          <a href="#" class="border-b-2 border-primary px-1 py-4 text-sm font-semibold text-primary">Dashboard</a>
-          <a href="#" class="px-1 py-4 text-sm text-slate-500 transition-colors hover:text-slate-900">GraphQL</a>
-        </nav>
+<!-- TOASTS -->
+<div id="toast-root"></div>
+
+<!-- HEADER -->
+<header id="hdr">
+  <div id="logo">
+    <div id="logo-mark">
+      <svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="3"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <span id="logo-name">BEACON</span>
+  </div>
+  <nav>
+    <button class="ntab active" data-view="fleet">Fleet</button>
+    <button class="ntab" data-view="plugins">Plugins</button>
+    <button class="ntab" data-view="actions">Actions</button>
+    <button class="ntab" data-view="monitoring">Monitoring</button>
+  </nav>
+  <div id="hdr-right">
+    <div id="conn-pill" onclick="toggleSettings()">
+      <span id="conn-dot"></span>
+      <span id="conn-text">Configure connection</span>
+      <svg width="10" height="10" viewBox="0 0 10 10" style="flex-shrink:0;fill:var(--hint)" xmlns="http://www.w3.org/2000/svg"><path d="M5 7L1 3h8z"/></svg>
+    </div>
+    <button class="icon-btn" id="refresh-btn" title="Refresh data">
+      <svg viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+    </button>
+    <button id="log-btn" onclick="toggleDrawer()">
+      <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      Log
+    </button>
+  </div>
+</header>
+
+<!-- SETTINGS PANEL -->
+<div id="settings-overlay" onclick="toggleSettings()"></div>
+<div id="settings">
+  <div class="settings-row">
+    <div class="field" style="min-width:200px;flex:2">
+      <span class="field-label">GraphQL Endpoint</span>
+      <input id="endpoint" class="inp" value="/graphql"/>
+    </div>
+    <div class="field" style="min-width:180px;flex:2">
+      <span class="field-label">API Key</span>
+      <input id="apiKey" class="inp" type="password" placeholder="Enter API key…"/>
+    </div>
+    <div class="field" style="flex:1;min-width:140px">
+      <span class="field-label">Key Preset</span>
+      <div style="display:flex;gap:6px">
+        <select id="apiKeyPreset" class="inp" style="flex:1">
+          <option value="admin">Admin</option>
+          <option value="probe">Probe</option>
+        </select>
+        <button class="btn btn-ghost" id="apply-preset-btn">Apply</button>
+      </div>
+    </div>
+    <button class="icon-btn" onclick="toggleSettings()" style="margin-top:22px">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- ═══════════════════════════════ FLEET VIEW ═══════════════════════════════ -->
+  <div id="view-fleet" class="view active">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Fleet</div>
+        <div class="view-sub">Monitor and manage all registered probes</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Probes</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" style="color:var(--success)">Online</div>
+        <div class="stat-value ok" id="stat-online">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" style="color:var(--warn)">Stale / Inactive</div>
+        <div class="stat-value warn" id="stat-stale">—</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="t-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Probe</th>
+              <th>Location</th>
+              <th>IP Address</th>
+              <th>Status</th>
+              <th>Heartbeat</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="fleet-body">
+            <tr><td colspan="6"><div class="empty">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <p>No probes loaded</p><small>Start a probe agent to auto-register it, then refresh this view.</small>
+            </div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="t-footer">Click a row to open probe controls · Auto-refreshes every 10s</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ PLUGINS VIEW ═══════════════════════════════ -->
+  <div id="view-plugins" class="view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Plugins</div>
+        <div class="view-sub">Register and manage probe plugins</div>
+      </div>
+      <button class="btn btn-primary" id="open-register-plugin">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Register Plugin
+      </button>
+    </div>
+
+    <div class="tool-row">
+      <div class="tool-card">
+        <div class="tool-card-title">Fetch Plugin Details</div>
+        <form id="plugin-fetch-form" class="tool-inline">
+          <select id="plugin-fetch-select" class="inp" style="flex:1"><option value="">No plugins loaded</option></select>
+          <button class="btn btn-primary" type="submit">Fetch</button>
+        </form>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-title">Download Plugin Bundle</div>
+        <form id="bundle-form" class="tool-inline">
+          <select id="bundle-plugin-select" class="inp" style="flex:1"><option value="">No plugins loaded</option></select>
+          <input id="bundle-version" class="inp" value="2.1.0" style="width:70px" placeholder="ver"/>
+          <button class="btn btn-primary" type="submit">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </form>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-title">Action-Mode Catalog</div>
+        <div id="action-plugin-summary" class="tool-summary">No plugins loaded.</div>
+      </div>
+    </div>
+
+    <div id="plugins-grid" class="plugin-grid">
+      <div style="grid-column:1/-1"><div class="empty">
+        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        <p>No plugins registered</p><small>Click "Register Plugin" to get started</small>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ MONITORING VIEW ═══════════════════════════════ -->
+  <div id="view-actions" class="view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Actions</div>
+        <div class="view-sub">Queue probe actions, inspect pending work, and review recent executions.</div>
+      </div>
+    </div>
+
+    <div class="actions-layout">
+      <div class="tool-card">
+        <div class="tool-card-title">Quick Trigger</div>
+        <form id="quick-action-form" class="field" style="gap:10px">
+          <div class="form-col">
+            <label>Probe</label>
+            <select id="quick-action-probe" class="inp"><option value="">No probes loaded</option></select>
+          </div>
+          <div class="form-col">
+            <label>Plugin</label>
+            <select id="quick-action-plugin" class="inp"><option value="">No action plugins</option></select>
+          </div>
+          <div class="form-col">
+            <label>Triggered By</label>
+            <input id="quick-action-triggered-by" class="inp" value="admin-ui"/>
+          </div>
+          <button class="btn btn-primary" type="submit">Queue Action</button>
+        </form>
       </div>
 
-      <div class="flex items-center gap-4">
-        <button type="button" class="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100">
-          <span class="material-symbols-outlined">help</span>
-        </button>
-        <div id="globalStatus" class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-slate-600">
-          <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
-          Ready
+      <div class="tool-card">
+        <div class="tool-card-title">Pending Queue</div>
+        <div id="actions-pending-list" class="stack-list">
+          <div class="empty"><p>No pending actions loaded</p></div>
         </div>
       </div>
     </div>
-  </header>
 
-  <main class="mx-auto w-full max-w-7xl space-y-8 px-4 pb-10 pt-24 sm:px-8">
-    <section class="animate-reveal space-y-2">
-      <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl">System Architecture</h1>
-      <p class="max-w-3xl text-sm text-on-muted sm:text-base">Monitor fleets, manage plugin lifecycle, and execute available BEACON GraphQL operations through a single simulator panel.</p>
-    </section>
-
-    <section class="grid grid-cols-1 gap-6 md:grid-cols-4 animate-reveal">
-      <div class="md:col-span-3 rounded-xl border border-border-soft bg-surface p-5 shadow-card sm:p-6">
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <div class="md:col-span-2">
-            <label for="endpoint" class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-on-muted">GraphQL Endpoint</label>
-            <input id="endpoint" value="/graphql" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-          </div>
-
-          <div>
-            <label for="apiKey" class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-on-muted">API Key</label>
-            <input id="apiKey" value="" placeholder="Enter API key" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" type="password" />
-          </div>
-
-          <div>
-            <label for="apiKeyPreset" class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-on-muted">Key Preset</label>
-            <select id="apiKeyPreset" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-              <option value="admin">Admin</option>
-              <option value="probe">Probe</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mt-4 flex flex-wrap items-center gap-3">
-          <button id="applyKeyPreset" type="button" class="inline-flex h-10 items-center gap-2 rounded-lg border border-border-soft bg-white px-4 text-sm font-semibold text-secondary transition-colors hover:bg-surface-2">
-            Apply Preset
-          </button>
-          <button id="refreshAll" type="button" class="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-lift transition-all hover:bg-primary-strong active:scale-[0.98]">
-            <span class="material-symbols-outlined text-[18px]">refresh</span>
-            Refresh
-          </button>
-        </div>
-
-        <div class="mt-4">
-          <div id="status" class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600">
-            <span class="material-symbols-outlined text-base">schedule</span>
-            <span id="statusText">Ready.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-center rounded-xl border border-dashed border-border-soft bg-white p-6 text-center shadow-card">
+    <div class="table-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)">
         <div>
-          <div class="font-headline text-3xl font-extrabold text-primary">GraphQL</div>
-          <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-on-muted">Live Simulator Mode</p>
+          <div class="tool-card-title" style="margin:0">Recent Executions</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">History follows the selected probe from Fleet or the quick trigger selector.</div>
         </div>
+        <button class="btn btn-ghost" id="refresh-actions-view-btn" type="button">Refresh</button>
       </div>
-    </section>
-
-    <section class="animate-reveal rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-sky-50 p-5 shadow-card sm:p-6">
-      <div class="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 class="font-headline text-2xl font-extrabold tracking-tight text-slate-900">Monitoring Hub</h2>
-          <p class="mt-1 max-w-2xl text-sm text-on-muted">Open embedded Grafana dashboards and apply Wi-Fi threshold profiles quickly from one place.</p>
-        </div>
+      <div id="actions-history-list" class="history-list">
+        <div class="empty"><p>No action executions loaded</p></div>
       </div>
+    </div>
+  </div>
 
-      <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[minmax(220px,1fr)_auto_auto] md:items-end">
-        <div>
-          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="monitorSiteQuick">Site</label>
-          <input id="monitorSiteQuick" value="Building A" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+  <div id="view-monitoring" class="view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Monitoring</div>
+        <div class="view-sub">Grafana health dashboard and plugin/action dashboards</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;font-weight:500;color:var(--muted)">Site</label>
+          <input id="monitor-site" class="inp" value="Building A" style="width:150px"/>
         </div>
-        <button id="openMonitoringDashboardQuick" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold uppercase tracking-wide text-white shadow-lift transition-all hover:bg-primary-strong active:scale-[0.98]">
-          <span class="material-symbols-outlined text-base">monitoring</span>
+        <button class="btn btn-primary" id="open-dashboard-btn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           Open Dashboard
         </button>
-        <button id="openMonitoringConfig" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border-soft bg-white px-4 text-xs font-bold uppercase tracking-wide text-secondary transition-colors hover:bg-surface-2">
-          <span class="material-symbols-outlined text-base">tune</span>
-          Config
-        </button>
       </div>
-
-      <div id="monitoringQuickStatus" class="mt-3 text-xs font-semibold text-on-muted">Tip: use an Admin API key, then click Open Dashboard.</div>
-
-      <div id="monitoringFrameWrapQuick" class="mt-4 hidden rounded-xl border border-indigo-100 bg-white p-2">
-        <iframe id="monitoringFrameQuick" class="h-[520px] w-full rounded-lg border border-surface-3" src="about:blank" loading="lazy"></iframe>
+    </div>
+    <div class="monitor-layout">
+      <div class="dash-card">
+        <div id="dash-placeholder" class="dash-placeholder">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <p>No dashboard loaded</p>
+          <small>Select a site and click "Open Dashboard" to embed Grafana</small>
+        </div>
+        <iframe id="monitor-frame" src="about:blank"></iframe>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <section class="grid grid-cols-1 items-start gap-8 lg:grid-cols-3 animate-reveal">
-      <div class="space-y-8 lg:col-span-2">
-        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
-          <div class="flex items-center justify-between border-b border-surface-2 bg-white px-6 py-4">
-            <h2 class="font-headline text-lg font-bold">Fleet Management</h2>
-            <span id="fleetCount" class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">0 probes</span>
-          </div>
+</main>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-surface-2/60 text-[11px] uppercase tracking-widest text-on-muted">
-                <tr>
-                  <th class="px-6 py-3 font-semibold">ID</th>
-                  <th class="px-6 py-3 font-semibold">Name</th>
-                  <th class="px-6 py-3 font-semibold">Location</th>
-                  <th class="px-6 py-3 font-semibold">IP Address</th>
-                  <th class="px-6 py-3 font-semibold">Status</th>
-                  <th class="px-6 py-3 font-semibold">Heartbeat</th>
-                </tr>
-              </thead>
-              <tbody id="fleetRows" class="divide-y divide-surface-2 text-sm">
-                <tr>
-                  <td class="px-6 py-6 text-center text-on-muted" colspan="6">No probes loaded.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="border-t border-surface-2 bg-surface-2 px-6 py-3 text-xs font-semibold text-on-muted">
-            Click a probe row to open its control panel.
-          </div>
-        </div>
-
-        <div class="rounded-xl border border-border-soft bg-surface-2 p-6 shadow-card">
-          <div class="mb-4 flex items-center gap-3 overflow-x-auto pb-2" id="adminTabs">
-            <button class="tab active" data-tab="register" type="button">Register Probe</button>
-            <button class="tab" data-tab="plugin" type="button">Register Plugin</button>
-            <button class="tab" data-tab="config" type="button">Update Config</button>
-          </div>
-
-          <div class="rounded-lg border border-border-soft bg-white p-5">
-            <div id="tab-register" class="tab-panel active">
-              <form id="registerForm" class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeId">Probe ID</label>
-                    <input id="probeId" required value="probe-100" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeName">Name</label>
-                    <input id="probeName" required value="Lab East" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeLocation">Location</label>
-                    <input id="probeLocation" required value="Building A" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeIp">IP Address / Host</label>
-                    <input id="probeIp" required value="10.1.1.100" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="probeMetricsPort">Metrics Port</label>
-                    <input id="probeMetricsPort" type="number" min="1" max="65535" required value="9464" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                </div>
-                <div class="flex justify-end">
-                  <button type="submit" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Register Probe</button>
-                </div>
-              </form>
-            </div>
-
-            <div id="tab-plugin" class="tab-panel">
-              <form id="registerPluginForm" class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginId">Plugin ID</label>
-                    <input id="pluginId" required value="plugin-http-v2" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginName">Name</label>
-                    <input id="pluginName" required value="HTTP Probe" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginVersion">Version</label>
-                    <input id="pluginVersion" required value="2.1.0" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginDescription">Description</label>
-                    <input id="pluginDescription" value="HTTP endpoint reachability checks" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginChecksum">Checksum</label>
-                  <input id="pluginChecksum" required value="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 font-mono text-xs focus:ring-2 focus:ring-primary/25" />
-                </div>
-                <div class="flex justify-end">
-                  <button type="submit" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Register Plugin</button>
-                </div>
-              </form>
-            </div>
-
-            <div id="tab-config" class="tab-panel">
-              <form id="configForm" class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgProbeId">Probe ID</label>
-                    <input id="cfgProbeId" required value="probe-100" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgType">Test Type</label>
-                    <input id="cfgType" required value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgInterval">Interval (seconds)</label>
-                    <input id="cfgInterval" type="number" min="5" max="3600" required value="30" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                  </div>
-                  <div>
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="cfgEnabled">Enabled</label>
-                    <select id="cfgEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-                      <option value="true">true</option>
-                      <option value="false">false</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="flex justify-end">
-                  <button type="submit" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Update Config</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="space-y-8">
-        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
-          <div class="flex items-center justify-between border-b border-surface-2 bg-white px-6 py-4">
-            <h2 class="font-headline text-lg font-bold">Plugins</h2>
-            <span id="pluginCount" class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-on-muted">0 plugins</span>
-          </div>
-
-          <div id="pluginRows" class="divide-y divide-surface-2">
-            <div class="p-6 text-sm text-on-muted">No plugins loaded.</div>
-          </div>
-        </div>
-
-        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
-          <div class="flex items-center justify-between border-b border-surface-2 bg-white px-6 py-4">
-            <h2 class="font-headline text-lg font-bold">Plugin Tools</h2>
-            <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">Query + Bundle</span>
-          </div>
-
-          <div class="space-y-4 p-5">
-            <div class="grid grid-cols-1 gap-3">
-              <form id="pluginByIdForm" class="space-y-3 rounded-lg border border-border-soft bg-surface-2 p-4">
-                <div class="text-sm font-bold text-on-surface">Plugin Query Panel</div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="pluginByIdValue">Plugin</label>
-                  <select id="pluginByIdValue" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-                    <option value="">No plugins available</option>
-                  </select>
-                </div>
-                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Fetch Plugin</button>
-              </form>
-
-              <form id="bundleDownloadForm" class="space-y-3 rounded-lg border border-border-soft bg-surface-2 p-4">
-                <div class="text-sm font-bold text-on-surface">Bundle Download Panel</div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="bundlePluginId">Plugin</label>
-                  <select id="bundlePluginId" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-                    <option value="">No plugins available</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="bundleVersion">Version</label>
-                  <input id="bundleVersion" required value="2.1.0" class="w-full rounded-lg border-none bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
-                </div>
-                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Download Bundle</button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <div class="overflow-hidden rounded-xl border border-border-soft bg-white shadow-card">
-          <div class="flex items-center justify-between bg-slate-900 px-6 py-4">
-            <span class="text-xs font-bold uppercase tracking-widest text-white">Response Output</span>
-            <button id="clearOutput" type="button" class="rounded-md border border-white/20 bg-slate-800 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-200 transition-colors hover:bg-slate-700">Clear</button>
-          </div>
-          <textarea id="output" class="h-80 w-full resize-y border-none bg-slate-950 p-6 font-mono text-xs leading-relaxed text-emerald-400 focus:ring-0" readonly spellcheck="false">{}</textarea>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <div id="fleetActionsBackdrop" class="fixed inset-0 z-40 hidden bg-slate-900/45 backdrop-blur-[1px]"></div>
-
-  <section id="fleetActionsPanel" class="fixed left-1/2 top-1/2 z-50 hidden max-h-[calc(100vh-2rem)] w-[min(860px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border-soft bg-surface p-5 shadow-lift">
-    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+<!-- ═══════════════════════ PROBE DETAIL PANEL ═══════════════════════ -->
+<div id="panel-overlay" onclick="closeProbePanel()"></div>
+<aside id="probe-panel">
+  <div id="panel-hdr">
+    <div class="panel-hdr-row">
       <div>
-        <div class="text-[11px] font-bold uppercase tracking-wider text-on-muted">Selected probe</div>
-        <div id="selectedProbeLabel" class="font-headline text-lg font-bold text-on-surface">No probe selected</div>
+        <div id="panel-name">—</div>
+        <div id="panel-id">—</div>
       </div>
-      <div class="flex items-center gap-2">
-        <div class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">Probe Controls</div>
-        <button id="fleetActionsClose" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border-soft bg-white text-on-muted transition-colors hover:bg-surface-2" aria-label="Close probe controls">
-          <span class="material-symbols-outlined text-[18px]">close</span>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+        <button class="btn btn-danger" id="delete-probe-btn" style="height:30px;font-size:12px">Delete</button>
+        <button class="icon-btn" onclick="closeProbePanel()">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
     </div>
+  </div>
+  <div class="panel-body">
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <form id="statusForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-        <input id="statusProbeId" type="hidden" />
-        <div class="text-sm font-bold text-on-surface">Update Probe Status</div>
-        <div>
-          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="statusValue">Status</label>
-          <select id="statusValue" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
+    <!-- Status -->
+    <div class="form-section">
+      <div class="section-title">Update Status</div>
+      <form id="status-form" class="form-row">
+        <input id="status-probe-id" type="hidden"/>
+        <div class="form-col">
+          <label>Status</label>
+          <select id="status-value" class="inp">
             <option value="REGISTERED">REGISTERED</option>
             <option value="ACTIVE">ACTIVE</option>
             <option value="INACTIVE">INACTIVE</option>
             <option value="DECOMMISSIONED">DECOMMISSIONED</option>
           </select>
         </div>
-        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Update Status</button>
+        <div class="form-col" style="flex:0;align-self:flex-end">
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
       </form>
+    </div>
 
-      <form id="panelConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-        <input id="panelCfgProbeId" type="hidden" />
-        <div class="text-sm font-bold text-on-surface">Update Test Config</div>
-        <div>
-          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgType">Test Type</label>
-          <input id="panelCfgType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgInterval">Interval (sec)</label>
-            <input id="panelCfgInterval" type="number" min="5" max="3600" value="30" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
-          </div>
-          <div>
-            <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="panelCfgEnabled">Enabled</label>
-            <select id="panelCfgEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Config</button>
-      </form>
-
-      <form id="testToggleForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-        <input id="toggleProbeId" type="hidden" />
-        <div class="text-sm font-bold text-on-surface">Toggle Test</div>
-        <div>
-          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleType">Test Type</label>
-          <input id="toggleType" value="PING" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" required />
-        </div>
-        <div>
-          <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="toggleEnabled">Enabled</label>
-          <select id="toggleEnabled" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25">
-            <option value="true">true</option>
-            <option value="false">false</option>
+    <!-- Test config -->
+    <div class="form-section">
+      <div class="section-title">Test Configuration</div>
+      <form id="panel-config-form" class="form-row">
+        <input id="panel-cfg-probe-id" type="hidden"/>
+        <div class="form-col">
+          <label>Type</label>
+          <select id="panel-cfg-type" class="inp">
+            <option value="">No available tests</option>
           </select>
         </div>
-        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Apply Toggle</button>
-      </form>
-
-      <form id="probeConfigForm" class="space-y-3 rounded-lg border border-border-soft bg-white p-4">
-        <input id="probeConfigProbeId" type="hidden" />
-        <div class="text-sm font-bold text-on-surface">Query Probe Config</div>
-        <p class="text-xs text-on-muted">Fetch current tests and available plugins for selected probe.</p>
-        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Fetch Probe Config</button>
+        <div class="form-col">
+          <label>Interval (s)</label>
+          <input id="panel-cfg-interval" class="inp" type="number" min="5" max="3600" value="30"/>
+        </div>
+        <div class="form-col">
+          <label>Enabled</label>
+          <select id="panel-cfg-enabled" class="inp">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div class="form-col" style="flex:0;align-self:flex-end">
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
       </form>
     </div>
-  </section>
 
-  <div id="monitorConfigBackdrop" class="fixed inset-0 z-40 hidden bg-slate-900/45 backdrop-blur-[1px]"></div>
+    <!-- Toggle test -->
+    <div class="form-section">
+      <div class="section-title">Toggle Test</div>
+      <form id="toggle-form" class="form-row">
+        <input id="toggle-probe-id" type="hidden"/>
+        <div class="form-col">
+          <label>Test Type</label>
+          <select id="toggle-type" class="inp">
+            <option value="">No available tests</option>
+          </select>
+        </div>
+        <div class="form-col">
+          <label>Action</label>
+          <select id="toggle-enabled" class="inp">
+            <option value="true">Enable</option>
+            <option value="false">Disable</option>
+          </select>
+        </div>
+        <div class="form-col" style="flex:0;align-self:flex-end">
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
+      </form>
+    </div>
 
-  <section id="monitorConfigPanel" class="fixed left-1/2 top-1/2 z-50 hidden max-h-[calc(100vh-2rem)] w-[min(760px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border-soft bg-surface p-5 shadow-lift">
-    <div class="mb-4 flex items-center justify-between gap-3">
-      <div>
-        <div class="text-[11px] font-bold uppercase tracking-wider text-on-muted">Grafana Dashboard Settings</div>
-        <div class="font-headline text-lg font-bold text-on-surface">Threshold Configuration</div>
+    <!-- Probe config query -->
+    <div class="form-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div>
+          <div class="section-title" style="margin:0">Query Probe Config</div>
+          <div class="section-desc" style="margin:4px 0 0">Fetch enabled tests &amp; available plugins</div>
+        </div>
+        <form id="probe-config-form">
+          <input id="probe-config-probe-id" type="hidden"/>
+          <button type="submit" class="btn btn-ghost">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Fetch
+          </button>
+        </form>
       </div>
-      <button id="monitorConfigClose" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border-soft bg-white text-on-muted transition-colors hover:bg-surface-2" aria-label="Close threshold config">
-        <span class="material-symbols-outlined text-[18px]">close</span>
+    </div>
+
+    <!-- Plugin assignments -->
+    <div class="form-section">
+      <div class="section-title">Plugin Assignments</div>
+      <div class="section-desc">Assign scheduled tests and action plugins separately (Ctrl/Cmd+click for multi-select)</div>
+      <form id="probe-plugins-form">
+        <input id="probe-plugins-probe-id" type="hidden"/>
+        <label style="display:block;margin-bottom:6px">Scheduled Plugins</label>
+        <select id="probe-scheduled-plugins-select" multiple class="inp" style="width:100%;height:120px;margin-bottom:12px"></select>
+        <label style="display:block;margin-bottom:6px">Action Plugins</label>
+        <select id="probe-action-plugins-select" multiple class="inp" style="width:100%;height:120px;margin-bottom:10px"></select>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Save Assignments</button>
+      </form>
+    </div>
+
+    <div class="form-section">
+      <div class="section-title">Trigger Probe Action</div>
+      <div class="section-desc">Queue manual work for an action-mode plugin assigned to this probe.</div>
+      <form id="trigger-action-form" class="field" style="gap:10px">
+        <input id="trigger-action-probe-id" type="hidden"/>
+        <div class="form-col">
+          <label>Action Plugin</label>
+          <select id="trigger-action-plugin-id" class="inp">
+            <option value="">No action plugins for this probe</option>
+          </select>
+        </div>
+        <div class="form-col">
+          <label>Triggered By</label>
+          <input id="trigger-action-triggered-by" class="inp" value="admin-ui"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Queue Action</button>
+      </form>
+    </div>
+
+    <div class="form-section">
+      <div class="section-title">Pending Actions</div>
+      <div class="section-desc">Claim pending actions through the runtime endpoint.</div>
+      <button class="btn btn-ghost" id="load-pending-btn" type="button">Claim Pending Actions</button>
+      <div id="panel-pending-actions" class="stack-list" style="margin-top:10px">
+        <div class="empty"><p>No pending actions claimed</p></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-title">Update Execution Status</div>
+      <form id="update-action-status-form" class="field" style="gap:10px">
+        <input id="update-action-probe-id" type="hidden"/>
+        <div class="form-col">
+          <label>Execution ID</label>
+          <input id="update-action-execution-id" class="inp mono"/>
+        </div>
+        <div class="form-col">
+          <label>Status</label>
+          <select id="update-action-status" class="inp">
+            <option value="RUNNING">RUNNING</option>
+            <option value="SUCCEEDED">SUCCEEDED</option>
+            <option value="FAILED">FAILED</option>
+            <option value="TIMED_OUT">TIMED_OUT</option>
+          </select>
+        </div>
+        <div class="form-col">
+          <label>Error Message</label>
+          <input id="update-action-error" class="inp" placeholder="Optional for failed executions"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Execution</button>
+      </form>
+    </div>
+
+    <div class="form-section">
+      <div class="section-title">Execution History</div>
+      <button class="btn btn-ghost" id="refresh-history-btn" type="button">Refresh History</button>
+      <div id="panel-action-history" class="stack-list" style="margin-top:10px">
+        <div class="empty"><p>No executions loaded</p></div>
+      </div>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ═══════════════════════ REGISTER PROBE MODAL ═══════════════════════ -->
+<!-- ═══════════════════════ REGISTER PLUGIN MODAL ═══════════════════════ -->
+<div class="modal-wrap" id="modal-plugin">
+  <div class="modal-bg" onclick="closeModal('modal-plugin')"></div>
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Register Plugin</span>
+      <button class="icon-btn" onclick="closeModal('modal-plugin')">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-
-    <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-[minmax(220px,1fr)_auto] md:items-end">
-      <div>
-        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-on-muted" for="monitorSite">Site</label>
-        <input id="monitorSite" value="Building A" class="w-full rounded-lg border-none bg-surface-2 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/25" />
+    <form id="register-plugin-form" class="modal-body">
+      <div class="form-row">
+        <div class="form-col"><label>Plugin ID</label><input id="plugin-reg-id" class="inp" required value="plugin-http-v2"/></div>
+        <div class="form-col"><label>Name</label><input id="plugin-reg-name" class="inp" required value="HTTP Probe"/></div>
       </div>
-      <button id="loadThresholds" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border-soft bg-white px-4 text-xs font-bold uppercase tracking-wide text-secondary transition-colors hover:bg-surface-2">
-        <span class="material-symbols-outlined text-base">download</span>
-        Load Thresholds
-      </button>
-    </div>
-
-    <form id="thresholdForm" class="space-y-3 rounded-lg border border-border-soft bg-surface-2 p-4">
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrRssiYellow">RSSI Yellow</label>
-          <input id="thrRssiYellow" type="number" step="0.1" value="-70" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrRssiGreen">RSSI Green</label>
-          <input id="thrRssiGreen" type="number" step="0.1" value="-60" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrSnrYellow">SNR Yellow</label>
-          <input id="thrSnrYellow" type="number" step="0.1" value="20" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrSnrGreen">SNR Green</label>
-          <input id="thrSnrGreen" type="number" step="0.1" value="30" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrLinkYellow">Link Yellow %</label>
-          <input id="thrLinkYellow" type="number" step="0.1" value="60" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrLinkGreen">Link Green %</label>
-          <input id="thrLinkGreen" type="number" step="0.1" value="80" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrPingWarn">Ping Loss Warn %</label>
-          <input id="thrPingWarn" type="number" step="0.1" value="2" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrPingCritical">Ping Loss Critical %</label>
-          <input id="thrPingCritical" type="number" step="0.1" value="5" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrDlWarn">iPerf DL Warn Mbps</label>
-          <input id="thrDlWarn" type="number" step="0.1" value="100" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrDlGood">iPerf DL Good Mbps</label>
-          <input id="thrDlGood" type="number" step="0.1" value="200" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrUlWarn">iPerf UL Warn Mbps</label>
-          <input id="thrUlWarn" type="number" step="0.1" value="60" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-on-muted" for="thrUlGood">iPerf UL Good Mbps</label>
-          <input id="thrUlGood" type="number" step="0.1" value="120" class="w-full rounded-lg border-none bg-white px-3 py-2 text-sm" />
+      <div class="form-row">
+        <div class="form-col"><label>Version</label><input id="plugin-reg-version" class="inp" required value="2.1.0"/></div>
+        <div class="form-col">
+          <label>Execution Mode</label>
+          <select id="plugin-reg-mode" class="inp">
+            <option value="SCHEDULED">SCHEDULED</option>
+            <option value="ACTION">ACTION</option>
+          </select>
         </div>
       </div>
-
-      <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-strong active:scale-[0.98]">Save and Apply Thresholds</button>
+      <div class="form-col full"><label>Description</label><input id="plugin-reg-desc" class="inp" value="HTTP endpoint reachability checks"/></div>
+      <div class="form-col full">
+        <label>Checksum</label>
+        <input id="plugin-reg-checksum" class="inp mono" style="font-size:11px" required value="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"/>
+      </div>
+      <div class="form-col full">
+        <label>Bundle Download URL <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--hint)">(optional)</span></label>
+        <input id="plugin-reg-url" class="inp" placeholder="https://cdn.example.com/plugins/…"/>
+      </div>
+      <div class="form-col full">
+        <label>Dashboard JSON <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--hint)">(optional)</span></label>
+        <textarea id="plugin-reg-json" class="inp" rows="4" placeholder="Paste Grafana dashboard JSON…"></textarea>
+      </div>
+      <div class="form-col full">
+        <label>Upload JSON File</label>
+        <input id="plugin-reg-file" type="file" accept="application/json,.json" style="font-size:12px;color:var(--muted)"/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-plugin')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Register Plugin</button>
+      </div>
     </form>
-  </section>
+  </div>
+</div>
 
-  <footer class="mt-6 border-t border-slate-200 bg-slate-50 py-8">
-    <div class="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-4 px-4 text-sm text-slate-500 sm:px-8 md:flex-row">
-      <p>BEACON Central API Simulator</p>
-      <div class="flex items-center gap-6">
-        <a href="#" class="transition-colors hover:text-primary">Documentation</a>
-        <a href="#" class="transition-colors hover:text-primary">Support</a>
-      </div>
+<!-- ═══════════════════════ OUTPUT DRAWER ═══════════════════════ -->
+<div id="output-drawer">
+  <div id="drawer-hdr">
+    <div class="drawer-hdr-left">
+      <span class="drawer-label">Response Log</span>
+      <span id="log-time"></span>
     </div>
-  </footer>
+    <div style="display:flex;gap:6px">
+      <button class="drawer-btn" id="clear-log-btn">Clear</button>
+      <button class="drawer-btn" onclick="toggleDrawer()">✕</button>
+    </div>
+  </div>
+  <textarea id="output" readonly spellcheck="false">{}</textarea>
+</div>
 
-  <script>
-    const ui = {
-      endpoint: document.getElementById("endpoint"),
-      apiKey: document.getElementById("apiKey"),
-      apiKeyPreset: document.getElementById("apiKeyPreset"),
-      applyKeyPreset: document.getElementById("applyKeyPreset"),
-      status: document.getElementById("status"),
-      statusText: document.getElementById("statusText"),
-      globalStatus: document.getElementById("globalStatus"),
-      output: document.getElementById("output"),
-      fleetRows: document.getElementById("fleetRows"),
-      fleetActionsPanel: document.getElementById("fleetActionsPanel"),
-      fleetActionsBackdrop: document.getElementById("fleetActionsBackdrop"),
-      fleetActionsClose: document.getElementById("fleetActionsClose"),
-      pluginRows: document.getElementById("pluginRows"),
-      fleetCount: document.getElementById("fleetCount"),
-      pluginCount: document.getElementById("pluginCount"),
-      selectedProbeLabel: document.getElementById("selectedProbeLabel"),
-      refreshAll: document.getElementById("refreshAll"),
-      registerForm: document.getElementById("registerForm"),
-      registerPluginForm: document.getElementById("registerPluginForm"),
-      configForm: document.getElementById("configForm"),
-      panelConfigForm: document.getElementById("panelConfigForm"),
-      testToggleForm: document.getElementById("testToggleForm"),
-      statusForm: document.getElementById("statusForm"),
-      probeConfigForm: document.getElementById("probeConfigForm"),
-      pluginByIdForm: document.getElementById("pluginByIdForm"),
-      bundleDownloadForm: document.getElementById("bundleDownloadForm"),
-      clearOutput: document.getElementById("clearOutput"),
-      monitorSiteQuick: document.getElementById("monitorSiteQuick"),
-      openMonitoringDashboardQuick: document.getElementById("openMonitoringDashboardQuick"),
-      openMonitoringConfig: document.getElementById("openMonitoringConfig"),
-      monitoringQuickStatus: document.getElementById("monitoringQuickStatus"),
-      monitoringFrameWrapQuick: document.getElementById("monitoringFrameWrapQuick"),
-      monitoringFrameQuick: document.getElementById("monitoringFrameQuick"),
-      monitorSite: document.getElementById("monitorSite"),
-      loadThresholds: document.getElementById("loadThresholds"),
-      thresholdForm: document.getElementById("thresholdForm"),
-      monitorConfigBackdrop: document.getElementById("monitorConfigBackdrop"),
-      monitorConfigPanel: document.getElementById("monitorConfigPanel"),
-      monitorConfigClose: document.getElementById("monitorConfigClose")
-    };
+<script>
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+const S = {
+  view: 'fleet',
+  probes: [],
+  plugins: [],
+  assignments: [],
+  probeConfig: null,
+  pendingActions: [],
+  actionHistory: [],
+  selectedId: null,
+  drawerOpen: false,
+  settingsOpen: false,
+  refreshing: false,
+};
+const STALE_S = 45;
+const KEY_PRESETS = { admin: '', probe: '' };
 
-    const KEY_PRESETS = {
-      admin: "",
-      probe: ""
-    };
+/* ════════════════════════════════════════
+   UTILS
+════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const esc = v => String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-    let selectedProbeId = "";
-    let currentFleetProbes = [];
-    const HEARTBEAT_STALE_SECONDS = 45;
-    const FLEET_AUTO_REFRESH_MS = 10000;
-    let refreshInFlight = false;
+function authH(extra={}) {
+  const k = $('apiKey').value.trim();
+  return k ? { 'X-Api-Key': k, ...extra } : { ...extra };
+}
 
-    const STATUS_CLASS = {
-      idle: "flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600",
-      ok: "flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700",
-      error: "flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700"
-    };
+function setLog(data) {
+  $('output').value = JSON.stringify(data, null, 2);
+  $('log-time').textContent = new Date().toLocaleTimeString();
+}
 
-    const GLOBAL_STATUS_CLASS = {
-      idle: "inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-slate-600",
-      ok: "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700",
-      error: "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-rose-700"
-    };
+function openModal(id) {
+  $(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  $(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
 
-    function esc(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+/* ════════════════════════════════════════
+   TOASTS
+════════════════════════════════════════ */
+function toast(msg, type='info') {
+  const root = $('toast-root');
+  const icons = {
+    ok:'<polyline points="20 6 9 17 4 12"/>',
+    err:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    warn:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'
+  };
+  const cls = {ok:'toast-ok',err:'toast-err',info:'toast-info',warn:'toast-warn'};
+  const el = document.createElement('div');
+  el.className = `toast ${cls[type]||'toast-info'}`;
+  el.innerHTML = `<svg viewBox="0 0 24 24">${icons[type]||icons.info}</svg>${esc(msg)}`;
+  root.appendChild(el);
+  setTimeout(()=>{
+    el.style.animation='tOut .2s ease forwards';
+    el.addEventListener('animationend',()=>el.remove(),{once:true});
+  }, 3500);
+}
+
+/* ════════════════════════════════════════
+   CONNECTION STATUS
+════════════════════════════════════════ */
+function setConn(ok) {
+  const dot = $('conn-dot'), text = $('conn-text');
+  const ep = $('endpoint').value.trim() || '/graphql';
+  if (ok===null) { dot.style.background='var(--hint)'; text.textContent='Configure connection'; }
+  else if (ok) { dot.style.background='var(--success)'; text.textContent=ep; }
+  else { dot.style.background='var(--danger)'; text.textContent='Connection error'; }
+}
+
+/* ════════════════════════════════════════
+   SETTINGS PANEL
+════════════════════════════════════════ */
+function toggleSettings() {
+  S.settingsOpen = !S.settingsOpen;
+  $('settings').classList.toggle('open', S.settingsOpen);
+  $('settings-overlay').classList.toggle('open', S.settingsOpen);
+}
+
+/* ════════════════════════════════════════
+   OUTPUT DRAWER
+════════════════════════════════════════ */
+function toggleDrawer() {
+  S.drawerOpen = !S.drawerOpen;
+  $('output-drawer').classList.toggle('open', S.drawerOpen);
+  $('main').classList.toggle('drawer-open', S.drawerOpen);
+}
+
+/* ════════════════════════════════════════
+   NAV
+════════════════════════════════════════ */
+function switchView(v) {
+  S.view = v;
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(el => {
+    el.classList.toggle('active', el.dataset.view===v);
+  });
+  $(`view-${v}`).classList.add('active');
+}
+document.querySelectorAll('.ntab').forEach(btn => {
+  btn.addEventListener('click', ()=> switchView(btn.dataset.view));
+});
+
+/* ════════════════════════════════════════
+   GQL / API
+════════════════════════════════════════ */
+async function gql(query, variables={}) {
+  const ep = $('endpoint').value.trim() || '/graphql';
+  const res = await fetch(ep, {
+    method:'POST',
+    headers: authH({'Content-Type':'application/json'}),
+    body: JSON.stringify({query, variables}),
+  });
+  const raw = await res.text();
+  let p = null;
+  if (raw.trim()) try { p = JSON.parse(raw); } catch {}
+  if (!res.ok) {
+    if (p?.errors) throw new Error(JSON.stringify(p.errors,null,2));
+    throw new Error(`HTTP ${res.status} ${res.statusText}\n${raw.slice(0,400)}`);
+  }
+  if (!p) throw new Error('Empty or non-JSON response');
+  if (p.errors) throw new Error(JSON.stringify(p.errors,null,2));
+  if (!Object.prototype.hasOwnProperty.call(p,'data')) throw new Error("Response missing 'data' field");
+  return p.data;
+}
+
+async function api(url, opts={}) {
+  const res = await fetch(url, {...opts, headers: authH(opts.headers||{})});
+  const raw = await res.text();
+  let p = null;
+  if (raw.trim()) try { p = JSON.parse(raw); } catch {}
+  if (!res.ok) throw new Error(p?.detail || p?.message || raw || `HTTP ${res.status}`);
+  return p;
+}
+
+/* ════════════════════════════════════════
+   HEARTBEAT
+════════════════════════════════════════ */
+function hbState(lhb, status) {
+  const s = String(status||'').toUpperCase();
+  if (s==='DECOMMISSIONED') return {label:'DECOMM',cls:'badge-danger',detail:'—'};
+  if (s==='INACTIVE') return {label:'INACTIVE',cls:'badge-warn',detail:'—'};
+  if (!lhb) return {label:'UNKNOWN',cls:'badge-gray',detail:'—'};
+  const d = new Date(lhb);
+  if (isNaN(d.getTime())) return {label:'UNKNOWN',cls:'badge-gray',detail:String(lhb)};
+  const age = Math.max(0, Math.floor((Date.now()-d.getTime())/1000));
+  const detail = age<60 ? `${age}s ago` : `${Math.floor(age/60)}m ago`;
+  if (age<=STALE_S) return {label:'ONLINE',cls:'badge-ok',detail};
+  return {label:'STALE',cls:'badge-warn',detail};
+}
+
+function statusCls(s) {
+  if (s==='ACTIVE' || s==='SUCCEEDED') return 'badge-ok';
+  if (s==='RUNNING' || s==='DELIVERED' || s==='INACTIVE' || s==='DECOMMISSIONED') return 'badge-warn';
+  if (s==='FAILED' || s==='TIMED_OUT') return 'badge-danger';
+  return 'badge-sky';
+}
+
+/* ════════════════════════════════════════
+   RENDER FLEET
+════════════════════════════════════════ */
+function renderFleet(probes) {
+  S.probes = probes || [];
+  const body = $('fleet-body');
+
+  // stats
+  const online = S.probes.filter(p=>hbState(p.lastHeartbeat,p.status).label==='ONLINE').length;
+  const stale = S.probes.length - online;
+  $('stat-total').textContent = S.probes.length;
+  $('stat-online').textContent = online;
+  $('stat-stale').textContent = stale;
+
+  if (!S.probes.length) {
+    body.innerHTML = `<tr><td colspan="6"><div class="empty">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <p>No probes found</p><small>Register your first probe to get started</small>
+    </div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = S.probes.map(p => {
+    const sc = statusCls(p.status);
+    const hb = hbState(p.lastHeartbeat, p.status);
+    const sel = p.id===S.selectedId;
+    return `<tr class="${sel?'selected':''}" data-id="${esc(p.id)}">
+      <td>
+        <div class="probe-name">${esc(p.name)}</div>
+        <div class="probe-id">${esc(p.id)}</div>
+      </td>
+      <td>${esc(p.location)}</td>
+      <td class="mono" style="font-size:12px;color:var(--muted)">${esc(p.ipAddress)}</td>
+      <td><span class="badge ${sc}">${esc(p.status)}</span></td>
+      <td>
+        <span class="badge ${hb.cls}" style="display:block;width:fit-content;margin-bottom:2px">${esc(hb.label)}</span>
+        <span style="font-size:11px;color:var(--hint)">${esc(hb.detail)}</span>
+      </td>
+      <td style="text-align:right">
+        <button class="btn btn-ghost open-panel-btn" data-id="${esc(p.id)}" style="height:28px;font-size:12px">Configure</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   RENDER PLUGINS
+════════════════════════════════════════ */
+function renderPlugins(plugins) {
+  S.plugins = plugins || [];
+  const opts = S.plugins.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} — v${esc(p.version)}</option>`).join('');
+  const empty = '<option value="">No plugins loaded</option>';
+  $('plugin-fetch-select').innerHTML = S.plugins.length ? opts : empty;
+  $('bundle-plugin-select').innerHTML = S.plugins.length ? opts : empty;
+  const actionPlugins = S.plugins.filter(p => p.executionMode === 'ACTION');
+  $('action-plugin-summary').textContent = actionPlugins.length
+    ? `${actionPlugins.length} action plugin(s) ready for manual execution.`
+    : 'No action-capable plugins registered yet.';
+  renderActionSelectors();
+  renderPluginAssignSelect();
+  renderTestTypeSelectors();
+
+  const grid = $('plugins-grid');
+  if (!S.plugins.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty">
+      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <p>No plugins registered</p><small>Click "Register Plugin" to add one</small>
+    </div></div>`;
+    return;
+  }
+  grid.innerHTML = S.plugins.map(p => {
+    const av = !!p.available;
+    return `<div class="plugin-card">
+      <div class="plugin-card-top">
+        <div>
+          <div class="plugin-card-name">${esc(p.name)}</div>
+          <div class="plugin-card-meta">${esc(p.id)} · v${esc(p.version)}</div>
+        </div>
+        <span class="badge ${av?'badge-ok':'badge-gray'}" style="flex-shrink:0">${av?'Active':'Disabled'}</span>
+      </div>
+      ${p.description?`<div class="plugin-card-desc">${esc(p.description)}</div>`:''}
+      <div class="plugin-card-actions">
+        <button class="btn ${av?'btn-danger':'btn-ghost'} plugin-toggle" data-id="${esc(p.id)}" data-next="${!av}" style="font-size:12px">${av?'Disable':'Enable'}</button>
+        <button class="btn btn-danger plugin-delete" data-id="${esc(p.id)}" style="width:32px;padding:0;justify-content:center;flex:0">
+          <svg viewBox="0 0 24 24" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   PROBE PANEL
+════════════════════════════════════════ */
+function emptyList(message) {
+  return `<div class="empty"><p>${esc(message)}</p></div>`;
+}
+
+function actionCard(action) {
+  return `<div class="stack-item">
+    <div class="stack-item-title">
+      <span>${esc(action.pluginId)} <span class="badge ${statusCls(action.status)}">${esc(action.status)}</span></span>
+      <span class="mono">${esc(action.executionId)}</span>
+    </div>
+    <div class="stack-item-sub">Probe: ${esc(action.probeId)} | Triggered by ${esc(action.triggeredBy || 'system')}</div>
+    <div class="stack-item-meta">Requested ${esc(action.requestedAtUtc || '-')}${action.errorMessage ? ` | ${esc(action.errorMessage)}` : ''}</div>
+  </div>`;
+}
+
+function renderActionSelectors() {
+  const probeOptions = S.probes.map(p => `<option value="${esc(p.id)}">${esc(p.name)} (${esc(p.id)})</option>`).join('');
+  const actionPluginOptions = S.plugins
+    .filter(p => p.executionMode === 'ACTION')
+    .map(p => `<option value="${esc(p.id)}">${esc(p.name)} (${esc(p.id)})</option>`)
+    .join('');
+  $('quick-action-probe').innerHTML = probeOptions || '<option value="">No probes loaded</option>';
+  $('quick-action-plugin').innerHTML = actionPluginOptions || '<option value="">No action plugins</option>';
+  if (S.selectedId) $('quick-action-probe').value = S.selectedId;
+  renderPanelActionPluginSelect();
+}
+
+function collectPanelActionPluginOptions() {
+  const optionsById = new Map();
+
+  (S.probeConfig?.availablePlugins || []).forEach(p => {
+    if (p?.executionMode !== 'ACTION' || p?.available === false || !p?.id) return;
+    optionsById.set(p.id, { id: p.id, label: `${p.name || p.id} (${p.id})` });
+  });
+
+  S.assignments.forEach(a => {
+    if (!a?.pluginId || a?.pluginAvailable === false) return;
+    const plugin = S.plugins.find(p => p.id === a.pluginId);
+    if (plugin && plugin.executionMode !== 'ACTION') return;
+    const name = a.pluginName || plugin?.name || a.pluginId;
+    if (!optionsById.has(a.pluginId)) {
+      optionsById.set(a.pluginId, { id: a.pluginId, label: `${name} (${a.pluginId})` });
     }
+  });
 
-    function statusBadgeClass(status) {
-      if (status === "ACTIVE") {
-        return "bg-emerald-100 text-emerald-700";
-      }
+  return Array.from(optionsById.values());
+}
 
-      if (status === "INACTIVE" || status === "DECOMMISSIONED") {
-        return "bg-amber-100 text-amber-700";
-      }
+function renderPanelActionPluginSelect(preferredValue) {
+  const sel = $('trigger-action-plugin-id');
+  if (!sel) return;
 
-      return "bg-sky-100 text-sky-700";
+  const current = preferredValue || sel.value;
+  const options = collectPanelActionPluginOptions();
+  if (!options.length) {
+    sel.innerHTML = '<option value="">No action plugins for this probe</option>';
+    sel.value = '';
+    sel.disabled = true;
+    return;
+  }
+
+  sel.disabled = false;
+  sel.innerHTML = options
+    .map(o => `<option value="${esc(o.id)}">${esc(o.label)}</option>`)
+    .join('');
+  sel.value = options.some(o => o.id === current) ? current : options[0].id;
+}
+
+function renderActionsView() {
+  $('actions-pending-list').innerHTML = S.pendingActions.length
+    ? S.pendingActions.map(actionCard).join('')
+    : emptyList('No pending actions loaded');
+  $('actions-history-list').innerHTML = S.actionHistory.length
+    ? S.actionHistory.map(actionCard).join('')
+    : emptyList('No action executions loaded');
+  $('panel-pending-actions').innerHTML = S.pendingActions.length
+    ? S.pendingActions.map(actionCard).join('')
+    : emptyList('No pending actions claimed');
+  $('panel-action-history').innerHTML = S.actionHistory.length
+    ? S.actionHistory.map(actionCard).join('')
+    : emptyList('No executions loaded');
+}
+
+async function loadPendingActions(probeId, showToast=false) {
+  const payload = await api(`/probes/${encodeURIComponent(probeId)}/actions/pending?limit=10`);
+  S.pendingActions = payload.actions || [];
+  renderActionsView();
+  if (showToast) toast(`Claimed ${S.pendingActions.length} pending action(s)`, 'ok');
+}
+
+async function loadActionHistory(probeId, showToast=false) {
+  const data = await gql(
+    'query H($probeId:String!,$limit:Int!){probeActionExecutions(probeId:$probeId,limit:$limit){executionId probeId pluginId triggeredBy status requestedAtUtc deliveredAtUtc startedAtUtc completedAtUtc errorMessage}}',
+    {probeId, limit:20}
+  );
+  S.actionHistory = data.probeActionExecutions || [];
+  renderActionsView();
+  if (showToast) toast('Action history refreshed', 'ok');
+}
+
+async function refreshActionsView(showToast=true) {
+  const probeId = $('quick-action-probe').value || S.selectedId;
+  if (!probeId) { renderActionsView(); return; }
+  S.selectedId = probeId;
+  try {
+    await Promise.all([loadActionHistory(probeId)]);
+    renderActionSelectors();
+    renderFleet(S.probes);
+    if (showToast) toast('Actions refreshed', 'ok');
+  } catch (e) {
+    setLog({error:String(e)});
+    if (showToast) toast('Failed to refresh actions', 'err');
+  }
+}
+
+function renderPluginAssignSelect() {
+  const scheduledSel = $('probe-scheduled-plugins-select');
+  const actionSel = $('probe-action-plugins-select');
+  const legacySel = $('probe-plugins-select');
+  const assigned = new Set(S.assignments.map(a=>a.pluginId));
+  const scheduledPlugins = S.plugins.filter(p => p.executionMode !== 'ACTION');
+  const actionPlugins = S.plugins.filter(p => p.executionMode === 'ACTION');
+
+  if (scheduledSel) {
+    scheduledSel.innerHTML = scheduledPlugins.map(p =>
+      `<option value="${esc(p.id)}" ${assigned.has(p.id)?'selected':''}>${esc(p.name)} v${esc(p.version)}${p.available?'':' [disabled]'}</option>`
+    ).join('') || '<option value="" disabled>No scheduled plugins available</option>';
+  }
+
+  if (actionSel) {
+    actionSel.innerHTML = actionPlugins.map(p =>
+      `<option value="${esc(p.id)}" ${assigned.has(p.id)?'selected':''}>${esc(p.name)} v${esc(p.version)}${p.available?'':' [disabled]'}</option>`
+    ).join('') || '<option value="" disabled>No action plugins available</option>';
+  }
+
+  if (legacySel && !scheduledSel && !actionSel) {
+    legacySel.innerHTML = S.plugins.map(p =>
+      `<option value="${esc(p.id)}" ${assigned.has(p.id)?'selected':''}>${esc(p.name)} v${esc(p.version)}${p.available?'':' [disabled]'}</option>`
+    ).join('') || '<option value="" disabled>No plugins available</option>';
+  }
+  renderTestTypeSelectors();
+  renderPanelActionPluginSelect();
+}
+
+function collectAssignedPluginIds() {
+  const scheduledSel = $('probe-scheduled-plugins-select');
+  const actionSel = $('probe-action-plugins-select');
+  const legacySel = $('probe-plugins-select');
+
+  if (scheduledSel || actionSel) {
+    const scheduledIds = scheduledSel ? Array.from(scheduledSel.selectedOptions).map(o=>o.value) : [];
+    const actionIds = actionSel ? Array.from(actionSel.selectedOptions).map(o=>o.value) : [];
+    return Array.from(new Set([...scheduledIds, ...actionIds])).filter(Boolean);
+  }
+
+  return legacySel ? Array.from(legacySel.selectedOptions).map(o=>o.value).filter(Boolean) : [];
+}
+
+function collectTestTypeOptions() {
+  const values = new Set();
+  (S.probeConfig?.enabledTests || []).forEach(t => { if (t?.testType) values.add(t.testType); });
+  // Only include SCHEDULED plugins, exclude ACTION plugins
+  (S.probeConfig?.availablePlugins || []).forEach(p => { if (p?.id && p?.executionMode !== "ACTION") values.add(p.id); });
+  S.assignments.forEach(a => { if (a?.pluginId) values.add(a.pluginId); });
+  // Only include SCHEDULED plugins, exclude ACTION plugins
+  S.plugins.forEach(p => { if (p?.id && p?.executionMode !== "ACTION") values.add(p.id); });
+  return Array.from(values);
+}
+
+function renderTestTypeSelect(selectId, preferredValue) {
+  const sel = $(selectId);
+  if (!sel) return;
+  const options = collectTestTypeOptions();
+  const current = preferredValue || sel.value;
+  if (!options.length) {
+    sel.innerHTML = '<option value="">No available tests</option>';
+    sel.value = '';
+    sel.disabled = true;
+    return;
+  }
+
+  sel.disabled = false;
+  sel.innerHTML = options.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  sel.value = options.includes(current) ? current : options[0];
+}
+
+function renderTestTypeSelectors() {
+  renderTestTypeSelect('panel-cfg-type');
+  renderTestTypeSelect('toggle-type', $('panel-cfg-type')?.value);
+}
+
+async function loadAssignments(probeId) {
+  try {
+    const d = await gql(
+      'query A($pid:String!){probePluginAssignments(probeId:$pid){probeId pluginId pluginName pluginVersion pluginAvailable assignedAt}}',
+      {pid:probeId}
+    );
+    S.assignments = d.probePluginAssignments || [];
+  } catch { S.assignments = []; }
+  renderPluginAssignSelect();
+}
+
+function openProbePanel(id) {
+  const p = S.probes.find(pr=>pr.id===id);
+  if (!p) return;
+  S.selectedId = id;
+
+  // Populate hidden fields
+  ['status-probe-id','panel-cfg-probe-id','toggle-probe-id','probe-config-probe-id','probe-plugins-probe-id','trigger-action-probe-id','update-action-probe-id'].forEach(f=>$(f).value=id);
+
+  $('panel-name').textContent = p.name;
+  $('panel-id').textContent = p.id;
+  $('status-value').value = p.status;
+  renderTestTypeSelectors();
+  renderPanelActionPluginSelect();
+
+  $('probe-panel').classList.add('open');
+  $('panel-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  $('quick-action-probe').value = id;
+  loadAssignments(id);
+  loadActionHistory(id).catch(e=>setLog({error:String(e)}));
+  renderFleet(S.probes); // highlight row
+}
+
+function closeProbePanel() {
+  $('probe-panel').classList.remove('open');
+  $('panel-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  S.selectedId = null;
+  renderFleet(S.probes);
+}
+
+/* ════════════════════════════════════════
+   REFRESH
+════════════════════════════════════════ */
+async function refreshAll() {
+  if (S.refreshing) return;
+  S.refreshing = true;
+  const btn = $('refresh-btn');
+  btn.querySelector('svg').classList.add('spinning');
+
+  try {
+    const [fd, pd] = await Promise.all([
+      gql('query{fleetStatus{probes{id name location ipAddress status lastHeartbeat}}}'),
+      gql('query{plugins{id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl}}'),
+    ]);
+    renderFleet(fd.fleetStatus.probes);
+    renderPlugins(pd.plugins);
+    if (S.selectedId && $('probe-panel').classList.contains('open')) {
+      await loadAssignments(S.selectedId);
+      await Promise.allSettled([loadActionHistory(S.selectedId)]);
     }
-
-    function heartbeatState(lastHeartbeatValue, statusValue) {
-      const normalizedStatus = String(statusValue || "").toUpperCase();
-      if (normalizedStatus === "DECOMMISSIONED") {
-        return { label: "DECOMMISSIONED", className: "bg-rose-100 text-rose-700", detail: "inactive" };
-      }
-
-      if (normalizedStatus === "INACTIVE") {
-        return { label: "INACTIVE", className: "bg-amber-100 text-amber-700", detail: "disabled" };
-      }
-
-      if (!lastHeartbeatValue) {
-        return { label: "UNKNOWN", className: "bg-slate-200 text-slate-700", detail: "-" };
-      }
-
-      const parsed = new Date(lastHeartbeatValue);
-      if (Number.isNaN(parsed.getTime())) {
-        return { label: "UNKNOWN", className: "bg-slate-200 text-slate-700", detail: String(lastHeartbeatValue) };
-      }
-
-      const ageSeconds = Math.max(0, Math.floor((Date.now() - parsed.getTime()) / 1000));
-      const detail = ageSeconds < 60
-        ? ageSeconds + "s ago"
-        : Math.floor(ageSeconds / 60) + "m ago";
-
-      if (ageSeconds <= HEARTBEAT_STALE_SECONDS) {
-        return { label: "ONLINE", className: "bg-emerald-100 text-emerald-700", detail };
-      }
-
-      return { label: "STALE", className: "bg-amber-100 text-amber-700", detail };
-    }
-
-    function setStatus(message, isError) {
-      ui.statusText.textContent = message;
-      ui.status.className = isError ? STATUS_CLASS.error : STATUS_CLASS.ok;
-      ui.globalStatus.className = isError ? GLOBAL_STATUS_CLASS.error : GLOBAL_STATUS_CLASS.ok;
-      ui.globalStatus.innerHTML = "<span class=\"h-1.5 w-1.5 rounded-full " + (isError ? "bg-rose-500" : "bg-emerald-500") + "\"></span>" + (isError ? "Error" : "OK");
-    }
-
-    function resetStatus() {
-      ui.status.className = STATUS_CLASS.idle;
-      ui.statusText.textContent = "Ready.";
-      ui.globalStatus.className = GLOBAL_STATUS_CLASS.idle;
-      ui.globalStatus.innerHTML = "<span class=\"h-1.5 w-1.5 rounded-full bg-slate-500\"></span>Ready";
-    }
-
-    function setOutput(data) {
-      ui.output.value = JSON.stringify(data, null, 2);
-    }
-
-    function authHeaders(headers) {
-      const output = { ...(headers || {}) };
-      const key = ui.apiKey.value.trim();
-
-      if (key) {
-        output["X-Api-Key"] = key;
-      }
-
-      return output;
-    }
-
-    function applyApiKeyPreset() {
-      const value = KEY_PRESETS[ui.apiKeyPreset.value];
-
-      if (!value) {
-        setStatus(
-          "No preset configured for " + ui.apiKeyPreset.value + ". Enter key manually.",
-          true
-        );
-        return;
-      }
-
-      ui.apiKey.value = value;
-      setStatus("Applied " + ui.apiKeyPreset.value + " key preset.", false);
-    }
-
-    async function gql(query, variables) {
-      const endpoint = ui.endpoint.value.trim() || "/graphql";
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ query, variables: variables || {} })
-      });
-
-      const raw = await response.text();
-      let payload = null;
-
-      if (raw.trim()) {
-        try {
-          payload = JSON.parse(raw);
-        } catch {
-          payload = null;
-        }
-      }
-
-      if (!response.ok) {
-        if (payload?.errors) {
-          throw new Error(JSON.stringify(payload.errors, null, 2));
-        }
-
-        const preview = raw.trim().length
-          ? raw.trim().slice(0, 600)
-          : "Empty response body";
-
-        throw new Error(
-          "HTTP " + response.status + " " + response.statusText +
-          " from " + endpoint + ". Response preview: " + preview
-        );
-      }
-
-      if (!payload) {
-        throw new Error(
-          "Expected JSON from " + endpoint + " but received an empty or non-JSON response."
-        );
-      }
-
-      if (payload.errors) {
-        throw new Error(JSON.stringify(payload.errors, null, 2));
-      }
-
-      if (!Object.prototype.hasOwnProperty.call(payload, "data")) {
-        throw new Error("GraphQL response did not include a 'data' field.");
-      }
-
-      return payload.data;
-    }
-
-    async function apiRequest(url, options) {
-      const response = await fetch(url, {
-        ...(options || {}),
-        headers: authHeaders((options && options.headers) || {})
-      });
-
-      const raw = await response.text();
-      let payload = null;
-
-      if (raw.trim()) {
-        try {
-          payload = JSON.parse(raw);
-        } catch {
-          payload = null;
-        }
-      }
-
-      if (!response.ok) {
-        const message = payload?.detail || payload?.message || raw || ("HTTP " + response.status);
-        throw new Error(String(message));
-      }
-
-      return payload;
-    }
-
-    function collectThresholdProfile() {
-      return {
-        rssiYellowDbm: Number(document.getElementById("thrRssiYellow").value),
-        rssiGreenDbm: Number(document.getElementById("thrRssiGreen").value),
-        snrYellowDb: Number(document.getElementById("thrSnrYellow").value),
-        snrGreenDb: Number(document.getElementById("thrSnrGreen").value),
-        linkQualityYellowPercent: Number(document.getElementById("thrLinkYellow").value),
-        linkQualityGreenPercent: Number(document.getElementById("thrLinkGreen").value),
-        pingLossWarnPercent: Number(document.getElementById("thrPingWarn").value),
-        pingLossCriticalPercent: Number(document.getElementById("thrPingCritical").value),
-        iperfDownloadWarnMbps: Number(document.getElementById("thrDlWarn").value),
-        iperfDownloadGoodMbps: Number(document.getElementById("thrDlGood").value),
-        iperfUploadWarnMbps: Number(document.getElementById("thrUlWarn").value),
-        iperfUploadGoodMbps: Number(document.getElementById("thrUlGood").value)
-      };
-    }
-
-    function applyThresholdProfile(profile) {
-      if (!profile) {
-        return;
-      }
-
-      document.getElementById("thrRssiYellow").value = profile.rssiYellowDbm;
-      document.getElementById("thrRssiGreen").value = profile.rssiGreenDbm;
-      document.getElementById("thrSnrYellow").value = profile.snrYellowDb;
-      document.getElementById("thrSnrGreen").value = profile.snrGreenDb;
-      document.getElementById("thrLinkYellow").value = profile.linkQualityYellowPercent;
-      document.getElementById("thrLinkGreen").value = profile.linkQualityGreenPercent;
-      document.getElementById("thrPingWarn").value = profile.pingLossWarnPercent;
-      document.getElementById("thrPingCritical").value = profile.pingLossCriticalPercent;
-      document.getElementById("thrDlWarn").value = profile.iperfDownloadWarnMbps;
-      document.getElementById("thrDlGood").value = profile.iperfDownloadGoodMbps;
-      document.getElementById("thrUlWarn").value = profile.iperfUploadWarnMbps;
-      document.getElementById("thrUlGood").value = profile.iperfUploadGoodMbps;
-    }
-
-    function getMonitoringSite() {
-      const quickSite = ui.monitorSiteQuick?.value?.trim();
-      const configSite = ui.monitorSite?.value?.trim();
-      return quickSite || configSite || "default";
-    }
-
-    function syncMonitoringSiteInputs(site) {
-      if (!site) {
-        return;
-      }
-
-      if (ui.monitorSiteQuick) {
-        ui.monitorSiteQuick.value = site;
-      }
-
-      if (ui.monitorSite) {
-        ui.monitorSite.value = site;
-      }
-    }
-
-    function updateBodyScrollLock() {
-      const probeOpen = ui.fleetActionsPanel && !ui.fleetActionsPanel.classList.contains("hidden");
-      const monitorOpen = ui.monitorConfigPanel && !ui.monitorConfigPanel.classList.contains("hidden");
-      document.body.classList.toggle("overflow-hidden", Boolean(probeOpen || monitorOpen));
-    }
-
-    function closeMonitoringConfigPanel() {
-      if (ui.monitorConfigPanel) {
-        ui.monitorConfigPanel.classList.add("hidden");
-      }
-
-      if (ui.monitorConfigBackdrop) {
-        ui.monitorConfigBackdrop.classList.add("hidden");
-      }
-
-      updateBodyScrollLock();
-    }
-
-    function openMonitoringConfigPanel() {
-      syncMonitoringSiteInputs(getMonitoringSite());
-
-      if (ui.monitorConfigPanel) {
-        ui.monitorConfigPanel.classList.remove("hidden");
-      }
-
-      if (ui.monitorConfigBackdrop) {
-        ui.monitorConfigBackdrop.classList.remove("hidden");
-      }
-
-      updateBodyScrollLock();
-    }
-
-    async function openMonitoringDashboard() {
-      const site = getMonitoringSite();
-
-      try {
-        const payload = await apiRequest("/monitoring/grafana/embed-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ site })
-        });
-
-        syncMonitoringSiteInputs(payload.site);
-
-        if (ui.monitoringFrameQuick && ui.monitoringFrameWrapQuick) {
-          ui.monitoringFrameQuick.src = payload.embedUrl;
-          ui.monitoringFrameWrapQuick.classList.remove("hidden");
-        }
-
-        if (ui.monitoringQuickStatus) {
-          ui.monitoringQuickStatus.textContent = "Embedded dashboard loaded for site '" + payload.site + "'.";
-        }
-
-        setOutput(payload);
-        setStatus("Embedded dashboard loaded for site '" + payload.site + "'.", false);
-      } catch (error) {
-        if (ui.monitoringQuickStatus) {
-          ui.monitoringQuickStatus.textContent = "Failed to open dashboard. Confirm Admin API key and Grafana availability.";
-        }
-
-        setStatus("Failed to open embedded dashboard.", true);
-        setOutput({ error: String(error) });
-      }
-    }
-
-    async function loadThresholdProfile() {
-      const site = getMonitoringSite();
-
-      try {
-        const payload = await apiRequest("/monitoring/thresholds/" + encodeURIComponent(site), {
-          method: "GET"
-        });
-
-        applyThresholdProfile(payload.profile);
-        syncMonitoringSiteInputs(payload.site);
-
-        if (ui.monitoringQuickStatus) {
-          ui.monitoringQuickStatus.textContent = "Threshold profile loaded for site '" + payload.site + "'.";
-        }
-
-        setOutput(payload);
-        setStatus("Threshold profile loaded for site '" + payload.site + "'.", false);
-      } catch (error) {
-        if (ui.monitoringQuickStatus) {
-          ui.monitoringQuickStatus.textContent = "Failed to load thresholds. Confirm Admin API key.";
-        }
-
-        setStatus("Failed to load threshold profile.", true);
-        setOutput({ error: String(error) });
-      }
-    }
-
-    function syncSelectOptions(selectId, options, emptyLabel) {
-      const select = document.getElementById(selectId);
-
-      if (!select || select.tagName !== "SELECT") {
-        return;
-      }
-
-      const previousValue = select.value;
-      select.innerHTML = "";
-
-      if (!options.length) {
-        select.insertAdjacentHTML("beforeend", "<option value=\"\">" + esc(emptyLabel) + "</option>");
-        return;
-      }
-
-      for (const option of options) {
-        select.insertAdjacentHTML(
-          "beforeend",
-          "<option value=\"" + esc(option.value) + "\">" + esc(option.label) + "</option>"
-        );
-      }
-
-      if (options.some((option) => option.value === previousValue)) {
-        select.value = previousValue;
-      }
-    }
-
-    function setSelectedProbe(probeId) {
-      const probe = currentFleetProbes.find((item) => item.id === probeId);
-
-      if (!probe) {
-        selectedProbeId = "";
-        document.getElementById("statusProbeId").value = "";
-        document.getElementById("panelCfgProbeId").value = "";
-        document.getElementById("toggleProbeId").value = "";
-        document.getElementById("probeConfigProbeId").value = "";
-        ui.selectedProbeLabel.textContent = "No probe selected";
-        return;
-      }
-
-      selectedProbeId = probe.id;
-      document.getElementById("statusProbeId").value = probe.id;
-      document.getElementById("panelCfgProbeId").value = probe.id;
-      document.getElementById("toggleProbeId").value = probe.id;
-      document.getElementById("probeConfigProbeId").value = probe.id;
-      document.getElementById("cfgProbeId").value = probe.id;
-      document.getElementById("statusValue").value = probe.status;
-      syncMonitoringSiteInputs(probe.location);
-
-      ui.selectedProbeLabel.textContent = probe.name + " (" + probe.id + ")";
-    }
-
-    function closeProbePanel() {
-      if (ui.fleetActionsPanel) {
-        ui.fleetActionsPanel.classList.add("hidden");
-      }
-
-      if (ui.fleetActionsBackdrop) {
-        ui.fleetActionsBackdrop.classList.add("hidden");
-      }
-
-      updateBodyScrollLock();
-    }
-
-    function openProbePanel(probeId) {
-      setSelectedProbe(probeId);
-
-      if (!selectedProbeId) {
-        closeProbePanel();
-        return false;
-      }
-
-      if (ui.fleetActionsPanel) {
-        ui.fleetActionsPanel.classList.remove("hidden");
-      }
-
-      if (ui.fleetActionsBackdrop) {
-        ui.fleetActionsBackdrop.classList.remove("hidden");
-      }
-
-      updateBodyScrollLock();
-      return true;
-    }
-
-    function syncProbeSelectors(probes) {
-      currentFleetProbes = probes || [];
-
-      if (!currentFleetProbes.length) {
-        setSelectedProbe("");
-        return;
-      }
-
-      const candidateId = currentFleetProbes.some((probe) => probe.id === selectedProbeId)
-        ? selectedProbeId
-        : currentFleetProbes[0].id;
-
-      setSelectedProbe(candidateId);
-    }
-
-    function syncPluginSelectors(plugins) {
-      const options = (plugins || []).map((plugin) => ({
-        value: plugin.id,
-        label: plugin.name + " (" + plugin.id + ")"
-      }));
-
-      syncSelectOptions("pluginByIdValue", options, "No plugins available");
-      syncSelectOptions("bundlePluginId", options, "No plugins available");
-    }
-
-    function renderFleet(probes) {
-      ui.fleetRows.innerHTML = "";
-      ui.fleetCount.textContent = (probes?.length || 0) + " probe" + (probes?.length === 1 ? "" : "s");
-      syncProbeSelectors(probes || []);
-
-      if (!probes || !probes.length) {
-        ui.fleetRows.innerHTML = "<tr><td class=\"px-6 py-6 text-center text-on-muted\" colspan=\"6\">No probes found.</td></tr>";
-        return;
-      }
-
-      for (const probe of probes) {
-        const statusClass = statusBadgeClass(probe.status);
-        const isSelected = probe.id === selectedProbeId;
-        const heartbeat = heartbeatState(probe.lastHeartbeat, probe.status);
-        ui.fleetRows.insertAdjacentHTML(
-          "beforeend",
-          "<tr class=\"transition-colors hover:bg-surface-2 cursor-pointer " + (isSelected ? "bg-surface-2" : "") + "\" data-probe-id=\"" + esc(probe.id) + "\">" +
-            "<td class=\"px-6 py-4 font-mono text-xs text-on-muted\">" + esc(probe.id) + "</td>" +
-            "<td class=\"px-6 py-4 font-medium\">" + esc(probe.name) + "</td>" +
-            "<td class=\"px-6 py-4\">" + esc(probe.location) + "</td>" +
-            "<td class=\"px-6 py-4 font-mono text-xs\">" + esc(probe.ipAddress) + "</td>" +
-            "<td class=\"px-6 py-4\"><span class=\"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold " + statusClass + "\">" + esc(probe.status) + "</span></td>" +
-            "<td class=\"px-6 py-4\">" +
-              "<div class=\"flex flex-col gap-1\">" +
-                "<span class=\"inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[11px] font-semibold " + heartbeat.className + "\">" + esc(heartbeat.label) + "</span>" +
-                "<span class=\"text-[11px] text-on-muted\">" + esc(heartbeat.detail) + "</span>" +
-              "</div>" +
-            "</td>" +
-          "</tr>"
-        );
-      }
-    }
-
-    function renderPlugins(plugins) {
-      ui.pluginRows.innerHTML = "";
-      ui.pluginCount.textContent = (plugins?.length || 0) + " plugin" + (plugins?.length === 1 ? "" : "s");
-      syncPluginSelectors(plugins || []);
-
-      if (!plugins || !plugins.length) {
-        ui.pluginRows.innerHTML = "<div class=\"p-6 text-sm text-on-muted\">No plugins found.</div>";
-        return;
-      }
-
-      for (const plugin of plugins) {
-        const available = !!plugin.available;
-        const statusClass = available ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600";
-        const buttonClass = available
-          ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-          : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100";
-
-        ui.pluginRows.insertAdjacentHTML(
-          "beforeend",
-          "<div class=\"flex items-center justify-between gap-4 p-5 transition-colors hover:bg-surface-2\">" +
-            "<div class=\"min-w-0\">" +
-              "<div class=\"truncate text-sm font-bold\">" + esc(plugin.name) + "</div>" +
-              "<div class=\"mt-1 truncate font-mono text-[11px] uppercase tracking-wide text-on-muted\">" + esc(plugin.version) + " - ID: " + esc(plugin.id) + "</div>" +
-              "<span class=\"mt-2 inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest " + statusClass + "\">" + (available ? "Active" : "Disabled") + "</span>" +
-            "</div>" +
-            "<button type=\"button\" class=\"rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors " + buttonClass + "\" data-plugin-id=\"" + esc(plugin.id) + "\" data-next-available=\"" + (!available) + "\">" +
-              (available ? "Disable" : "Enable") +
-            "</button>" +
-          "</div>"
-        );
-      }
-    }
-
-    async function refreshAll() {
-      if (refreshInFlight) {
-        return;
-      }
-
-      refreshInFlight = true;
-      setStatus("Loading data...", false);
-      ui.refreshAll.disabled = true;
-
-      try {
-        const [fleetData, pluginData] = await Promise.all([
-          gql("query{fleetStatus{probes{id name location ipAddress status lastHeartbeat}}}"),
-          gql("query{plugins{id name version checksum description releasedAt available}}")
-        ]);
-
-        renderFleet(fleetData.fleetStatus.probes);
-        renderPlugins(pluginData.plugins);
-        setOutput({ fleet: fleetData, plugins: pluginData });
-        setStatus("Fleet and plugins loaded.", false);
-      } catch (error) {
-        setStatus("Failed to refresh data.", true);
-        setOutput({ error: String(error) });
-      } finally {
-        ui.refreshAll.disabled = false;
-        refreshInFlight = false;
-      }
-    }
-
-    document.getElementById("adminTabs").addEventListener("click", (event) => {
-      const button = event.target.closest(".tab");
-
-      if (!button) {
-        return;
-      }
-
-      document.querySelectorAll(".tab").forEach((tabButton) => tabButton.classList.remove("active"));
-      document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.remove("active"));
-
-      button.classList.add("active");
-      const panel = document.getElementById("tab-" + button.dataset.tab);
-
-      if (panel) {
-        panel.classList.add("active");
-      }
+    setLog({fleet:fd, plugins:pd});
+    setConn(true);
+  } catch(e) {
+    setConn(false);
+    setLog({error:String(e)});
+    toast('Failed to load data — check connection', 'err');
+  } finally {
+    btn.querySelector('svg').classList.remove('spinning');
+    S.refreshing = false;
+  }
+}
+
+/* ════════════════════════════════════════
+   EVENT LISTENERS
+════════════════════════════════════════ */
+
+// Header buttons
+$('refresh-btn').addEventListener('click', refreshAll);
+$('clear-log-btn').addEventListener('click', ()=>{ $('output').value='{}'; $('log-time').textContent=''; });
+$('apply-preset-btn').addEventListener('click', ()=>{
+  const v = KEY_PRESETS[$('apiKeyPreset').value];
+  if (!v) { toast('No preset configured — enter API key manually', 'warn'); return; }
+  $('apiKey').value = v;
+  toast(`Applied ${$('apiKeyPreset').value} preset`, 'ok');
+});
+
+// Open modals
+$('open-register-plugin').addEventListener('click', ()=>openModal('modal-plugin'));
+$('refresh-actions-view-btn').addEventListener('click', ()=>refreshActionsView());
+$('quick-action-form').addEventListener('submit', async e=>{
+  const probeId = $('quick-action-probe').value;
+  const pluginId = $('quick-action-plugin').value;
+  if (!probeId || !pluginId) { toast('Choose a probe and action plugin', 'warn'); return; }
+  try {
+    const d = await gql(
+      'mutation Q($i:TriggerProbeActionInputTypeInput!){triggerProbeAction(input:$i){success message execution{executionId probeId pluginId status requestedAtUtc}}}',
+      {i:{probeId,pluginId,triggeredBy:$('quick-action-triggered-by').value.trim() || 'admin-ui'}}
+    );
+    setLog(d);
+    if (d.triggerProbeAction?.success) {
+      S.selectedId = probeId;
+      $('update-action-execution-id').value = d.triggerProbeAction.execution.executionId;
+      await refreshActionsView(false);
+      toast('Action queued', 'ok');
+    } else toast(d.triggerProbeAction?.message || 'Rejected', 'err');
+  } catch(e) { toast('Quick action failed', 'err'); setLog({error:String(e)}); }
+});
+$('quick-action-probe').addEventListener('change', ()=>{
+  if ($('quick-action-probe').value) {
+    S.selectedId = $('quick-action-probe').value;
+    renderFleet(S.probes);
+  }
+});
+
+// Fleet row click
+$('fleet-body').addEventListener('click', e=>{
+  const row = e.target.closest('tr[data-id]');
+  if (row) openProbePanel(row.dataset.id);
+});
+
+// Plugins actions
+$('plugins-grid').addEventListener('click', async e=>{
+  const toggleBtn = e.target.closest('.plugin-toggle');
+  const deleteBtn = e.target.closest('.plugin-delete');
+
+  if (toggleBtn) {
+    const id = toggleBtn.dataset.id, next = toggleBtn.dataset.next==='true';
+    try {
+      const d = await gql(
+        'mutation($i:SetPluginAvailabilityInputTypeInput!){setPluginAvailability(input:$i){success message plugin{id name version available}}}',
+        {i:{pluginId:id,available:next}}
+      );
+      setLog(d);
+      if (d.setPluginAvailability?.success) { toast(`Plugin ${next?'enabled':'disabled'}`, 'ok'); await refreshAll(); }
+      else toast(d.setPluginAvailability?.message||'Rejected', 'err');
+    } catch(e) { toast('Plugin toggle failed','err'); setLog({error:String(e)}); }
+    return;
+  }
+  if (deleteBtn) {
+    const id = deleteBtn.dataset.id;
+    if (!confirm(`Delete plugin '${id}'? This removes it from all probes.`)) return;
+    try {
+      const d = await gql(
+        'mutation($id:String!){deletePlugin(pluginId:$id){success message pluginId}}',
+        {id}
+      );
+      setLog(d);
+      if (d.deletePlugin?.success) { toast(`Plugin ${id} deleted`, 'ok'); await refreshAll(); }
+      else toast(d.deletePlugin?.message||'Delete rejected','err');
+    } catch(e) { toast('Plugin delete failed','err'); setLog({error:String(e)}); }
+  }
+});
+// Register plugin
+$('register-plugin-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const vars = {i:{
+    id:$('plugin-reg-id').value.trim(), name:$('plugin-reg-name').value.trim(),
+    version:$('plugin-reg-version').value.trim(), checksum:$('plugin-reg-checksum').value.trim(),
+    description:$('plugin-reg-desc').value.trim()||null,
+    bundleDownloadUrl:$('plugin-reg-url').value.trim()||null,
+    dashboardJson:$('plugin-reg-json').value.trim()||null,
+    executionMode:$('plugin-reg-mode').value,
+  }};
+  try {
+    const d = await gql(
+      'mutation R($i:RegisterPluginInputTypeInput!){registerPlugin(input:$i){success message plugin{id name version available executionMode bundleUrl bundleDownloadUrl}}}',
+      vars
+    );
+    setLog(d);
+    if (d.registerPlugin?.success) {
+      toast(d.registerPlugin?.message||'Plugin registered','ok');
+      closeModal('modal-plugin'); await refreshAll();
+    } else toast(d.registerPlugin?.message||'Rejected','err');
+  } catch(e) { toast('Plugin registration failed','err'); setLog({error:String(e)}); }
+});
+
+// Plugin file upload
+$('plugin-reg-file').addEventListener('change', async e=>{
+  const f = e.target.files?.[0]; if (!f) return;
+  try { $('plugin-reg-json').value = await f.text(); toast('JSON loaded from file','info'); }
+  catch { toast('Failed to read file','err'); }
+});
+
+// Plugin fetch
+$('plugin-fetch-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const id = $('plugin-fetch-select').value;
+  if (!id) { toast('Select a plugin','warn'); return; }
+  try {
+    const d = await gql('query P($id:String!){plugin(id:$id){id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl}}',{id});
+    setLog(d); if (!S.drawerOpen) toggleDrawer();
+    toast('Plugin details — see log','info');
+  } catch(e) { toast('Fetch failed','err'); setLog({error:String(e)}); }
+});
+
+// Bundle download
+$('bundle-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('bundle-plugin-select').value, ver = $('bundle-version').value.trim();
+  const url = `/plugins/${encodeURIComponent(pid)}/${encodeURIComponent(ver)}/bundle`;
+  try {
+    const res = await fetch(url,{method:'GET',headers:authH()});
+    if (!res.ok) throw new Error((await res.text())||`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`${pid}-${ver}.zip`});
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
+    setLog({url,pid,ver,status:'downloaded'});
+    toast('Bundle downloaded','ok');
+  } catch(e) { toast('Bundle download failed','err'); setLog({error:String(e),url}); }
+});
+
+// Probe status
+$('status-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('status-probe-id').value;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  try {
+    const d = await gql(
+      'mutation U($pid:String!,$s:String!){updateProbeStatus(probeId:$pid,status:$s){success message probe{id status lastHeartbeat}}}',
+      {pid,s:$('status-value').value}
+    );
+    setLog(d); toast('Status updated','ok'); await refreshAll();
+  } catch(e) { toast('Status update failed','err'); setLog({error:String(e)}); }
+});
+
+// Panel config
+$('panel-config-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('panel-cfg-probe-id').value;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  const testType = $('panel-cfg-type').value;
+  if (!testType) { toast('No available tests for this probe','warn'); return; }
+  try {
+    const d = await gql(
+      'mutation U($i:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$i){success message config{probeId testType intervalSeconds enabled}}}',
+      {i:{probeId:pid,testType,intervalSeconds:+$('panel-cfg-interval').value,enabled:$('panel-cfg-enabled').value==='true'}}
+    );
+    setLog(d); toast('Config updated','ok');
+  } catch(e) { toast('Config update failed','err'); setLog({error:String(e)}); }
+});
+
+// Toggle
+$('toggle-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('toggle-probe-id').value;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  const testType = $('toggle-type').value;
+  if (!testType) { toast('No available tests for this probe','warn'); return; }
+  try {
+    const d = await gql(
+      'mutation T($i:SetProbeTestEnabledInputTypeInput!){setProbeTestEnabled(input:$i){success message config{probeId testType intervalSeconds enabled}}}',
+      {i:{probeId:pid,testType,enabled:$('toggle-enabled').value==='true'}}
+    );
+    setLog(d);
+    if (d.setProbeTestEnabled?.success) toast('Toggle applied','ok');
+    else toast(d.setProbeTestEnabled?.message||'Rejected','err');
+  } catch(e) { toast('Toggle failed','err'); setLog({error:String(e)}); }
+});
+
+// Probe config query
+$('probe-config-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('probe-config-probe-id').value;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  try {
+    const d = await gql(
+      'query C($pid:String!){probeConfig(probeId:$pid){probeId enabledTests{probeId testType intervalSeconds enabled}availablePlugins{id name version checksum available executionMode bundleUrl}}}',
+      {pid}
+    );
+    S.probeConfig = d.probeConfig || null;
+    renderTestTypeSelectors();
+    renderPanelActionPluginSelect();
+    setLog(d); if (!S.drawerOpen) toggleDrawer();
+    toast('Probe config — see log','info');
+  } catch(e) { toast('Fetch failed','err'); setLog({error:String(e)}); }
+});
+
+// Probe plugins save
+$('probe-plugins-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('probe-plugins-probe-id').value;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  const pluginIds = collectAssignedPluginIds();
+  try {
+    const d = await gql(
+      'mutation S($i:SetProbePluginsInputTypeInput!){setProbePlugins(input:$i){success message assignments{probeId pluginId pluginName pluginVersion pluginAvailable assignedAt}}}',
+      {i:{probeId:pid,pluginIds}}
+    );
+    setLog(d);
+    if (d.setProbePlugins?.success) {
+      S.assignments = d.setProbePlugins.assignments||[];
+      renderPluginAssignSelect();
+      toast('Assignments saved','ok');
+    } else toast(d.setProbePlugins?.message||'Rejected','err');
+  } catch(e) { toast('Save failed','err'); setLog({error:String(e)}); }
+});
+
+// Trigger action
+$('trigger-action-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('trigger-action-probe-id').value;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  const pluginId = $('trigger-action-plugin-id').value;
+  if (!pluginId) { toast('No action plugin available for this probe','warn'); return; }
+  try {
+    const d = await gql(
+      'mutation A($i:TriggerProbeActionInputTypeInput!){triggerProbeAction(input:$i){success message execution{executionId probeId pluginId status requestedAtUtc}}}',
+      {i:{probeId:pid,pluginId,triggeredBy:$('trigger-action-triggered-by').value.trim() || 'admin-ui'}}
+    );
+    setLog(d);
+    if (d.triggerProbeAction?.success) {
+      $('update-action-execution-id').value = d.triggerProbeAction.execution.executionId;
+      await Promise.allSettled([loadActionHistory(pid)]);
+      toast(`Action queued as ${d.triggerProbeAction.execution.executionId}`, 'ok');
+    } else toast(d.triggerProbeAction?.message || 'Rejected', 'err');
+  } catch(e) { toast('Action queue failed','err'); setLog({error:String(e)}); }
+});
+
+// Pending actions
+$('load-pending-btn').addEventListener('click', async ()=>{
+  const pid = S.selectedId;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  try { await loadPendingActions(pid, true); }
+  catch (e) { setLog({error:String(e)}); }
+});
+
+// Update action status
+$('update-action-status-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('update-action-probe-id').value;
+  const executionId = $('update-action-execution-id').value.trim();
+  if (!pid) { toast('No probe selected','warn'); return; }
+  if (!executionId) { toast('Execution ID is required','warn'); return; }
+  try {
+    const d = await api(`/probes/${encodeURIComponent(pid)}/actions/${encodeURIComponent(executionId)}/status`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        status:$('update-action-status').value,
+        errorMessage:$('update-action-error').value.trim() || null,
+      }),
     });
+    setLog(d);
+    await Promise.allSettled([loadActionHistory(pid)]);
+    toast('Execution updated', 'ok');
+  } catch(e) { toast('Execution update failed','err'); setLog({error:String(e)}); }
+});
 
-    ui.refreshAll.addEventListener("click", refreshAll);
-    ui.applyKeyPreset.addEventListener("click", applyApiKeyPreset);
+// Refresh action history
+$('refresh-history-btn').addEventListener('click', async ()=>{
+  const pid = S.selectedId;
+  if (!pid) { toast('No probe selected','warn'); return; }
+  try { await loadActionHistory(pid, true); }
+  catch (e) { setLog({error:String(e)}); }
+});
 
-    ui.registerForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
+// Delete probe
+$('delete-probe-btn').addEventListener('click', async ()=>{
+  const pid = S.selectedId;
+  if (!pid) return;
+  if (!confirm(`Delete probe '${pid}'? This removes all plugin assignments too.`)) return;
+  try {
+    const d = await gql(
+      'mutation D($pid:String!){deleteProbe(probeId:$pid){success message probeId}}',
+      {pid}
+    );
+    setLog(d);
+    if (d.deleteProbe?.success) { toast(`Probe ${pid} deleted`,'ok'); closeProbePanel(); await refreshAll(); }
+    else toast(d.deleteProbe?.message||'Delete rejected','err');
+  } catch(e) { toast('Delete failed','err'); setLog({error:String(e)}); }
+});
 
-      const rawProbeHost = document.getElementById("probeIp").value.trim();
-      const rawProbePort = document.getElementById("probeMetricsPort").value.trim();
-      const parsedPort = Number(rawProbePort);
-
-      if (!rawProbeHost) {
-        setStatus("Probe host/IP is required.", true);
-        return;
-      }
-
-      if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
-        setStatus("Probe metrics port must be an integer between 1 and 65535.", true);
-        return;
-      }
-
-      let normalizedHost = rawProbeHost;
-      if (/^[^\[\]]+:[0-9]+$/.test(normalizedHost)) {
-        normalizedHost = normalizedHost.replace(/:[0-9]+$/, "");
-      }
-
-      const hostWithPort = normalizedHost.includes(":") && !normalizedHost.startsWith("[")
-        ? "[" + normalizedHost + "]:" + parsedPort
-        : normalizedHost + ":" + parsedPort;
-
-      const variables = {
-        input: {
-          id: document.getElementById("probeId").value.trim(),
-          name: document.getElementById("probeName").value.trim(),
-          location: document.getElementById("probeLocation").value.trim(),
-          ipAddress: hostWithPort
-        }
-      };
-
-      try {
-        const data = await gql(
-          "mutation RegisterProbe($input:RegisterProbeInputTypeInput!){registerProbe(input:$input){success message probe{id name location ipAddress status createdAt}}}",
-          variables
-        );
-        setOutput(data);
-        setStatus("Probe registered.", false);
-        await refreshAll();
-      } catch (error) {
-        setStatus("Registration failed.", true);
-        setOutput({ error: String(error) });
-      }
+// Monitoring — open dashboard
+$('open-dashboard-btn').addEventListener('click', async ()=>{
+  const site = $('monitor-site').value.trim() || 'default';
+  try {
+    const p = await api('/monitoring/grafana/embed-session',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({site}),
     });
+    $('monitor-frame').src = p.embedUrl;
+    $('monitor-frame').style.display = 'block';
+    $('dash-placeholder').style.display = 'none';
+    setLog(p); toast(`Dashboard loaded for '${p.site}'`,'ok');
+  } catch(e) { toast('Failed to open dashboard — check Admin key','err'); setLog({error:String(e)}); }
+});
 
-    ui.registerPluginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
+// Keyboard shortcuts
+document.addEventListener('keydown', e=>{
+  if (e.key==='Escape') {
+    closeProbePanel();
+    closeModal('modal-plugin');
+    if (S.settingsOpen) toggleSettings();
+  }
+});
 
-      const variables = {
-        input: {
-          id: document.getElementById("pluginId").value.trim(),
-          name: document.getElementById("pluginName").value.trim(),
-          version: document.getElementById("pluginVersion").value.trim(),
-          checksum: document.getElementById("pluginChecksum").value.trim(),
-          description: document.getElementById("pluginDescription").value.trim()
-        }
-      };
-
-      try {
-        const data = await gql(
-          "mutation RegisterPlugin($input:RegisterPluginInputTypeInput!){registerPlugin(input:$input){success message plugin{id name version available}}}",
-          variables
-        );
-        setOutput(data);
-
-        if (data.registerPlugin?.success) {
-          setStatus("Plugin registered.", false);
-          await refreshAll();
-        } else {
-          setStatus("Plugin registration rejected.", true);
-        }
-      } catch (error) {
-        setStatus("Plugin registration failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.configForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const variables = {
-        input: {
-          probeId: document.getElementById("cfgProbeId").value.trim(),
-          testType: document.getElementById("cfgType").value.trim(),
-          intervalSeconds: Number(document.getElementById("cfgInterval").value),
-          enabled: document.getElementById("cfgEnabled").value === "true"
-        }
-      };
-
-      try {
-        const data = await gql(
-          "mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}",
-          variables
-        );
-        setOutput(data);
-        setStatus("Config updated.", false);
-      } catch (error) {
-        setStatus("Config update failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.testToggleForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const variables = {
-        input: {
-          probeId: document.getElementById("toggleProbeId").value.trim(),
-          testType: document.getElementById("toggleType").value.trim(),
-          enabled: document.getElementById("toggleEnabled").value === "true"
-        }
-      };
-
-      if (!variables.input.probeId) {
-        setStatus("Select a probe in Fleet first.", true);
-        return;
-      }
-
-      try {
-        const data = await gql(
-          "mutation SetProbeTestEnabled($input:SetProbeTestEnabledInputTypeInput!){setProbeTestEnabled(input:$input){success message config{probeId testType intervalSeconds enabled}}}",
-          variables
-        );
-        setOutput(data);
-
-        if (data.setProbeTestEnabled?.success) {
-          setStatus("Test toggle applied.", false);
-        } else {
-          setStatus("Toggle rejected.", true);
-        }
-      } catch (error) {
-        setStatus("Toggle failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.pluginRows.addEventListener("click", async (event) => {
-      const button = event.target.closest("button[data-plugin-id]");
-
-      if (!button) {
-        return;
-      }
-
-      const pluginId = button.getAttribute("data-plugin-id");
-      const nextAvailable = button.getAttribute("data-next-available") === "true";
-
-      try {
-        const data = await gql(
-          "mutation SetPluginAvailability($input:SetPluginAvailabilityInputTypeInput!){setPluginAvailability(input:$input){success message plugin{id name version available}}}",
-          { input: { pluginId, available: nextAvailable } }
-        );
-        setOutput(data);
-
-        if (data.setPluginAvailability?.success) {
-          setStatus("Plugin " + pluginId + " updated.", false);
-          await refreshAll();
-        } else {
-          setStatus("Toggle rejected.", true);
-        }
-      } catch (error) {
-        setStatus("Plugin toggle failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.fleetRows.addEventListener("click", (event) => {
-      const row = event.target.closest("tr[data-probe-id]");
-
-      if (!row) {
-        return;
-      }
-
-      openProbePanel(row.getAttribute("data-probe-id") || "");
-      renderFleet(currentFleetProbes);
-    });
-
-    if (ui.fleetActionsClose) {
-      ui.fleetActionsClose.addEventListener("click", closeProbePanel);
-    }
-
-    if (ui.fleetActionsBackdrop) {
-      ui.fleetActionsBackdrop.addEventListener("click", closeProbePanel);
-    }
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        closeProbePanel();
-        closeMonitoringConfigPanel();
-      }
-    });
-
-    ui.statusForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const variables = {
-        probeId: document.getElementById("statusProbeId").value.trim(),
-        status: document.getElementById("statusValue").value
-      };
-
-      if (!variables.probeId) {
-        setStatus("Select a probe in Fleet first.", true);
-        return;
-      }
-
-      try {
-        const data = await gql(
-          "mutation UpdateProbeStatus($probeId:String!,$status:String!){updateProbeStatus(probeId:$probeId,status:$status){success message probe{id status lastHeartbeat}}}",
-          variables
-        );
-        setOutput(data);
-        setStatus("Probe status updated.", false);
-        await refreshAll();
-      } catch (error) {
-        setStatus("Status update failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.panelConfigForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const variables = {
-        input: {
-          probeId: document.getElementById("panelCfgProbeId").value.trim(),
-          testType: document.getElementById("panelCfgType").value.trim(),
-          intervalSeconds: Number(document.getElementById("panelCfgInterval").value),
-          enabled: document.getElementById("panelCfgEnabled").value === "true"
-        }
-      };
-
-      if (!variables.input.probeId) {
-        setStatus("Select a probe in Fleet first.", true);
-        return;
-      }
-
-      try {
-        const data = await gql(
-          "mutation UpdateProbeTestConfig($input:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$input){success message config{probeId testType intervalSeconds enabled}}}",
-          variables
-        );
-        setOutput(data);
-        setStatus("Test config updated.", false);
-      } catch (error) {
-        setStatus("Test config update failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.probeConfigForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const variables = { probeId: document.getElementById("probeConfigProbeId").value.trim() };
-
-      if (!variables.probeId) {
-        setStatus("Select a probe in Fleet first.", true);
-        return;
-      }
-
-      try {
-        const data = await gql(
-          "query ProbeConfig($probeId:String!){probeConfig(probeId:$probeId){probeId enabledTests{probeId testType intervalSeconds enabled}availablePlugins{id name version checksum available bundleUrl}}}",
-          variables
-        );
-        setOutput(data);
-        setStatus("Probe config loaded.", false);
-      } catch (error) {
-        setStatus("Probe config request failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.pluginByIdForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const variables = { id: document.getElementById("pluginByIdValue").value.trim() };
-
-      try {
-        const data = await gql(
-          "query PluginById($id:String!){plugin(id:$id){id name version checksum description releasedAt available bundleUrl}}",
-          variables
-        );
-        setOutput(data);
-        setStatus("Plugin lookup completed.", false);
-      } catch (error) {
-        setStatus("Plugin lookup failed.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.bundleDownloadForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const pluginId = document.getElementById("bundlePluginId").value.trim();
-      const version = document.getElementById("bundleVersion").value.trim();
-      const url = "/plugins/" + encodeURIComponent(pluginId) + "/" + encodeURIComponent(version) + "/bundle";
-
-      try {
-        const response = await fetch(url, { method: "GET", headers: authHeaders() });
-
-        if (!response.ok) {
-          throw new Error((await response.text()) || "HTTP " + response.status);
-        }
-
-        const blob = await response.blob();
-        const downloadLink = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = downloadLink;
-        anchor.download = pluginId + "-" + version + ".zip";
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        URL.revokeObjectURL(downloadLink);
-
-        setOutput({ downloadUrl: url, pluginId, version, status: "downloaded" });
-        setStatus("Bundle downloaded.", false);
-      } catch (error) {
-        setStatus("Bundle download failed.", true);
-        setOutput({ error: String(error), downloadUrl: url });
-      }
-    });
-
-    if (ui.loadThresholds) {
-      ui.loadThresholds.addEventListener("click", loadThresholdProfile);
-    }
-
-    if (ui.openMonitoringDashboardQuick) {
-      ui.openMonitoringDashboardQuick.addEventListener("click", () => {
-        openMonitoringDashboard();
-      });
-    }
-
-    if (ui.openMonitoringConfig) {
-      ui.openMonitoringConfig.addEventListener("click", openMonitoringConfigPanel);
-    }
-
-    if (ui.monitorConfigClose) {
-      ui.monitorConfigClose.addEventListener("click", closeMonitoringConfigPanel);
-    }
-
-    if (ui.monitorConfigBackdrop) {
-      ui.monitorConfigBackdrop.addEventListener("click", closeMonitoringConfigPanel);
-    }
-
-    ui.thresholdForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const site = getMonitoringSite();
-      const profile = collectThresholdProfile();
-
-      try {
-        const payload = await apiRequest("/monitoring/thresholds/" + encodeURIComponent(site), {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(profile)
-        });
-
-        setOutput(payload);
-        syncMonitoringSiteInputs(payload.site);
-
-        if (payload?.grafana?.embedUrl) {
-          if (ui.monitoringFrameQuick && ui.monitoringFrameWrapQuick) {
-            ui.monitoringFrameQuick.src = payload.grafana.embedUrl;
-            ui.monitoringFrameWrapQuick.classList.remove("hidden");
-          }
-        }
-
-        if (ui.monitoringQuickStatus) {
-          ui.monitoringQuickStatus.textContent = "Thresholds saved and applied for site '" + payload.site + "'.";
-        }
-
-        setStatus("Thresholds saved for site '" + payload.site + "'.", false);
-      } catch (error) {
-        if (ui.monitoringQuickStatus) {
-          ui.monitoringQuickStatus.textContent = "Failed to save thresholds. Check Admin API key and backend logs.";
-        }
-
-        setStatus("Failed to save thresholds.", true);
-        setOutput({ error: String(error) });
-      }
-    });
-
-    ui.clearOutput.addEventListener("click", () => {
-      setOutput({});
-      resetStatus();
-    });
-
-    resetStatus();
-
-    if (ui.apiKey.value.trim()) {
-      loadThresholdProfile();
-    }
-
-    syncMonitoringSiteInputs(getMonitoringSite());
-    setInterval(refreshAll, FLEET_AUTO_REFRESH_MS);
-
-    refreshAll();
-  </script>
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+switchView('fleet');
+setConn(null);
+renderActionsView();
+refreshAll();
+setInterval(refreshAll, 10000);
+</script>
 </body>
 </html>
+

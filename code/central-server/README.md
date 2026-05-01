@@ -1,314 +1,158 @@
-# BEACON Central Server (.NET 9)
+# BEACON Central Server
 
-## Overview
+The central server is the BEACON control plane. It owns probe inventory, plugin metadata, plugin assignment, scheduled test configuration, action queueing, and the aggregated `/metrics` export used by Prometheus. Probes create their own inventory record when they first send a heartbeat.
 
-Central Server is a production-ready backend service for the **BEACON** platform - a distributed network monitoring and diagnostic system built on Raspberry Pi probes deployed across buildings.
+## Responsibilities
 
-The system is responsible for:
-- **Coordinating** data from external probe agents
-- **Managing** probe configuration, tests, and results
-- **Exposing** a GraphQL API for Admin tooling and probe agents
-- **Distributing** plugins for probe test execution
+- expose a protected GraphQL API for admin and probe clients
+- persist probe, plugin, assignment, and action state in PostgreSQL
+- store latest probe metric snapshots in Redis
+- serve plugin bundle archives to probe agents
+- expose `/metrics` for Prometheus and `/monitoring/grafana/embed-session` for dashboard embedding
+- host the local simulator UI at `/beacon-simulator.html`
+
+## Stack
+
+- .NET 9
+- ASP.NET Core minimal hosting
+- HotChocolate GraphQL
+- Entity Framework Core
+- PostgreSQL
+- Redis
 
 ## Architecture
 
-### Stack
-- **.NET 9** - Latest LTS runtime
-- **ASP.NET Core** - Web framework
-- **HotChocolate** - GraphQL API layer (ADR-008)
-- **PostgreSQL** - Relational database
-- **Entity Framework Core** - ORM
-- **C# 13** - Language
+The service follows an onion-style layout:
 
-### Design Pattern: Onion Architecture (Clean Architecture)
+- `Domain/`
+  Business entities and repository contracts.
+- `Application/`
+  Use cases, DTOs, services, and abstractions.
+- `Infrastructure/`
+  Persistence, metrics storage, and external adapters.
+- `Presentation/`
+  GraphQL resolvers, HTTP endpoints, auth, and simulator assets.
 
-```
-┌─────────────────────────────────────────────────┐
-│           Presentation Layer                     │
-│  (GraphQL: Types, Queries, Mutations)           │
-└─────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────┐
-│         Application Layer                        │
-│  (Use Cases, DTOs, Service Orchestration)       │
-└─────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────┐
-│  Infrastructure Layer                           │
-│  (EF Core, Entities, Repository Adapters)      │
-└─────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────┐
-│         Domain Layer (PURE)                      │
-│  (Models, Value Objects, Repository Interfaces)│
-└─────────────────────────────────────────────────┘
-```
+The main composition happens in [Program.cs](/C:/Users/joaom/Faculdade/beacon/code/central-server/Program.cs), where the app wires persistence, metrics, GraphQL security, monitoring endpoints, static assets, and plugin bundle delivery.
 
-**Key Principles:**
-- Domain layer is pure C# - no EF Core, no ASP.NET, no framework dependencies
-- Dependencies always point inward
-- Repository interfaces defined in domain, implemented in infrastructure
-- Use cases orchestrate pure domain logic
-- GraphQL resolvers only call use cases (never bypass to repositories)
-- DTOs separate API contracts from domain models
+## Current Use Cases
 
-## Project Structure
+### Fleet and plugin administration
 
-```
-CentralServer/
-├── CentralServer.csproj               # Project file
-├── appsettings.json                   # Configuration
-├── Program.cs                         # Entry point
-├── Domain/
-│   ├── Models/
-│   │   ├── Probe.cs                   # Probe aggregate root
-│   │   ├── ProbeId.cs                 # Value object
-│   │   ├── ProbeStatus.cs             # Enum
-│   │   ├── TestType.cs                # Value object
-│   │   ├── ProbeTestConfiguration.cs  # Value object
-│   │   ├── Plugin.cs                  # Plugin aggregate root
-│   │   └── DomainException.cs         # Base domain exception
-│   └── Repositories/
-│       ├── IProbeRepository.cs        # Port interface
-│       ├── ITestTypeRepository.cs     # Port interface
-│       ├── IProbeTestConfigurationRepository.cs
-│       └── IPluginRepository.cs
-├── Application/
-│   ├── DTOs/
-│   │   ├── RegisterProbeInput.cs
-│   │   ├── ProbeDTO.cs
-│   │   ├── ProbeTestConfigurationDTO.cs
-│   │   ├── PluginDTO.cs
-│   │   ├── ProbeConfigResponseDTO.cs
-│   │   ├── UpdateProbeTestConfigInput.cs
-│   │   └── ErrorResponse.cs
-│   └── UseCases/
-│       ├── RegisterProbeUseCase.cs
-│       ├── GetFleetStatusUseCase.cs
-│       ├── GetProbeConfigUseCase.cs
-│       ├── UpdateProbeTestConfigUseCase.cs
-│       ├── UpdateProbeStatusUseCase.cs
-│       ├── ListPluginsUseCase.cs
-│       ├── RegisterPluginUseCase.cs
-│       ├── GetPluginByIdUseCase.cs
-│       ├── SetProbeTestEnabledUseCase.cs
-│       └── SetPluginAvailabilityUseCase.cs
-├── Infrastructure/
-│   ├── Persistence/
-│   │   ├── Entities/
-│   │   │   ├── ProbeEntity.cs
-│   │   │   ├── TestTypeEntity.cs
-│   │   │   ├── ProbeTestConfigEntity.cs
-│   │   │   └── PluginEntity.cs
-│   │   ├── Migrations/
-│   │   ├── CentralServerDbContext.cs
-│   │   └── Repositories/
-│   │       ├── ProbeRepositoryAdapter.cs
-│   │       ├── TestTypeRepositoryAdapter.cs
-│   │       ├── ProbeTestConfigurationRepositoryAdapter.cs
-│   │       └── PluginRepositoryAdapter.cs
-│   └── Configuration/
-│       └── ServiceConfiguration.cs
-└── Presentation/
-    ├── GraphQL/
-    │   ├── Types/
-    │   │   ├── ProbeType.cs
-    │   │   ├── PluginType.cs
-    │   │   ├── ProbeTestConfigType.cs
-    │   │   └── ProbeConfigType.cs
-    │   ├── Queries.cs
-    │   ├── Mutations.cs
-    │   └── Errors/
-    │       └── ErrorHandler.cs
-    └── Middleware/
-        └── ExceptionMiddleware.cs
-```
+- `DeleteProbeUseCase`
+- `GetFleetStatusUseCase`
+- `UpdateProbeStatusUseCase`
+- `RegisterPluginUseCase`
+- `DeletePluginUseCase`
+- `ListPluginsUseCase`
+- `GetPluginByIdUseCase`
+- `SetPluginAvailabilityUseCase`
+- `SetProbePluginsUseCase`
+- `GetProbePluginAssignmentsUseCase`
 
-## Getting Started
+### Probe runtime and execution
 
-### Prerequisites
-- .NET 9 SDK
-- PostgreSQL 14+
-- Docker (optional, for containerization)
+- `GetProbeConfigUseCase`
+- `GetProbeRuntimeUseCase`
+- `RecordProbeHeartbeatUseCase`
+- `GetPendingProbeActionsUseCase`
+- `TriggerProbeActionUseCase`
+- `UpdateProbeActionStatusUseCase`
+- `ListProbeActionExecutionsUseCase`
+- `UpdateProbeTestConfigUseCase`
+- `SetProbeTestEnabledUseCase`
 
-### Development
+### Monitoring
 
-1. **Install dependencies:**
-   ```bash
-   dotnet restore
-   ```
+- `ReportProbeMetricsUseCase`
+- `ExportPrometheusMetricsUseCase`
 
-2. **Configure database:**
-   Update `appsettings.json` with your PostgreSQL connection string.
+## Runtime Model
 
-3. **Run migrations:**
-   ```bash
-   dotnet ef database update
-   ```
+### Scheduled plugins
 
-4. **Start the server:**
-   ```bash
-   dotnet run
-   ```
+Scheduled plugins are assigned to a probe after it auto-registers and then activated through `updateProbeTestConfig`.
 
-   The GraphQL endpoint is available at `http://localhost:5000/graphql`
+Examples:
 
-### Docker
+- `PING`
+- `HTTP`
+- `IPERF`
+- `WIFI`
 
-Build and run the container:
-```bash
-docker build -t beacon-central-server .
-docker run -p 5000:8080 -e ConnectionString="Host=host.docker.internal;..." beacon-central-server
-```
+### Action plugins
 
-### Testing
-
-Run all Central Server tests:
-
-```bash
-dotnet test tests/CentralServer.Tests/CentralServer.Tests.csproj
-```
-
-Test coverage includes:
-- Domain model invariants and behavior transitions
-- Application use-case business rules and error flows
-- Integration checks for health, auth-gated endpoints, monitoring service discovery, and GraphQL hardening
-
-### Plugin Bundles
-
-Plugin bundle artifacts are served by the central server for probe download.
-
-1. Place bundle files in `plugin-bundles/`.
-2. Use naming convention `<plugin-id>-<plugin-version>.zip`.
-3. Download URL format is `/plugins/{pluginId}/{version}/bundle`.
+Action plugins are assigned to a probe after it auto-registers and then queued on demand through `triggerProbeAction`.
 
 Example:
 
-```bash
-curl -L http://localhost:5000/plugins/plugin-http-v2/2.1.0/bundle -o plugin-http-v2-2.1.0.zip
+- `WIFI_SCAN_ACTION`
+
+## API Surface
+
+Primary endpoints:
+
+- `POST /graphql`
+- `GET /metrics`
+- `GET /health`
+- `POST /monitoring/grafana/embed-session`
+- `GET /plugins/{pluginId}/{version}/bundle`
+
+GraphQL is protected by API-key auth and request hardening:
+
+- introspection disabled by default
+- query depth limit
+- query complexity limit
+
+## Local Development
+
+### Run with Docker
+
+```powershell
+docker compose up -d --build
 ```
 
-## Use Cases
+### Run with the .NET SDK
 
-The server implements the following use cases:
-
-1. **RegisterProbeUseCase** - Register a new Raspberry Pi probe device
-2. **GetFleetStatusUseCase** - Retrieve the status of all probes
-3. **GetProbeConfigUseCase** - Fetch configuration for a specific probe
-4. **UpdateProbeTestConfigUseCase** - Create/update test config for a probe
-5. **UpdateProbeStatusUseCase** - Update probe status (active, inactive, etc.)
-6. **ListPluginsUseCase** - List all registered plugins (available and disabled)
-7. **RegisterPluginUseCase** - Register a plugin package/version
-8. **GetPluginByIdUseCase** - Retrieve one plugin by ID
-9. **SetProbeTestEnabledUseCase** - Enable or disable an existing test config on a probe
-10. **SetPluginAvailabilityUseCase** - Enable or disable plugin distribution
-
-## Authentication
-
-- GraphQL and plugin bundle endpoints require `X-Api-Key`.
-- Admin role can execute all operations.
-- Probe role can execute probe-facing operations (`probeConfig`, `updateProbeStatus`) and plugin bundle download.
-
-## API Examples
-
-### Get Fleet Status
-```graphql
-query {
-  fleetStatus {
-    probes {
-      id
-      name
-      location
-      status
-      lastHeartbeat
-    }
-  }
-}
+```powershell
+dotnet restore
+dotnet run
 ```
 
-### Register a Probe
-```graphql
-mutation {
-  registerProbe(input: {
-    id: "probe-001"
-    name: "Building A - Flow 1"
-    location: "1st Floor"
-    ipAddress: "192.168.1.100"
-  }) {
-    probe {
-      id
-      status
-    }
-  }
-}
+The app automatically creates or migrates the database on startup.
+
+## Testing
+
+Run the test project:
+
+```powershell
+dotnet test tests/CentralServer.Tests/CentralServer.Tests.csproj
 ```
 
-### Get Probe Configuration
-```graphql
-query {
-  probeConfig(probeId: "probe-001") {
-    probeId
-    enabledTests {
-      testType
-      intervalSeconds
-      enabled
-    }
-    availablePlugins {
-      id
-      version
-      checksum
-      bundleUrl
-    }
-  }
-}
+Current coverage includes:
+
+- domain behavior
+- use-case behavior
+- GraphQL runtime flows
+- health and security integration
+- central `/metrics` export
+
+## Plugin Bundles
+
+Bundle files are served from `plugin-bundles/` using the naming convention:
+
+- `<plugin-id>-<plugin-version>.zip`
+
+Example download:
+
+```powershell
+curl -L -H "X-Api-Key: <probe-key>" http://localhost:5000/plugins/PING/1.0.0/bundle -o PING-1.0.0.zip
 ```
 
-### Toggle Probe Test Enablement
-```graphql
-mutation {
-  setProbeTestEnabled(input: {
-    probeId: "probe-001"
-    testType: "PING"
-    enabled: false
-  }) {
-    success
-    message
-    config {
-      probeId
-      testType
-      intervalSeconds
-      enabled
-    }
-  }
-}
-```
+## Related Docs
 
-### Toggle Plugin Availability
-```graphql
-mutation {
-  setPluginAvailability(input: {
-    pluginId: "plugin-http-v2"
-    available: false
-  }) {
-    success
-    message
-    plugin {
-      id
-      available
-    }
-  }
-}
-```
-
-## Architecture Decision Records
-
-- **ADR-007**: Use .NET 9 with C# for the central server
-- **ADR-008**: Use HotChocolate GraphQL for the .NET central server
-- **ADR-006**: PostgreSQL with Entity Framework Core for configuration storage (updated from ADR-006)
-
-## Related Documentation
-
-See `docs/` directory for:
-- GraphQL API schema
-- Architecture diagrams
-- ADRs (Architecture Decision Records)
+- [Platform overview](../README.md)
+- [API reference](../../docs/graphql-api.md)
+- [Deployment guide](../../docs/deploy.md)
+- [ADR-007](../../docs/adr/ADR-007-use-dotnet-9-with-csharp-for-the-central-server.md)
+- [ADR-008](../../docs/adr/ADR-008-use-hotchocolate-graphql-for-dotnet.md)

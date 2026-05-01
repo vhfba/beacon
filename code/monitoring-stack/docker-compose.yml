@@ -14,7 +14,6 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/rules:/etc/prometheus/rules:ro
-      - ./prometheus/targets:/etc/prometheus/targets:ro
       - prometheus_data:/prometheus
     restart: unless-stopped
     networks:

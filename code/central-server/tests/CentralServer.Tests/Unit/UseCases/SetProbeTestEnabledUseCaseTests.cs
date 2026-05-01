@@ -12,7 +12,8 @@ public class SetProbeTestEnabledUseCaseTests
     {
         var probeRepo = new InMemoryProbeRepository();
         var configRepo = new InMemoryProbeTestConfigurationRepository();
-        var useCase = new SetProbeTestEnabledUseCase(probeRepo, configRepo);
+        var unitOfWork = new NoOpUnitOfWork();
+        var useCase = new SetProbeTestEnabledUseCase(probeRepo, configRepo, unitOfWork);
 
         var input = new SetProbeTestEnabledInput
         {
@@ -22,6 +23,7 @@ public class SetProbeTestEnabledUseCaseTests
         };
 
         await Assert.ThrowsAsync<DomainException>(() => useCase.ExecuteAsync(input));
+        Assert.Equal(0, unitOfWork.SaveChangesCallCount);
     }
 
     [Fact]
@@ -29,13 +31,14 @@ public class SetProbeTestEnabledUseCaseTests
     {
         var probeRepo = new InMemoryProbeRepository();
         var configRepo = new InMemoryProbeTestConfigurationRepository();
+        var unitOfWork = new NoOpUnitOfWork();
         var probe = new Probe(new ProbeId("probe-200"), "Probe 200", "HQ", "10.0.0.200");
         var testType = new TestType("PING", "ICMP latency");
 
         await probeRepo.RegisterAsync(probe);
         await configRepo.UpdateAsync(new ProbeTestConfiguration(probe.Id, testType, 30, enabled: true));
 
-        var useCase = new SetProbeTestEnabledUseCase(probeRepo, configRepo);
+        var useCase = new SetProbeTestEnabledUseCase(probeRepo, configRepo, unitOfWork);
         var input = new SetProbeTestEnabledInput
         {
             ProbeId = "probe-200",
@@ -49,5 +52,6 @@ public class SetProbeTestEnabledUseCaseTests
         var stored = await configRepo.GetAsync(new ProbeId("probe-200"), "PING");
         Assert.NotNull(stored);
         Assert.False(stored!.Enabled);
+        Assert.Equal(1, unitOfWork.SaveChangesCallCount);
     }
 }

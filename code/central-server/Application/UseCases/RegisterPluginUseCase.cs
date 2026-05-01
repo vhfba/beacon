@@ -1,16 +1,20 @@
 namespace CentralServer.Application.UseCases;
 
+using CentralServer.Application.Abstractions;
 using CentralServer.Application.DTOs;
+using CentralServer.Application.Mappings;
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
 
 public class RegisterPluginUseCase
 {
     private readonly IPluginRepository _pluginRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public RegisterPluginUseCase(IPluginRepository pluginRepository)
+    public RegisterPluginUseCase(IPluginRepository pluginRepository, IUnitOfWork unitOfWork)
     {
         _pluginRepository = pluginRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<PluginDTO> ExecuteAsync(RegisterPluginInput input, CancellationToken cancellationToken = default)
@@ -23,9 +27,18 @@ public class RegisterPluginUseCase
         if (existingByName.Any(p => string.Equals(p.Version, input.Version, StringComparison.OrdinalIgnoreCase)))
             throw new DomainException($"Plugin {input.Name} version {input.Version} already exists");
 
-        var plugin = new Plugin(input.Id, input.Name, input.Version, input.Checksum, input.Description);
+        var plugin = new Plugin(
+            input.Id,
+            input.Name,
+            input.Version,
+            input.Checksum,
+            input.Description,
+            input.BundleDownloadUrl,
+            input.DashboardJson,
+            input.ExecutionMode);
         var created = await _pluginRepository.CreateAsync(plugin, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return PluginDTO.FromDomain(created);
+        return created.ToDto();
     }
 }

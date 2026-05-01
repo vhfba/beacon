@@ -25,21 +25,15 @@ public class PluginType
     [GraphQLType("Boolean!")]
     public bool Available { get; set; }
 
+    [GraphQLType("PluginExecutionModeType!")]
+    public PluginExecutionModeType ExecutionMode { get; set; } = PluginExecutionModeType.Scheduled;
+
     [GraphQLType("String!")]
     public string BundleUrl { get; set; } = string.Empty;
 
-    public static PluginType FromDTO(PluginDTO dto)
-    {
-        return new PluginType
-        {
-            Id = dto.Id,
-            Name = dto.Name,
-            Version = dto.Version,
-            Checksum = dto.Checksum,
-            Description = dto.Description,
-            ReleasedAt = dto.ReleasedAt,
-            Available = dto.Available,
-            BundleUrl = dto.BundleUrl
-        };
-    }
+    [GraphQLType("String")]
+    public string? BundleDownloadUrl { get; set; }
+
+    [GraphQLType("String")]
+    public string? DashboardJson { get; set; }
 }

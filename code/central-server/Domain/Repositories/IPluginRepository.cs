@@ -16,4 +16,6 @@ public interface IPluginRepository
     Task<Plugin> CreateAsync(Plugin plugin, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(Plugin plugin, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 }

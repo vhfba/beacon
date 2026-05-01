@@ -1,6 +1,8 @@
 namespace CentralServer.Application.UseCases;
 
+using CentralServer.Application.Abstractions;
 using CentralServer.Application.DTOs;
+using CentralServer.Application.Mappings;
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
 
@@ -8,13 +10,16 @@ public class SetProbeTestEnabledUseCase
 {
     private readonly IProbeRepository _probeRepository;
     private readonly IProbeTestConfigurationRepository _configRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public SetProbeTestEnabledUseCase(
         IProbeRepository probeRepository,
-        IProbeTestConfigurationRepository configRepository)
+        IProbeTestConfigurationRepository configRepository,
+        IUnitOfWork unitOfWork)
     {
         _probeRepository = probeRepository;
         _configRepository = configRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProbeTestConfigurationDTO> ExecuteAsync(
@@ -32,13 +37,8 @@ public class SetProbeTestEnabledUseCase
 
         var updated = config.WithEnabled(input.Enabled);
         await _configRepository.UpdateAsync(updated, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new ProbeTestConfigurationDTO
-        {
-            ProbeId = updated.ProbeId.Value,
-            TestType = updated.TestType.Name,
-            IntervalSeconds = updated.IntervalSeconds,
-            Enabled = updated.Enabled
-        };
+        return updated.ToDto();
     }
 }

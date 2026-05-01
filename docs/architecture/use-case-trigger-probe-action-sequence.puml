@@ -1,0 +1,34 @@
+@startuml
+title Use Case - Trigger Probe Action (TriggerProbeActionUseCase)
+
+autonumber
+
+actor Admin as admin
+boundary "GraphQL Mutation\ntriggerProbeAction" as gql
+control "TriggerProbeActionUseCase" as uc
+database "IProbeRepository" as probes
+database "IPluginRepository" as plugins
+database "IProbePluginAssignmentRepository" as assignments
+database "IProbeActionExecutionRepository" as actions
+database "PostgreSQL" as db
+
+admin -> gql : triggerProbeAction(input)
+gql -> uc : ExecuteAsync(input)
+uc -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe
+db --> probes : probe row
+uc -> plugins : GetByIdAsync(pluginId)
+plugins -> db : SELECT plugin
+db --> plugins : plugin row
+uc -> assignments : GetByProbeIdAsync(probeId)
+assignments -> db : SELECT assignments
+db --> assignments : assignment rows
+uc -> uc : Validate plugin availability,\naction execution mode,\nand probe assignment
+uc -> actions : CreateAsync(new ProbeActionExecution)
+actions -> db : INSERT action execution
+db --> actions : queued row
+actions --> uc : ProbeActionExecution
+uc --> gql : ProbeActionExecutionDTO
+gql --> admin : TriggerProbeActionResponse(success=true)
+
+@enduml

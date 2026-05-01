@@ -4,41 +4,32 @@ title BEACON - Container Diagram (C2)
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 Person(admin, "Admin")
+System_Ext(targets, "Site Wi-Fi and Network Targets", "Endpoints exercised by probe plugins")
 
-System_Boundary(central, "Central Server") {
-  Container(gql, "GraphQL API", "Python/Node.js, HTTP", "Serves central configuration and probe status")
-  ContainerDb(cfg, "Config Store", "SQLite/PostgreSQL", "Stores probe registry and test configuration")
+System_Boundary(beacon, "BEACON Platform") {
+  Container(central, "Central Server", ".NET 9 / ASP.NET Core / HotChocolate", "GraphQL control plane, plugin bundle delivery, metrics export, and monitoring integration")
+  ContainerDb(postgres, "Primary Data Store", "PostgreSQL", "Stores probes, plugins, assignments, action executions, and test configuration")
+  ContainerDb(redis, "Metrics Snapshot Store", "Redis", "Stores latest per-probe metric snapshots for central export")
+  Container(agent, "Probe Agent", "Python", "Polls config, downloads plugins, executes checks, sends heartbeat, reports metrics, and processes actions")
+  Container(prom, "Prometheus", "Prometheus", "Scrapes central-server /metrics and evaluates rules")
+  Container(graf, "Grafana", "Grafana", "Dashboards, embeds, and plugin-provided visualizations")
 }
 
-System_Boundary(monitoring, "Monitoring Stack") {
-  ContainerDb(prom, "Prometheus", "Prometheus", "Scrapes probe metrics and stores time-series")
-  Container(graf, "Grafana", "Grafana", "Dashboards and metric exploration")
-}
+Rel(admin, central, "Manage fleet and control runtime", "GraphQL + HTTP")
+Rel(admin, graf, "View dashboards", "Browser")
 
-System_Boundary(probes, "Raspberry Pi Probe xN") {
-  Container(agent, "Probe Agent", "Python/C on Raspberry Pi OS", "Polls config and runs test plugins")
-  Container(metrics, "/metrics endpoint", "HTTP", "Exposes latest probe metrics to Prometheus")
-}
+Rel(agent, central, "GraphQL runtime operations and plugin bundle download", "HTTP")
+Rel(agent, targets, "Run scheduled and action checks")
 
-Rel(gql, cfg, "Read/write configuration")
+Rel(central, postgres, "Read/write domain state")
+Rel(central, redis, "Store and export latest metric snapshots")
+Rel(prom, central, "Scrape /metrics", "HTTP GET")
 Rel(graf, prom, "Execute PromQL queries", "HTTP")
-Rel(agent, metrics, "Update metrics on each test run")
+Rel(central, graf, "Synchronize dashboards and build embed URLs", "Grafana HTTP API")
 
-Rel(admin, gql, "Configure probes and view status", "GraphQL over HTTP")
-Rel(admin, graf, "View dashboards")
-
-Rel(agent, gql, "Poll configuration", "GraphQL over HTTP")
-Rel(gql, agent, "Return enabled tests and interval", "GraphQL response")
-Rel(prom, metrics, "Scrape /metrics every 15s", "HTTP GET")
-
-note bottom of agent
-  Each Pi runs one Agent process.
-  Scheduler triggers plugins;
-  results written to /metrics.
-end note
-
-note bottom of prom
-  Prometheus scrapes all probes.
+note bottom of central
+  Central-server is the control plane and the
+  single Prometheus scrape target for BEACON metrics.
 end note
 
 @enduml

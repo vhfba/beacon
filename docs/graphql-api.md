@@ -1,71 +1,73 @@
-# BEACON Central API Documentation (GraphQL + Operational REST)
+# BEACON API Reference
 
-## Overview
-The BEACON Central Server exposes:
+The BEACON central server exposes:
 
-- GraphQL for core admin and probe configuration workflows.
-- REST endpoints for operational monitoring, Prometheus service discovery, probe runtime controls, and plugin bundle download.
-
-This hybrid API keeps schema-driven business operations in GraphQL while using REST where external systems (Prometheus/Grafana/probe runtime agents) need simple endpoint semantics.
+- a protected GraphQL endpoint for admin and probe workflows
+- a Prometheus-compatible `/metrics` endpoint
+- a Grafana embed-session endpoint for the monitoring UI
+- a protected plugin bundle download endpoint for probe agents
 
 ## Base URLs
 
-- Simulator root: `http://localhost:5000/`
-- GraphQL endpoint/IDE: `http://localhost:5000/graphql`
-- Health check: `http://localhost:5000/health`
+- App root: `http://localhost:5000/`
+- GraphQL: `http://localhost:5000/graphql`
+- Health: `http://localhost:5000/health`
+- Metrics: `http://localhost:5000/metrics`
 
 ## Authentication
 
-- Protected APIs require header: `X-Api-Key: <key>`
-- Roles:
-  - Admin key (`AUTH_ADMIN_API_KEY`): full admin + probe operations.
-  - Probe key (`AUTH_PROBE_API_KEY`): probe operations + bundle download.
-  - Prometheus service discovery token (`PROMETHEUS_SD_TOKEN`): used on service discovery endpoint (`token` query param or `X-Service-Discovery-Token` header).
+All GraphQL operations and plugin downloads require `X-Api-Key`.
 
-## GraphQL API
+- Admin key: `Auth__AdminApiKey`
+- Probe key: `Auth__ProbeApiKey`
 
-### Core Types
+Authorization model:
 
-#### Probe
-- `id: String!`
-- `name: String!`
-- `location: String!`
-- `ipAddress: String!` (host or host:port; service discovery resolves target endpoint)
-- `status: ProbeStatusType!`
-- `createdAt: DateTime!`
-- `lastHeartbeat: DateTime`
-- `lastConfigFetch: DateTime`
+- Admin-only operations manage fleet inventory, plugins, assignments, and action history.
+- Probe-or-admin operations cover runtime polling, heartbeat, action pickup, metric reporting, and probe status updates.
+- `/metrics` and `/health` are not API-key protected.
 
-#### ProbeConfig
-- `probeId: String!`
-- `enabledTests: [ProbeTestConfig!]!`
-- `availablePlugins: [Plugin!]!`
+## GraphQL Model
 
-#### Plugin
-- `id: String!`
-- `name: String!`
-- `version: String!`
-- `checksum: String!`
-- `description: String`
-- `releasedAt: DateTime!`
-- `available: Boolean!`
-- `bundleUrl: String!`
+### Core object types
 
-### Queries
-- `fleetStatus: FleetStatusResponse!`
-- `probeConfig(probeId: String!): ProbeConfig!`
-- `plugins: [Plugin!]!`
-- `plugin(id: String!): Plugin`
+- `Probe`
+  Registry record for a probe, including lifecycle status and last-seen timestamps.
+- `ProbeConfig`
+  Probe-facing config payload with enabled scheduled tests and available plugins.
+- `ProbeRuntime`
+  Runtime eligibility view returned during heartbeat/runtime flows.
+- `Plugin`
+  Distributed plugin metadata, including execution mode and bundle information.
+- `ProbePluginAssignment`
+  Mapping between a probe and its assigned plugins.
+- `ProbeActionExecution`
+  Queued or completed on-demand action execution.
 
-### Mutations
-- `registerProbe(input: RegisterProbeInput!): RegisterProbeResponse!`
-- `updateProbeTestConfig(input: UpdateProbeTestConfigInput!): UpdateProbeTestConfigResponse!`
-- `setProbeTestEnabled(input: SetProbeTestEnabledInput!): SetProbeTestEnabledResponse!`
-- `updateProbeStatus(probeId: String!, status: String!): UpdateProbeStatusResponse!`
-- `registerPlugin(input: RegisterPluginInput!): RegisterPluginResponse!`
-- `setPluginAvailability(input: SetPluginAvailabilityInput!): SetPluginAvailabilityResponse!`
+### Enums
 
-### GraphQL Example (fleet)
+- `ProbeStatusType`: `REGISTERED`, `ACTIVE`, `INACTIVE`, `DECOMMISSIONED`
+- `PluginExecutionModeType`: `SCHEDULED`, `ACTION`
+- `ProbeActionExecutionStatusType`: `QUEUED`, `DELIVERED`, `RUNNING`, `SUCCEEDED`, `FAILED`, `TIMED_OUT`
+
+## Queries
+
+### Admin queries
+
+- `fleetStatus`
+- `plugins`
+- `plugin(id: String!)`
+- `probePluginAssignments(probeId: String!)`
+- `probeActionExecutions(probeId: String!, limit: Int = 50)`
+
+### Probe-facing queries
+
+- `probeConfig(probeId: String!)`
+- `probeRuntime(probeId: String!)`
+- `pendingProbeActions(probeId: String!, limit: Int = 10)`
+
+### Example: fleet view
+
 ```graphql
 query {
   fleetStatus {
@@ -82,7 +84,8 @@ query {
 }
 ```
 
-### GraphQL Example (probe config)
+### Example: probe config
+
 ```graphql
 query ProbeConfig($probeId: String!) {
   probeConfig(probeId: $probeId) {
@@ -95,98 +98,261 @@ query ProbeConfig($probeId: String!) {
     availablePlugins {
       id
       version
+      executionMode
+      checksum
       bundleUrl
+      bundleDownloadUrl
     }
   }
 }
 ```
 
-## Operational REST API
+### Example: pending actions
 
-### Monitoring / Prometheus
-
-#### GET `/monitoring/prometheus/service-discovery`
-Returns Prometheus HTTP SD targets for ACTIVE probes only.
-
-- Auth: service discovery token
-- Query or header:
-  - `?token=<PROMETHEUS_SD_TOKEN>`
-  - or `X-Service-Discovery-Token: <PROMETHEUS_SD_TOKEN>`
-
-Example:
-```bash
-curl "http://localhost:5000/monitoring/prometheus/service-discovery?token=dev-prom-sd-token"
+```graphql
+query PendingActions($probeId: String!) {
+  pendingProbeActions(probeId: $probeId, limit: 10) {
+    executionId
+    pluginId
+    status
+    requestedAtUtc
+  }
+}
 ```
 
-#### GET `/monitoring/thresholds/{site}`
-Read Wi-Fi threshold profile for a site.
+## Mutations
 
-- Auth: Admin
+### Fleet and probe administration
 
-#### PUT `/monitoring/thresholds/{site}`
-Save threshold profile and apply Grafana sync/fallback.
+- `deleteProbe`
+- `updateProbeStatus`
+- `updateProbeTestConfig`
+- `setProbeTestEnabled`
+- `setProbePlugins`
 
-- Auth: Admin
+### Plugin administration
 
-#### POST `/monitoring/grafana/embed-session`
-Create embed session metadata and return dashboard embed URL.
+- `registerPlugin`
+- `setPluginAvailability`
+- `deletePlugin`
 
-- Auth: Admin
+### Runtime and action flow
 
-Request body:
+- `recordProbeHeartbeat`
+- `reportProbeMetrics`
+- `triggerProbeAction`
+- `updateProbeActionStatus`
+
+Probe lifecycle note:
+
+- probes self-register on their first successful `recordProbeHeartbeat`
+- admins no longer create probe records manually
+
+### Example: register plugin
+
+```graphql
+mutation RegisterPlugin($input: RegisterPluginInputTypeInput!) {
+  registerPlugin(input: $input) {
+    success
+    message
+    plugin {
+      id
+      name
+      version
+      available
+      executionMode
+    }
+  }
+}
+```
+
+Example variables:
+
+```json
+{
+  "input": {
+    "id": "PING",
+    "name": "Ping Check",
+    "version": "1.0.0",
+    "checksum": "replace-with-sha256",
+    "description": "Scheduled ICMP health check",
+    "executionMode": "SCHEDULED"
+  }
+}
+```
+
+### Example: assign plugins to a probe
+
+```graphql
+mutation Assign($input: SetProbePluginsInputTypeInput!) {
+  setProbePlugins(input: $input) {
+    success
+    message
+    assignments {
+      probeId
+      pluginId
+      pluginVersion
+      pluginAvailable
+    }
+  }
+}
+```
+
+### Example: heartbeat
+
+```graphql
+mutation Heartbeat($input: ProbeHeartbeatInputTypeInput!) {
+  recordProbeHeartbeat(input: $input) {
+    success
+    autoRegistered
+    probe {
+      id
+      status
+      lastHeartbeat
+    }
+    runtime {
+      probeId
+      status
+      canEmitMetrics
+    }
+  }
+}
+```
+
+### Example: metric reporting
+
+```graphql
+mutation ReportMetrics($input: ReportProbeMetricsInputTypeInput!) {
+  reportProbeMetrics(input: $input) {
+    success
+    probeId
+    acceptedSamples
+    receivedAtUtc
+  }
+}
+```
+
+### Example: trigger an action
+
+```graphql
+mutation Trigger($input: TriggerProbeActionInputTypeInput!) {
+  triggerProbeAction(input: $input) {
+    success
+    message
+    execution {
+      executionId
+      probeId
+      pluginId
+      status
+      requestedAtUtc
+    }
+  }
+}
+```
+
+### Example: mark an action complete
+
+```graphql
+mutation UpdateAction($input: UpdateProbeActionStatusInputTypeInput!) {
+  updateProbeActionStatus(input: $input) {
+    success
+    message
+    execution {
+      executionId
+      status
+      startedAtUtc
+      completedAtUtc
+      errorMessage
+    }
+  }
+}
+```
+
+## Operational HTTP Endpoints
+
+### `GET /health`
+
+Returns a simple health payload:
+
+```json
+{ "status": "healthy" }
+```
+
+### `GET /metrics`
+
+Returns Prometheus text exposition generated from the latest probe metric snapshots stored by the central server.
+
+Notes:
+
+- probes push metrics through `reportProbeMetrics`
+- central-server stores the latest per-probe snapshot
+- Prometheus scrapes only the central server, not each probe directly
+
+### `POST /monitoring/grafana/embed-session`
+
+Returns the dashboard embed target for a site.
+
+- Auth: admin API key
+- Body:
+
 ```json
 { "site": "building-a" }
 ```
 
-### Probe Runtime
+Response fields:
 
-#### GET `/probes/{probeId}/runtime-state`
-Probe polls this endpoint to decide if it can emit metrics and which tests are enabled.
+- `site`
+- `dashboardUid`
+- `embedUrl`
+- `grafanaSyncApplied`
+- `grafanaSyncMessage`
 
-- Auth: Probe or Admin
+Notes:
 
-Response includes:
-- `status` (`REGISTERED|ACTIVE|INACTIVE|DECOMMISSIONED`)
-- `canEmitMetrics` (bool)
-- `enabledTests` (array)
+- this endpoint no longer updates Grafana thresholds or clones site dashboards
+- Grafana dashboard import only happens during plugin registration when `dashboardJson` is provided
 
-#### POST `/probes/{probeId}/heartbeat`
-Probe sends periodic heartbeat to update liveness.
+### `GET /plugins/{pluginId}/{version}/bundle`
 
-- Auth: Probe or Admin
-- Decommissioned probes are rejected with conflict.
+Downloads a plugin bundle zip from the configured plugin bundle directory.
 
-### Plugin Distribution
-
-#### GET `/plugins/{pluginId}/{version}/bundle`
-Download zip bundle for available plugin version.
-
-- Auth: Probe or Admin
+- Auth: admin or probe API key
 
 Example:
+
 ```bash
-curl -L \
-  -H "X-Api-Key: change-this-probe-api-key" \
-  "http://localhost:5000/plugins/plugin-http-v2/2.1.0/bundle" \
-  -o plugin-http-v2-2.1.0.zip
+curl -L ^
+  -H "X-Api-Key: change-this-probe-api-key" ^
+  "http://localhost:5000/plugins/PING/1.0.0/bundle" ^
+  -o PING-1.0.0.zip
 ```
 
-## Probe Registration Note
+## Typical End-To-End Flows
 
-The simulator UI now captures host and metrics port separately and stores `ipAddress` as host:port when registering probes, so Prometheus can scrape per-probe ports correctly.
+### Scheduled monitoring flow
 
-## Typical End-to-End Validation Flow
+1. Admin registers a plugin with `executionMode: SCHEDULED`.
+2. Probe boots and self-registers through `recordProbeHeartbeat`.
+3. Admin assigns plugins to a probe with `setProbePlugins`.
+4. Admin enables intervals with `updateProbeTestConfig`.
+5. Probe reads `probeConfig` and `pendingProbeActions`.
+6. Probe runs scheduled plugins and pushes metrics with `reportProbeMetrics`.
+7. Prometheus scrapes `/metrics`.
+8. Grafana reads Prometheus.
 
-1. Register probe (`registerProbe`) with host/port.
-2. Configure tests (`updateProbeTestConfig`, `setProbeTestEnabled`).
-3. Start probe agent with probe key and central base URL.
-4. Probe polls `/probes/{probeId}/runtime-state` and sends `/probes/{probeId}/heartbeat`.
-5. Validate `fleetStatus` shows updated `lastHeartbeat` and status.
-6. Validate service discovery returns only ACTIVE probes.
-7. Open Grafana embed from Monitoring Hub and confirm time series.
+### On-demand action flow
 
-## Notes
+1. Admin registers a plugin with `executionMode: ACTION`.
+2. Probe boots and self-registers through `recordProbeHeartbeat`.
+3. Admin assigns it to a probe.
+4. Admin queues work with `triggerProbeAction`.
+5. Probe polls `pendingProbeActions`.
+6. Probe executes the action plugin.
+7. Probe posts status changes with `updateProbeActionStatus`.
+8. Admin reviews history with `probeActionExecutions`.
 
-- GraphQL remains the control-plane API for business operations.
-- REST endpoints cover integration boundaries (Prometheus/Grafana/probe runtime).
-- Date/time values are ISO-8601 timestamps.
+## Implementation Notes
+
+- GraphQL introspection is disabled by default in `appsettings.json`.
+- Request hardening enforces depth and complexity limits.
+- The checked-in `GraphQL.schema.graphql` is not yet fully aligned with the live probe runtime operations. Prefer the resolver code and this document until the schema snapshot is refreshed.

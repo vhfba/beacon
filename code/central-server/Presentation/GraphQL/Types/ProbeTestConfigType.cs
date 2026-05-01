@@ -15,15 +15,4 @@ public class ProbeTestConfigType
 
     [GraphQLType("Boolean!")]
     public bool Enabled { get; set; }
-
-    public static ProbeTestConfigType FromDTO(ProbeTestConfigurationDTO dto)
-    {
-        return new ProbeTestConfigType
-        {
-            ProbeId = dto.ProbeId,
-            TestType = dto.TestType,
-            IntervalSeconds = dto.IntervalSeconds,
-            Enabled = dto.Enabled
-        };
-    }
 }

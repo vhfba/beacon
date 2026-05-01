@@ -1,25 +1,29 @@
 @startuml
-title Use Case - Register Probe (RegisterProbeUseCase)
+title Use Case - Auto Register Probe (RecordProbeHeartbeatUseCase)
 
 autonumber
 
-actor Admin as admin
-boundary "GraphQL Mutation\nregisterProbe" as gql
-control "RegisterProbeUseCase" as uc
+actor "Probe Agent" as probe
+boundary "GraphQL Mutation\nrecordProbeHeartbeat" as gql
+control "RecordProbeHeartbeatUseCase" as uc
+control "ProbeRuntimeCoordinator" as runtime
 database "IProbeRepository" as probes
 database "PostgreSQL" as db
 
-admin -> gql : registerProbe(input)
+probe -> gql : recordProbeHeartbeat(input)
 gql -> uc : ExecuteAsync(input)
-uc -> probes : GetByIpAddressAsync(ipAddress)
-probes -> db : SELECT probe by ip
+uc -> runtime : RecordHeartbeatAsync(input)
+runtime -> probes : GetByIdAsync(probeId)
+probes -> db : SELECT probe by id
 db --> probes : no row
-probes --> uc : null
-uc -> probes : RegisterAsync(new Probe)
+probes --> runtime : null
+runtime -> runtime : Create Probe + record passive heartbeat
+runtime -> probes : RegisterAsync(new Probe)
 probes -> db : INSERT probe
 db --> probes : inserted
-probes --> uc : Probe
-uc --> gql : ProbeDTO
-gql --> admin : RegisterProbeResponse(success=true)
+probes --> runtime : Probe
+runtime --> uc : Probe, autoRegistered=true
+uc --> gql : ProbeHeartbeatResponse
+gql --> probe : success + runtime snapshot
 
 @enduml

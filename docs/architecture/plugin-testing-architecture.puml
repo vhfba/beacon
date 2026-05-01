@@ -1,38 +1,56 @@
 @startuml
-title BEACON - Plugin-Based Testing System
+title BEACON - Plugin Execution Architecture
 
-package "Probe (Raspberry Pi)" {
-  package "Agent" {
-    rectangle "Scheduler" as scheduler
-    rectangle "Plugin Loader" as loader
-    rectangle "Result Formatter" as formatter
+left to right direction
+
+package "Probe Agent" {
+  rectangle "Central Client" as client
+  rectangle "Scheduler" as scheduler
+  rectangle "Action Poller" as poller
+  rectangle "Plugin Manager" as manager
+  rectangle "Bundle Cache" as cache
+  rectangle "Metrics Reporter" as reporter
+
+  package "Scheduled Plugins" {
+    rectangle "PING" as ping
+    rectangle "HTTP" as http
+    rectangle "IPERF" as iperf
+    rectangle "WIFI" as wifi
   }
 
-  package "Test Plugins" {
-    rectangle "HTTP Test" as http
-    rectangle "RSSI Test" as rssi
-    rectangle "Ping Test" as ping
-    rectangle "iPerf Test" as iperf
+  package "Action Plugins" {
+    rectangle "WIFI_SCAN_ACTION" as scan
   }
 }
 
 package "Central Server" {
   rectangle "GraphQL API" as gql
-  rectangle "Plugin Repository" as repo
+  rectangle "Bundle Endpoint" as bundles
 }
 
-scheduler --> loader : Trigger execution
-loader --> http
-loader --> rssi
-loader --> ping
-loader --> iperf
+cloud "Site Targets" as targets
 
-http --> formatter
-rssi --> formatter
-ping --> formatter
-iperf --> formatter
+client --> gql : probeConfig + probeRuntime
+poller --> gql : pendingProbeActions
+manager --> bundles : Download plugin zip archives
+manager --> cache : Extract and load bundles
 
-loader --> gql : Get enabled tests
-loader --> repo : New plugin download
+scheduler --> manager : Run due scheduled plugins
+poller --> manager : Run queued action plugins
+
+manager --> ping
+manager --> http
+manager --> iperf
+manager --> wifi
+manager --> scan
+
+ping --> targets
+http --> targets
+iperf --> targets
+wifi --> targets
+scan --> targets
+
+manager --> reporter : Normalized metrics and records
+reporter --> gql : reportProbeMetrics + updateProbeActionStatus
 
 @enduml

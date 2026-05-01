@@ -25,7 +25,7 @@ public class TestTypeRepositoryAdapter : ITestTypeRepository
         return entities.Select(e => new TestType(e.Name, e.Description)).ToList();
     }
 
-    public async Task<TestType> CreateAsync(TestType testType, CancellationToken cancellationToken = default)
+    public Task<TestType> CreateAsync(TestType testType, CancellationToken cancellationToken = default)
     {
         var entity = new TestTypeEntity
         {
@@ -34,8 +34,6 @@ public class TestTypeRepositoryAdapter : ITestTypeRepository
         };
 
         _context.TestTypes.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return testType;
+        return Task.FromResult(testType);
     }
 }

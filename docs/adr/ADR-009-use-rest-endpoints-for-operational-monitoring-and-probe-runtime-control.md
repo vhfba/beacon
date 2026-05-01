@@ -3,18 +3,18 @@
 |Metadata|Value|
 |--------|-----|
 |Date|[2026-04-11]|
-|Status|Accepted|
+|Status|Superseded by ADR-012|
 |Depends on|ADR-003, ADR-007, ADR-008|
 |Tags|beacon, api, rest, monitoring, prometheus, grafana, probe-runtime|
 
 ## Context
 GraphQL remains BEACON's primary control-plane API for admin workflows and probe configuration queries. However, several integrations are operational by nature and fit REST semantics better:
 
-- Prometheus HTTP service discovery (`/monitoring/prometheus/service-discovery`)
-- Grafana embed/session orchestration (`/monitoring/grafana/embed-session`)
-- Site threshold profile read/write (`/monitoring/thresholds/{site}`)
-- Probe runtime polling and heartbeat (`/probes/{probeId}/runtime-state`, `/probes/{probeId}/heartbeat`)
-- Binary bundle download (`/plugins/{pluginId}/{version}/bundle`)
+- Prometheus HTTP service discovery
+- Grafana embed/session orchestration
+- Site threshold profile read/write
+- Probe runtime polling and heartbeat
+- Binary bundle download
 
 These interfaces are consumed by systems and agents that prefer stable URL/resource contracts and simple request/response payloads.
 
@@ -29,33 +29,34 @@ Adopt a hybrid API model:
 ## Alternatives considered
 
 ### 1. Keep everything in GraphQL
-How it would work: expose operational functions as GraphQL fields/mutations only.
+How it would work: expose operational functions as GraphQL fields and mutations only.
 
 Why it was rejected: external systems like Prometheus and binary download clients require plain HTTP endpoint semantics and do not benefit from GraphQL tooling.
 
 ### 2. Move everything to REST
-How it would work: deprecate GraphQL and replace with many resource endpoints.
+How it would work: deprecate GraphQL and replace it with many resource endpoints.
 
-Why it was rejected: conflicts with ADR-003 and would degrade schema-driven admin workflows and UI query flexibility.
+Why it was rejected: this conflicts with ADR-003 and would degrade schema-driven admin workflows.
 
 ### 3. Separate operational sidecar service
 How it would work: create a second service for operational endpoints.
 
-Why it was rejected: unnecessary deployment and auth complexity for current scale.
+Why it was rejected: unnecessary deployment and auth complexity for the current scale.
 
 ## Consequences
 
 ### Positive
-- Better interoperability with Prometheus/Grafana and lightweight agents.
+- Better interoperability with Prometheus, Grafana, and lightweight agents.
 - Cleaner contracts for runtime endpoints and binary download.
-- Reduced accidental coupling between GraphQL schema evolution and operations interfaces.
-- Presentation-layer endpoint modules keep Program.cs as composition root.
 
 ### Negative
 - Two API styles increase documentation and testing surface.
-- Need to maintain consistent auth semantics across both API styles.
+- Auth semantics must stay consistent across both styles.
 
 ## Related decisions
 - ADR-003 (GraphQL for central configuration API)
 - ADR-007 (.NET 9 / C# central server)
 - ADR-008 (HotChocolate GraphQL in .NET)
+
+## Supersession note
+This ADR reflected an intermediate design where probe runtime polling and heartbeat were exposed as REST endpoints. The current system moved probe runtime, heartbeat, pending actions, metric reporting, and action status updates into GraphQL while keeping REST only for the central `/metrics` export, Grafana embed orchestration, and plugin bundle download. See ADR-012.

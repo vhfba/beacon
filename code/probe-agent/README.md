@@ -1,42 +1,108 @@
 # Probe Agent
 
-This folder now contains a lightweight mock probe service to test the BEACON monitoring stack.
+The probe agent simulates the runtime that would execute on a deployed BEACON probe. It is plugin-driven and talks to the central server over GraphQL plus bundle download HTTP endpoints.
 
-## What this mock service provides
+The first successful `recordProbeHeartbeat` auto-registers the probe in central-server. There is no manual probe registration flow anymore.
 
-- Background generation of mock Wi-Fi quality tests every X seconds.
-- Prometheus metrics endpoint for scraping.
-- JSON endpoints to inspect generated test data.
-- Optional polling of central-server runtime state to decide if this probe is allowed to emit metrics.
-- Periodic heartbeat POST to central-server so fleet UI can show probe liveness.
+## Responsibilities
 
-Generated test families:
-- Ping quality (latency, jitter, packet loss)
-- HTTP reachability/performance (latency, status code, success)
-- iPerf-like throughput quality (download/upload throughput, jitter, packet loss)
-- Wi-Fi link telemetry (RSSI, noise floor, SNR, link quality)
+- send heartbeat updates with `recordProbeHeartbeat`
+- fetch probe config with `probeConfig`
+- poll pending actions with `pendingProbeActions`
+- download assigned plugin bundles from central-server
+- execute scheduled plugins on interval
+- execute action plugins on demand
+- push metric snapshots with `reportProbeMetrics`
+- update action execution status with `updateProbeActionStatus`
 
-## Endpoints
+## Local Endpoints
 
 - `GET /health`
 - `GET /api/runtime`
 - `GET /api/tests/latest`
 - `GET /api/tests/history`
 - `GET /api/wifi/summary`
-- `GET /metrics`
 
-When central sync is configured, the agent polls:
+These endpoints are for local inspection only. Prometheus should scrape central-server `/metrics`, not the probe agent.
 
-- `GET /probes/{probeId}/runtime-state` on central-server
-- `POST /probes/{probeId}/heartbeat` on central-server
+## Plugin Contract
 
-Behavior:
+Each plugin bundle zip must contain:
 
-- If runtime state says `status=ACTIVE` and `canEmitMetrics=true`, metrics are generated.
-- If runtime state says `INACTIVE` or `DECOMMISSIONED`, mock test generation pauses.
-- Runtime control metrics (`beacon_probe_runtime_*`) still expose current state.
+- `manifest.json`
+- `plugin.py`
 
-## Run locally
+Supported entrypoints:
+
+- `run_scheduled(context)` for `SCHEDULED` plugins
+- `run_action(context)` for `ACTION` plugins
+
+### Scheduled result shape
+
+```python
+{
+  "metrics": [
+    {"name": "metric_name", "kind": "gauge", "value": 1.0, "labels": {"k": "v"}}
+  ],
+  "records": [
+    {
+      "category": "ping",
+      "testType": "PING",
+      "target": "8.8.8.8",
+      "passed": True,
+      "latencyMs": 12.3
+    }
+  ]
+}
+```
+
+### Action result shape
+
+```python
+{
+  "status": "SUCCEEDED",
+  "metrics": [
+    {"name": "metric_name", "kind": "gauge", "value": 1.0, "labels": {"k": "v"}}
+  ],
+  "record": {
+    "category": "action",
+    "pluginId": "WIFI_SCAN_ACTION",
+    "passed": True
+  }
+}
+```
+
+## Current Example Plugins
+
+Scheduled:
+
+- `PING`
+- `HTTP`
+- `IPERF`
+- `WIFI`
+
+Action:
+
+- `WIFI_SCAN_ACTION`
+
+Built bundle archives are placed in:
+
+- `code/central-server/plugin-bundles/`
+
+Checksums are written to:
+
+- [plugin-bundle-registry.json](/C:/Users/joaom/Faculdade/beacon/code/probe-agent/plugin-bundle-registry.json)
+
+## Build Plugin Bundles
+
+From `code/probe-agent`:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+.\build_plugin_bundles.ps1
+```
+
+## Run Locally
 
 1. Install dependencies:
 
@@ -44,65 +110,50 @@ Behavior:
 pip install -r requirements.txt
 ```
 
-2. Start the mock probe:
+2. Configure `.env`:
+
+```dotenv
+PROBE_ID=probe-mock-01
+CENTRAL_SERVER_BASE_URL=http://localhost:5000
+CENTRAL_SERVER_PROBE_API_KEY=<AUTH_PROBE_API_KEY from central-server>
+```
+
+3. Start the agent:
 
 ```powershell
 python mock_probe_agent.py
 ```
 
-Default bind:
-- Host: `0.0.0.0`
-- Port: `9464`
+## Central Server Setup For A Working Demo
 
-## Useful environment variables
+1. Register scheduled and action plugins with `registerPlugin`.
+2. Start the agent so it can auto-register itself through `recordProbeHeartbeat`.
+3. Wait for the probe to appear in `fleetStatus` or the fleet UI.
+4. Assign plugins to that probe with `setProbePlugins`.
+5. Enable scheduled plugins with `updateProbeTestConfig`.
+6. Trigger action plugins with `triggerProbeAction`.
 
-- `PORT` (default: `9464`)
-- `PROBE_ID` (default: `probe-mock-01`)
-- `PROBE_SITE` (default: `building-a-floor-1`)
-- `PROBE_SSID` (default: `BEACON-WIFI`)
-- `PROBE_INTERFACE` (default: `wlan0`)
-- `MOCK_INTERVAL_SECONDS` (default: `5`)
-- `HISTORY_SIZE` (default: `100`)
-- `PING_TARGETS` (default: `8.8.8.8,1.1.1.1`)
-- `HTTP_TARGETS` (default: `https://example.com,https://api.example.com/health`)
-- `IPERF_SERVERS` (default: `iperf-a.local,iperf-b.local`)
-- `CENTRAL_SERVER_BASE_URL` (example: `http://localhost:5000`)
-- `CENTRAL_SERVER_PROBE_API_KEY` (probe API key used in `X-Api-Key`)
-- `CENTRAL_SYNC_INTERVAL_SECONDS` (default: `15`)
-- `CENTRAL_REQUEST_TIMEOUT_SECONDS` (default: `3`)
-- `HEARTBEAT_INTERVAL_SECONDS` (default: `15`)
+Important distinction:
 
-## Key Prometheus metrics
+- scheduled plugins require both assignment and test configuration
+- action plugins require assignment and then explicit triggering
 
-- `beacon_wifi_rssi_dbm`
-- `beacon_wifi_snr_db`
-- `beacon_wifi_link_quality_percent`
-- `beacon_ping_latency_ms`
-- `beacon_ping_jitter_ms`
-- `beacon_ping_packet_loss_percent`
-- `beacon_http_latency_ms`
-- `beacon_http_success`
-- `beacon_iperf_throughput_mbps`
-- `beacon_iperf_jitter_ms`
-- `beacon_iperf_packet_loss_percent`
-- `beacon_test_runs_total`
-- `beacon_test_failures_total`
-- `beacon_test_last_status`
-- `beacon_probe_runtime_can_emit_metrics`
-- `beacon_probe_runtime_status_active`
-- `beacon_probe_runtime_last_sync_timestamp_seconds`
-- `beacon_probe_runtime_sync_failures_total`
+## Troubleshooting
 
-## Connect to monitoring-stack
+- Heartbeat not updating:
+  - Confirm `CENTRAL_SERVER_PROBE_API_KEY` matches `AUTH_PROBE_API_KEY`.
+  - Confirm the probe can reach `/graphql`.
+  - Confirm the probe appears in `fleetStatus` after startup; the first heartbeat creates the probe record.
 
-In `code/monitoring-stack/prometheus/targets/probes.yml`, add an entry such as:
+- No plugins loaded:
+  - Confirm plugin records were registered in central-server.
+  - Confirm the probe has already auto-registered and was then assigned those plugins.
+  - Confirm bundle files exist in `code/central-server/plugin-bundles`.
 
-```yaml
-- targets:
-    - host.docker.internal:9464
-  labels:
-    probe_id: probe-mock-01
-    site: building-a-floor-1
-```
+- Scheduled checks never run:
+  - Confirm `updateProbeTestConfig` was called for each scheduled plugin.
 
-Prometheus will discover it through file SD and start scraping `/metrics`.
+- Actions never run:
+  - Confirm the action plugin is assigned to the probe.
+  - Confirm `triggerProbeAction` queued work.
+  - Confirm the agent can call `pendingProbeActions`.

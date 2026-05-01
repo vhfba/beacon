@@ -28,43 +28,40 @@ public class HealthAndSecurityIntegrationTests : IClassFixture<CentralServerWebA
     }
 
     [Fact]
-    public async Task RuntimeState_WithoutApiKey_IsUnauthorized()
+    public async Task GraphQL_WithoutApiKey_IsUnauthorized()
     {
         var client = _factory.CreateClient();
 
-        var response = await client.GetAsync("/probes/probe-missing/runtime-state");
+        var response = await client.PostAsJsonAsync("/graphql", new
+        {
+            query = "query { probeRuntime(probeId: \"probe-missing\") { probeId } }"
+        });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
-    public async Task RuntimeState_WithProbeKeyAndMissingProbe_ReturnsNotFound()
+    public async Task ProbeRuntime_WithProbeKeyAndMissingProbe_ReturnsGraphQLError()
     {
         var client = _factory.CreateProbeClient();
 
-        var response = await client.GetAsync("/probes/probe-missing/runtime-state");
+        var response = await client.PostAsJsonAsync("/graphql", new
+        {
+            query = "query { probeRuntime(probeId: \"probe-missing\") { probeId } }"
+        });
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(payload.TryGetProperty("errors", out _));
     }
 
     [Fact]
-    public async Task ServiceDiscovery_WithValidToken_ReturnsOnlyActiveProbes()
+    public async Task MetricsEndpoint_ReturnsOk()
     {
-        await _factory.SeedProbeAsync("probe-active", "10.2.0.1", ProbeStatus.Active);
-        await _factory.SeedProbeAsync("probe-registered", "10.2.0.2", ProbeStatus.Registered);
-
         var client = _factory.CreateClient();
-        var response = await client.GetAsync($"/monitoring/prometheus/service-discovery?token={_factory.ServiceDiscoveryToken}");
+        var response = await client.GetAsync("/metrics");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal(JsonValueKind.Array, content.ValueKind);
-        Assert.Single(content.EnumerateArray());
-
-        var first = content.EnumerateArray().First();
-        var labels = first.GetProperty("labels");
-        Assert.Equal("probe-active", labels.GetProperty("probe_id").GetString());
     }
 
     [Fact]

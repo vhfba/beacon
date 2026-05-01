@@ -41,11 +41,11 @@ public class ProbeTests
     }
 
     [Fact]
-    public void RecordHeartbeat_FromRegistered_SetsActiveAndHeartbeat()
+    public void RecordHeartbeatAndActivate_FromRegistered_SetsActiveAndHeartbeat()
     {
         var probe = new Probe(new ProbeId("probe-02"), "Probe 02", "Building B", "10.0.0.2");
 
-        probe.RecordHeartbeat();
+        probe.RecordHeartbeatAndActivate();
 
         Assert.Equal(ProbeStatus.Active, probe.Status);
         Assert.NotNull(probe.LastHeartbeat);
@@ -53,13 +53,13 @@ public class ProbeTests
     }
 
     [Fact]
-    public void RecordHeartbeat_FromDecommissioned_KeepsDecommissioned()
+    public void RecordHeartbeatAndActivate_FromDecommissioned_KeepsDecommissioned()
     {
         var probe = new Probe(new ProbeId("probe-03"), "Probe 03", "Building C", "10.0.0.3");
         probe.UpdateStatus(ProbeStatus.Decommissioned);
         var versionAfterDecommission = probe.Version;
 
-        probe.RecordHeartbeat();
+        probe.RecordHeartbeatAndActivate();
 
         Assert.Equal(ProbeStatus.Decommissioned, probe.Status);
         Assert.NotNull(probe.LastHeartbeat);
@@ -98,10 +98,14 @@ public class ProbeTests
             name: "Probe 04",
             location: "Building D",
             ipAddress: "10.0.0.4",
+            ssid: null,
+            agentVersion: null,
             status: "NOT_A_STATUS",
             createdAt: DateTime.UtcNow,
             lastHeartbeat: null,
             lastConfigFetch: null,
+            lastMetricsPush: null,
+            lastSeenAt: null,
             version: 1));
     }
 
@@ -117,10 +121,14 @@ public class ProbeTests
             name: "Probe 07",
             location: "Building G",
             ipAddress: "10.0.0.7",
+            ssid: "Beacon",
+            agentVersion: "1.0.0",
             status: ProbeStatus.Inactive.ToString(),
             createdAt: createdAt,
             lastHeartbeat: lastHeartbeat,
             lastConfigFetch: lastConfigFetch,
+            lastMetricsPush: null,
+            lastSeenAt: lastHeartbeat,
             version: 42);
 
         Assert.Equal("probe-07", probe.Id.Value);

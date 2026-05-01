@@ -28,6 +28,10 @@
       },
       "fieldConfig": {
         "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -36,12 +40,8 @@
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": -70
-              },
-              {
                 "color": "green",
-                "value": -60
+                "value": 1
               }
             ]
           }
@@ -50,7 +50,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 6,
         "x": 0,
         "y": 0
       },
@@ -71,11 +71,11 @@
       },
       "targets": [
         {
-          "expr": "avg(beacon_wifi_rssi_dbm)",
+          "expr": "sum(up{job=\"beacon-probes\"} == 1)",
           "refId": "A"
         }
       ],
-      "title": "Avg RSSI (dBm)",
+      "title": "Active Probes",
       "type": "stat"
     },
     {
@@ -85,6 +85,10 @@
       },
       "fieldConfig": {
         "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -94,11 +98,11 @@
               },
               {
                 "color": "yellow",
-                "value": 20
+                "value": 90
               },
               {
                 "color": "green",
-                "value": 30
+                "value": 99
               }
             ]
           }
@@ -107,8 +111,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 4,
+        "w": 6,
+        "x": 6,
         "y": 0
       },
       "id": 2,
@@ -128,11 +132,11 @@
       },
       "targets": [
         {
-          "expr": "avg(beacon_wifi_snr_db)",
+          "expr": "100 * avg(up{job=\"beacon-probes\"})",
           "refId": "A"
         }
       ],
-      "title": "Avg SNR (dB)",
+      "title": "Probe Health (%)",
       "type": "stat"
     },
     {
@@ -142,252 +146,22 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 60
-              },
-              {
-                "color": "green",
-                "value": 80
-              }
-            ]
-          }
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "max": 1
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 0
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
       },
       "id": 3,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "expr": "avg(beacon_wifi_link_quality_percent)",
-          "refId": "A"
-        }
-      ],
-      "title": "Link Quality (%)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 2
-              },
-              {
-                "color": "red",
-                "value": 5
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 0
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "expr": "avg(beacon_ping_packet_loss_percent)",
-          "refId": "A"
-        }
-      ],
-      "title": "Ping Loss (%)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "Mbits",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 100
-              },
-              {
-                "color": "green",
-                "value": 200
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 0
-      },
-      "id": 5,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "expr": "avg(beacon_iperf_throughput_mbps{direction=\"download\"})",
-          "refId": "A"
-        }
-      ],
-      "title": "iPerf DL (Mbps)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "Mbits",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 60
-              },
-              {
-                "color": "green",
-                "value": 120
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 0
-      },
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "expr": "avg(beacon_iperf_throughput_mbps{direction=\"upload\"})",
-          "refId": "A"
-        }
-      ],
-      "title": "iPerf UL (Mbps)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 4
-      },
-      "id": 7,
-      "options": {
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -401,237 +175,12 @@
       },
       "targets": [
         {
-          "expr": "beacon_wifi_rssi_dbm",
-          "legendFormat": "{{probe_id}} {{site}} {{ssid}}",
+          "expr": "up{job=\"beacon-probes\"}",
+          "legendFormat": "{{probe_id}} {{site}}",
           "refId": "A"
         }
       ],
-      "title": "Wi-Fi RSSI Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 4
-      },
-      "id": 8,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "expr": "beacon_ping_latency_ms",
-          "legendFormat": "Latency {{probe_id}} {{target}}",
-          "refId": "A"
-        },
-        {
-          "expr": "beacon_ping_jitter_ms",
-          "legendFormat": "Jitter {{probe_id}} {{target}}",
-          "refId": "B"
-        }
-      ],
-      "title": "Ping Latency and Jitter",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 4
-      },
-      "id": 9,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "expr": "beacon_http_latency_ms",
-          "legendFormat": "{{probe_id}} {{url}}",
-          "refId": "A"
-        }
-      ],
-      "title": "HTTP Response Time",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "Mbits"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 12
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "expr": "beacon_iperf_throughput_mbps",
-          "legendFormat": "{{probe_id}} {{server}} {{direction}}",
-          "refId": "A"
-        }
-      ],
-      "title": "iPerf Throughput",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 12
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "expr": "beacon_iperf_jitter_ms",
-          "legendFormat": "Jitter {{probe_id}} {{server}} {{direction}}",
-          "refId": "A"
-        },
-        {
-          "expr": "beacon_iperf_packet_loss_percent",
-          "legendFormat": "Loss {{probe_id}} {{server}} {{direction}}",
-          "refId": "B"
-        }
-      ],
-      "title": "iPerf Jitter and Loss",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 20
-      },
-      "id": 12,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "expr": "sum by (test_type) (rate(beacon_test_runs_total[5m]) - rate(beacon_test_failures_total[5m])) / clamp_min(sum by (test_type) (rate(beacon_test_runs_total[5m])), 0.0001)",
-          "legendFormat": "{{test_type}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Pass Rate by Test Type (5m)",
+      "title": "Probe Up Status",
       "type": "timeseries"
     },
     {
@@ -654,28 +203,22 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 4
       },
-      "id": 13,
+      "id": 4,
       "options": {
         "cellHeight": "sm",
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "Value"
-          }
-        ]
+        "showHeader": true
       },
       "targets": [
         {
-          "expr": "beacon_test_last_status",
+          "expr": "up{job=\"beacon-probes\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Latest Test Status by Target",
+      "title": "Probe Target Snapshot",
       "transformations": [
         {
           "id": "organize",
@@ -685,7 +228,7 @@
               "__name__": true
             },
             "renameByName": {
-              "Value": "status"
+              "Value": "up"
             }
           }
         }
@@ -697,7 +240,7 @@
   "schemaVersion": 39,
   "tags": [
     "beacon",
-    "probe",
+    "health",
     "prometheus"
   ],
   "templating": {
@@ -709,8 +252,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "BEACON Building Wi-Fi Quality",
+  "title": "BEACON Health",
   "uid": "beacon-probe-health",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }

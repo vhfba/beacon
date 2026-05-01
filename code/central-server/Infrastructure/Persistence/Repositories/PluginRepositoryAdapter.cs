@@ -2,7 +2,7 @@ namespace CentralServer.Infrastructure.Persistence.Repositories;
 
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
-using CentralServer.Infrastructure.Persistence.Entities;
+using CentralServer.Infrastructure.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
 public class PluginRepositoryAdapter : IPluginRepository
 {
@@ -16,7 +16,7 @@ public class PluginRepositoryAdapter : IPluginRepository
     public async Task<Plugin?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Plugins.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
-        return entity != null ? MapToDomain(entity) : null;
+        return entity?.ToDomain();
     }
 
     public async Task<IReadOnlyList<Plugin>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -24,13 +24,13 @@ public class PluginRepositoryAdapter : IPluginRepository
         var entities = await _context.Plugins
             .OrderByDescending(p => p.ReleasedAt)
             .ToListAsync(cancellationToken);
-        return entities.Select(MapToDomain).ToList();
+        return entities.Select(entity => entity.ToDomain()).ToList();
     }
 
     public async Task<IReadOnlyList<Plugin>> GetAvailableAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _context.Plugins.Where(p => p.Available).ToListAsync(cancellationToken);
-        return entities.Select(MapToDomain).ToList();
+        return entities.Select(entity => entity.ToDomain()).ToList();
     }
 
     public async Task<IReadOnlyList<Plugin>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -39,7 +39,7 @@ public class PluginRepositoryAdapter : IPluginRepository
             .Where(p => p.Name == name)
             .OrderByDescending(p => p.ReleasedAt)
             .ToListAsync(cancellationToken);
-        return entities.Select(MapToDomain).ToList();
+        return entities.Select(entity => entity.ToDomain()).ToList();
     }
 
     public async Task<Plugin?> GetLatestByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -48,26 +48,14 @@ public class PluginRepositoryAdapter : IPluginRepository
             .Where(p => p.Name == name && p.Available)
             .OrderByDescending(p => p.ReleasedAt)
             .FirstOrDefaultAsync(cancellationToken);
-        return entity != null ? MapToDomain(entity) : null;
+        return entity?.ToDomain();
     }
 
-    public async Task<Plugin> CreateAsync(Plugin plugin, CancellationToken cancellationToken = default)
+    public Task<Plugin> CreateAsync(Plugin plugin, CancellationToken cancellationToken = default)
     {
-        var entity = new PluginEntity
-        {
-            Id = plugin.Id,
-            Name = plugin.Name,
-            Version = plugin.Version,
-            Checksum = plugin.Checksum,
-            Description = plugin.Description,
-            ReleasedAt = plugin.ReleasedAt,
-            Available = plugin.Available
-        };
-
+        var entity = plugin.ToEntity();
         _context.Plugins.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return plugin;
+        return Task.FromResult(plugin);
     }
 
     public async Task UpdateAsync(Plugin plugin, CancellationToken cancellationToken = default)
@@ -75,22 +63,16 @@ public class PluginRepositoryAdapter : IPluginRepository
         var entity = await _context.Plugins.FirstOrDefaultAsync(p => p.Id == plugin.Id, cancellationToken)
             ?? throw new InvalidOperationException($"Plugin {plugin.Id} not found");
 
-        entity.Available = plugin.Available;
+        plugin.ApplyToEntity(entity);
 
         _context.Plugins.Update(entity);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private static Plugin MapToDomain(PluginEntity entity)
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        return Plugin.Rehydrate(
-            entity.Id,
-            entity.Name,
-            entity.Version,
-            entity.Checksum,
-            entity.Description,
-            entity.ReleasedAt,
-            entity.Available
-        );
+        var entity = await _context.Plugins.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
+            ?? throw new InvalidOperationException($"Plugin {id} not found");
+
+        _context.Plugins.Remove(entity);
     }
 }

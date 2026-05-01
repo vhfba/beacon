@@ -1,49 +1,41 @@
 @startuml
-title BEACON - Component Diagram (C3) · Monitoring Stack
+title BEACON - Component Diagram (C3) - Monitoring Stack
 
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
 Person(admin, "Admin")
-System_Ext(probes, "Probe /metrics endpoint xN", "HTTP endpoints exposed by probe agents")
+System_Ext(central, "Central Server /metrics", "Prometheus text exposition generated from latest probe snapshots")
+System_Ext(syncClient, "Central Server Monitoring Integration", "Calls Grafana HTTP API to manage dashboards")
 
 System_Boundary(monitoring, "Monitoring Stack") {
 
-	Container_Boundary(prometheus, "Prometheus") {
-		Component(scraper, "Scrape Manager", "Prometheus", "Executes pull jobs per scrape_config")
-		Component(tsdb, "TSDB", "Prometheus storage", "Local time-series storage")
-		Component(rules, "Rules Engine", "Prometheus", "Recording and alert rule evaluation")
-		Component(promql, "Query Engine", "PromQL", "PromQL evaluation")
-		Component(alertmgr, "Alertmanager", "Alertmanager", "Route, group and silence alerts")
-	}
+  Container_Boundary(prometheus, "Prometheus") {
+    Component(scraper, "Scrape Manager", "Prometheus", "Executes pull jobs per scrape_config")
+    Component(tsdb, "TSDB", "Prometheus storage", "Local time-series storage")
+    Component(rules, "Rules Engine", "Prometheus", "Recording and alert rule evaluation")
+    Component(promql, "Query Engine", "PromQL", "PromQL evaluation")
+  }
 
-	Container_Boundary(grafana, "Grafana") {
-		Component(ds, "Datasource Plugin", "Prometheus connector", "Connects dashboards to Prometheus HTTP API")
-		Component(dash, "Dashboard Engine", "Grafana", "Panel rendering and templating")
-		Component(galert, "Alerting", "Grafana", "Grafana-managed alert rules")
-		Component(gauth, "User and Auth", "Grafana", "Local accounts and LDAP integration")
-	}
+  Container_Boundary(grafana, "Grafana") {
+    Component(ds, "Datasource Plugin", "Prometheus connector", "Connects dashboards to Prometheus HTTP API")
+    Component(dash, "Dashboard Engine", "Grafana", "Panel rendering and templating")
+    Component(api, "Dashboard HTTP API", "Grafana API", "Imports and updates dashboard JSON")
+    Component(gauth, "User and Auth", "Grafana", "Local accounts and access control")
+  }
 }
 
 Rel(scraper, tsdb, "Write scraped samples")
 Rel(rules, tsdb, "Read/write recording and alerting series")
-Rel(rules, alertmgr, "Fire alerts")
 Rel(promql, tsdb, "Read samples for query execution")
 
 Rel(ds, dash, "Provide panel data")
-Rel(ds, galert, "Provide alert evaluation data")
 Rel(gauth, dash, "Authorize dashboard access")
 Rel(ds, promql, "Execute PromQL over HTTP")
+Rel(api, dash, "Manage dashboards and panels")
 
-Rel(scraper, probes, "Scrape /metrics", "HTTP GET")
+Rel(scraper, central, "Scrape /metrics", "HTTP GET")
+Rel(syncClient, api, "Import plugin dashboards", "HTTP")
 Rel(admin, gauth, "Login")
 Rel(admin, dash, "View dashboards and explore metrics")
-
-note bottom of tsdb
-	Retention period still to be defined.
-end note
-
-note bottom of alertmgr
-	Only if necessary, as Prometheus alerting is often sufficient.
-end note
 
 @enduml

@@ -16,6 +16,12 @@ public class ProbeType
     [GraphQLType("String!")]
     public string IpAddress { get; set; } = string.Empty;
 
+    [GraphQLType("String")]
+    public string? Ssid { get; set; }
+
+    [GraphQLType("String")]
+    public string? AgentVersion { get; set; }
+
     public ProbeStatusType Status { get; set; } = ProbeStatusType.Registered;
 
     [GraphQLType("DateTime!")]
@@ -27,22 +33,9 @@ public class ProbeType
     [GraphQLType("DateTime")]
     public DateTime? LastConfigFetch { get; set; }
 
-    public static ProbeType FromDTO(ProbeDTO dto)
-    {
-        var status = Enum.TryParse<ProbeStatusType>(dto.Status, true, out var parsedStatus)
-            ? parsedStatus
-            : ProbeStatusType.Registered;
+    [GraphQLType("DateTime")]
+    public DateTime? LastMetricsPush { get; set; }
 
-        return new ProbeType
-        {
-            Id = dto.Id,
-            Name = dto.Name,
-            Location = dto.Location,
-            IpAddress = dto.IpAddress,
-            Status = status,
-            CreatedAt = dto.CreatedAt,
-            LastHeartbeat = dto.LastHeartbeat,
-            LastConfigFetch = dto.LastConfigFetch
-        };
-    }
+    [GraphQLType("DateTime")]
+    public DateTime? LastSeenAt { get; set; }
 }

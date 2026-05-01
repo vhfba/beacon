@@ -2,7 +2,7 @@ namespace CentralServer.Infrastructure.Persistence.Repositories;
 
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
-using CentralServer.Infrastructure.Persistence.Entities;
+using CentralServer.Infrastructure.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
 public class ProbeRepositoryAdapter : IProbeRepository
 {
@@ -13,29 +13,17 @@ public class ProbeRepositoryAdapter : IProbeRepository
         _context = context;
     }
 
-    public async Task<Probe> RegisterAsync(Probe probe, CancellationToken cancellationToken = default)
+    public Task<Probe> RegisterAsync(Probe probe, CancellationToken cancellationToken = default)
     {
-        var entity = new ProbeEntity
-        {
-            Id = probe.Id.Value,
-            Name = probe.Name,
-            Location = probe.Location,
-            IpAddress = probe.IpAddress,
-            Status = probe.Status.ToString(),
-            CreatedAt = probe.CreatedAt,
-            Version = probe.Version
-        };
-
+        var entity = probe.ToEntity();
         _context.Probes.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return MapToDomain(entity);
+        return Task.FromResult(entity.ToDomain());
     }
 
     public async Task<Probe?> GetByIdAsync(ProbeId id, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Probes.FirstOrDefaultAsync(p => p.Id == id.Value, cancellationToken);
-        return entity != null ? MapToDomain(entity) : null;
+        return entity?.ToDomain();
     }
 
     public async Task<IReadOnlyList<Probe>> GetAllAsync(ProbeStatus? status = null, CancellationToken cancellationToken = default)
@@ -46,13 +34,13 @@ public class ProbeRepositoryAdapter : IProbeRepository
             query = query.Where(p => p.Status == status.Value.ToString());
 
         var entities = await query.ToListAsync(cancellationToken);
-        return entities.Select(MapToDomain).ToList();
+        return entities.Select(entity => entity.ToDomain()).ToList();
     }
 
     public async Task<Probe?> GetByIpAddressAsync(string ipAddress, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Probes.FirstOrDefaultAsync(p => p.IpAddress == ipAddress, cancellationToken);
-        return entity != null ? MapToDomain(entity) : null;
+        return entity?.ToDomain();
     }
 
     public async Task UpdateAsync(Probe probe, CancellationToken cancellationToken = default)
@@ -60,16 +48,9 @@ public class ProbeRepositoryAdapter : IProbeRepository
         var entity = await _context.Probes.FirstOrDefaultAsync(p => p.Id == probe.Id.Value, cancellationToken)
             ?? throw new InvalidOperationException($"Probe {probe.Id.Value} not found");
 
-        entity.Name = probe.Name;
-        entity.Location = probe.Location;
-        entity.IpAddress = probe.IpAddress;
-        entity.Status = probe.Status.ToString();
-        entity.LastHeartbeat = probe.LastHeartbeat;
-        entity.LastConfigFetch = probe.LastConfigFetch;
-        entity.Version = probe.Version;
+        probe.ApplyToEntity(entity);
 
         _context.Probes.Update(entity);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(ProbeId id, CancellationToken cancellationToken = default)
@@ -78,21 +59,5 @@ public class ProbeRepositoryAdapter : IProbeRepository
             ?? throw new InvalidOperationException($"Probe {id.Value} not found");
 
         _context.Probes.Remove(entity);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    private static Probe MapToDomain(ProbeEntity entity)
-    {
-        return Probe.Rehydrate(
-            entity.Id,
-            entity.Name,
-            entity.Location,
-            entity.IpAddress,
-            entity.Status,
-            entity.CreatedAt,
-            entity.LastHeartbeat,
-            entity.LastConfigFetch,
-            entity.Version
-        );
     }
 }

@@ -1,58 +1,42 @@
 @startuml communication-flow
 title BEACON - Communication Architecture
 
+left to right direction
+
 actor Admin
+actor "Probe Agent" as probe
 
 package "Central Server" {
   rectangle "GraphQL API" as gql
-  rectangle "Probe Runtime API\n/runtime-state + /heartbeat" as runtime
-  rectangle "Monitoring API\nservice-discovery + thresholds + embed" as mon
-  rectangle "Config Manager" as cfg
-}
-
-package "Probe 1 (Raspberry Pi)" {
-  rectangle "Agent" as p1agent
-  rectangle "/metrics endpoint" as p1metrics
-}
-
-package "Probe 2 (Raspberry Pi)" {
-  rectangle "Agent" as p2agent
-  rectangle "/metrics endpoint" as p2metrics
+  rectangle "Plugin Bundle Endpoint\n/plugins/{pluginId}/{version}/bundle" as bundles
+  rectangle "Metrics Export\n/metrics" as metrics
+  rectangle "Monitoring Endpoint\n/monitoring/grafana/embed-session" as mon
+  rectangle "PostgreSQL" as pg
+  rectangle "Redis Metrics Store" as redis
+  rectangle "Plugin Dashboard Sync Service" as sync
 }
 
 package "Monitoring Stack" {
-  database "Prometheus" as prom
+  rectangle "Prometheus" as prom
   rectangle "Grafana" as graf
 }
 
-Admin --> gql : Configure probes\n(view status, enable tests)
+cloud "Site Wi-Fi / Network Targets" as targets
 
-p1agent --> gql : Fetch config\n(tests, interval)
-gql --> p1agent : Config response
-p1agent --> runtime : Poll runtime-state
-runtime --> p1agent : status + canEmitMetrics + enabledTests
-p1agent --> runtime : Send heartbeat
-runtime --> p1agent : heartbeat accepted/rejected
+Admin --> gql : Admin queries and mutations\nfleet, plugins, assignments, actions
+probe --> gql : probeConfig, probeRuntime,\nrecordProbeHeartbeat,\npendingProbeActions,\nreportProbeMetrics,\nupdateProbeActionStatus
+probe --> bundles : Download assigned plugin bundles
+probe --> targets : Execute scheduled and action plugins
 
-p2agent --> gql : Fetch config\n(tests, interval)
-gql --> p2agent : Config response
-p2agent --> runtime : Poll runtime-state
-runtime --> p2agent : status + canEmitMetrics + enabledTests
-p2agent --> runtime : Send heartbeat
-runtime --> p2agent : heartbeat accepted/rejected
+gql --> pg : Read and write probe,\nplugin, assignment, and action state
+gql --> redis : Store latest probe metric snapshots
+metrics --> redis : Read aggregated samples
 
-p1agent --> p1metrics : Update metrics
-p2agent --> p2metrics : Update metrics
+prom --> metrics : Scrape central metrics
+graf --> prom : Query time-series data
+Admin --> graf : Open dashboards and embeds
 
-prom --> mon : Fetch service discovery
-mon --> prom : ACTIVE targets only
-prom --> p1metrics : Scrape metrics (HTTP pull)
-prom --> p2metrics : Scrape metrics (HTTP pull)
-
-Admin --> mon : Set thresholds / Open embed
-mon --> graf : Embed URL + dashboard sync
-
-graf --> prom : Query metrics
-prom --> graf : Return time-series data
+Admin --> mon : Request dashboard embed
+sync --> graf : Import plugin dashboards during\nplugin registration only
 
 @enduml
