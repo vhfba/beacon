@@ -30,10 +30,23 @@ internal static class GraphQLDocumentAnalyzer
 
         foreach (var operation in document.Definitions.OfType<OperationDefinitionNode>())
         {
-            AnalyzeSelectionSet(operation.SelectionSet, 1, metrics, fragments, new HashSet<string>(StringComparer.Ordinal));
+            AnalyzeOperation(operation, metrics, fragments);
         }
 
         return metrics;
+    }
+
+    private static void AnalyzeOperation(
+        OperationDefinitionNode operation,
+        GraphQLRequestMetrics metrics,
+        IReadOnlyDictionary<string, FragmentDefinitionNode> fragments)
+    {
+        AnalyzeSelectionSet(
+            operation.SelectionSet,
+            depth: 1,
+            metrics,
+            fragments,
+            activeFragments: new HashSet<string>(StringComparer.Ordinal));
     }
 
     private static void AnalyzeSelectionSet(
@@ -41,7 +54,7 @@ internal static class GraphQLDocumentAnalyzer
         int depth,
         GraphQLRequestMetrics metrics,
         IReadOnlyDictionary<string, FragmentDefinitionNode> fragments,
-        HashSet<string> recursionGuard)
+        HashSet<string> activeFragments)
     {
         metrics.MaxDepth = Math.Max(metrics.MaxDepth, depth);
 
@@ -50,39 +63,58 @@ internal static class GraphQLDocumentAnalyzer
             switch (selection)
             {
                 case FieldNode field:
-                    metrics.FieldCount++;
-
-                    if (field.Name.Value.StartsWith("__", StringComparison.Ordinal))
-                    {
-                        metrics.ContainsIntrospection = true;
-                    }
-
-                    if (field.SelectionSet != null)
-                    {
-                        AnalyzeSelectionSet(field.SelectionSet, depth + 1, metrics, fragments, recursionGuard);
-                    }
-
+                    AnalyzeField(field, depth, metrics, fragments, activeFragments);
                     break;
 
                 case InlineFragmentNode inlineFragment:
-                    AnalyzeSelectionSet(inlineFragment.SelectionSet, depth + 1, metrics, fragments, recursionGuard);
+                    AnalyzeSelectionSet(inlineFragment.SelectionSet, depth + 1, metrics, fragments, activeFragments);
                     break;
 
                 case FragmentSpreadNode fragmentSpread:
-                    var fragmentName = fragmentSpread.Name.Value;
-                    if (!recursionGuard.Add(fragmentName))
-                    {
-                        break;
-                    }
-
-                    if (fragments.TryGetValue(fragmentName, out var fragmentDefinition))
-                    {
-                        AnalyzeSelectionSet(fragmentDefinition.SelectionSet, depth + 1, metrics, fragments, recursionGuard);
-                    }
-
-                    recursionGuard.Remove(fragmentName);
+                    AnalyzeFragmentSpread(fragmentSpread, depth, metrics, fragments, activeFragments);
                     break;
             }
         }
+    }
+
+    private static void AnalyzeField(
+        FieldNode field,
+        int depth,
+        GraphQLRequestMetrics metrics,
+        IReadOnlyDictionary<string, FragmentDefinitionNode> fragments,
+        HashSet<string> activeFragments)
+    {
+        metrics.FieldCount++;
+
+        if (field.Name.Value.StartsWith("__", StringComparison.Ordinal))
+        {
+            metrics.ContainsIntrospection = true;
+        }
+
+        if (field.SelectionSet != null)
+        {
+            AnalyzeSelectionSet(field.SelectionSet, depth + 1, metrics, fragments, activeFragments);
+        }
+    }
+
+    private static void AnalyzeFragmentSpread(
+        FragmentSpreadNode fragmentSpread,
+        int depth,
+        GraphQLRequestMetrics metrics,
+        IReadOnlyDictionary<string, FragmentDefinitionNode> fragments,
+        HashSet<string> activeFragments)
+    {
+        var fragmentName = fragmentSpread.Name.Value;
+        if (!activeFragments.Add(fragmentName))
+        {
+            return;
+        }
+
+        if (fragments.TryGetValue(fragmentName, out var fragmentDefinition))
+        {
+            AnalyzeSelectionSet(fragmentDefinition.SelectionSet, depth + 1, metrics, fragments, activeFragments);
+        }
+
+        activeFragments.Remove(fragmentName);
     }
 }

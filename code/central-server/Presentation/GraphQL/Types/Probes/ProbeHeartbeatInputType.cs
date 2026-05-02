@@ -1,6 +1,5 @@
 namespace CentralServer.Presentation.GraphQL.Types;
 
-using CentralServer.Application.DTOs;
 using HotChocolate;
 
 public record ProbeHeartbeatInputType
@@ -23,16 +22,4 @@ public record ProbeHeartbeatInputType
     [GraphQLType("String")]
     public string? AgentVersion { get; init; }
 
-    public ProbeHeartbeatInput ToDTO()
-    {
-        return new ProbeHeartbeatInput
-        {
-            ProbeId = ProbeId,
-            Name = Name,
-            Location = Location,
-            IpAddress = IpAddress,
-            Ssid = Ssid,
-            AgentVersion = AgentVersion
-        };
-    }
 }

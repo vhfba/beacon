@@ -32,7 +32,7 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
         CancellationToken cancellationToken)
     {
         var options = _monitoringOptions.CurrentValue.Grafana;
-        var dashboardUid = BuildPluginDashboardUid(pluginId);
+        var dashboardUid = GrafanaDashboardConventions.BuildPluginDashboardUid(pluginId);
 
         if (string.IsNullOrWhiteSpace(options.ApiBaseUrl) || string.IsNullOrWhiteSpace(options.ApiToken))
         {
@@ -72,8 +72,7 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
     public string BuildEmbedUrl(string dashboardUid, string site)
     {
         var options = _monitoringOptions.CurrentValue.Grafana;
-        var encodedSite = Uri.EscapeDataString(string.IsNullOrWhiteSpace(site) ? "default" : site.Trim());
-        return $"{options.EmbedBaseUrl.TrimEnd('/')}/d/{Uri.EscapeDataString(dashboardUid)}?kiosk&theme=light&var-site={encodedSite}";
+        return GrafanaDashboardConventions.BuildEmbedUrl(options.EmbedBaseUrl, dashboardUid, site);
     }
 
     private async Task<GrafanaSyncResult> SaveDashboardAsync(
@@ -92,7 +91,7 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
             ["message"] = changeMessage
         };
 
-        var saveRequest = new HttpRequestMessage(HttpMethod.Post, CombineUrl(apiBaseUrl, "/api/dashboards/db"));
+        var saveRequest = new HttpRequestMessage(HttpMethod.Post, GrafanaDashboardConventions.BuildDashboardApiUrl(apiBaseUrl));
         saveRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
         saveRequest.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
 
@@ -112,28 +111,5 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
             Applied: true,
             DashboardUid: dashboardUid,
             Message: successMessage);
-    }
-
-    private static string BuildPluginDashboardUid(string pluginId)
-    {
-        var slug = new string((pluginId ?? string.Empty)
-            .Trim()
-            .ToLowerInvariant()
-            .Select(ch => (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') ? ch : '-')
-            .ToArray())
-            .Trim('-');
-
-        if (string.IsNullOrWhiteSpace(slug))
-        {
-            slug = "plugin";
-        }
-
-        var uid = $"beacon-plugin-{slug}";
-        return uid.Length <= 40 ? uid : uid[..40];
-    }
-
-    private static string CombineUrl(string baseUrl, string path)
-    {
-        return $"{baseUrl.TrimEnd('/')}/{path.TrimStart('/')}";
     }
 }

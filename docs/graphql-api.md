@@ -355,4 +355,4 @@ curl -L ^
 
 - GraphQL introspection is disabled by default in `appsettings.json`.
 - Request hardening enforces depth and complexity limits.
-- The checked-in `GraphQL.schema.graphql` is not yet fully aligned with the live probe runtime operations. Prefer the resolver code and this document until the schema snapshot is refreshed.
+- The checked-in `GraphQL.schema.graphql` is generated from the live HotChocolate SDL and should be refreshed whenever resolver-visible schema behavior changes.

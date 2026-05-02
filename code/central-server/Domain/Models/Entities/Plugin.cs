@@ -1,4 +1,5 @@
 namespace CentralServer.Domain.Models;
+
 public class Plugin
 {
     public string Id { get; private set; }
@@ -22,36 +23,24 @@ public class Plugin
         string? dashboardJson = null,
         PluginExecutionMode executionMode = PluginExecutionMode.Scheduled)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new DomainException("Plugin ID cannot be empty");
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Plugin name cannot be empty");
-        if (string.IsNullOrWhiteSpace(version))
-            throw new DomainException("Plugin version cannot be empty");
-        if (string.IsNullOrWhiteSpace(checksum))
-            throw new DomainException("Plugin checksum cannot be empty");
-
-        if (id.Length > 100)
-            throw new DomainException("Plugin ID cannot exceed 100 characters");
-        if (name.Length > 100)
-            throw new DomainException("Plugin name cannot exceed 100 characters");
-        if (version.Length > 50)
-            throw new DomainException("Plugin version cannot exceed 50 characters");
-        if (checksum.Length > 128)
-            throw new DomainException("Plugin checksum cannot exceed 128 characters");
-        if (!string.IsNullOrWhiteSpace(bundleDownloadUrl) &&
-            !Uri.TryCreate(bundleDownloadUrl, UriKind.Absolute, out _))
-            throw new DomainException("Bundle download URL must be a valid absolute URI");
-        if (!Enum.IsDefined(executionMode))
-            throw new DomainException("Plugin execution mode is invalid");
+        EnsureRequiredText(id, "Plugin ID cannot be empty");
+        EnsureRequiredText(name, "Plugin name cannot be empty");
+        EnsureRequiredText(version, "Plugin version cannot be empty");
+        EnsureRequiredText(checksum, "Plugin checksum cannot be empty");
+        EnsureMaxLength(id, 100, "Plugin ID cannot exceed 100 characters");
+        EnsureMaxLength(name, 100, "Plugin name cannot exceed 100 characters");
+        EnsureMaxLength(version, 50, "Plugin version cannot exceed 50 characters");
+        EnsureMaxLength(checksum, 128, "Plugin checksum cannot exceed 128 characters");
+        EnsureValidBundleDownloadUrl(bundleDownloadUrl);
+        EnsureValidExecutionMode(executionMode);
 
         Id = id;
         Name = name;
         Version = version;
         Checksum = checksum;
         Description = description;
-        BundleDownloadUrl = string.IsNullOrWhiteSpace(bundleDownloadUrl) ? null : bundleDownloadUrl.Trim();
-        DashboardJson = string.IsNullOrWhiteSpace(dashboardJson) ? null : dashboardJson.Trim();
+        BundleDownloadUrl = NormalizeOptional(bundleDownloadUrl);
+        DashboardJson = NormalizeOptional(dashboardJson);
         ReleasedAt = DateTime.UtcNow;
         Available = true;
         ExecutionMode = executionMode;
@@ -77,12 +66,44 @@ public class Plugin
 
         return plugin;
     }
+
     public void Retire()
     {
         Available = false;
     }
+
     public void Restore()
     {
         Available = true;
+    }
+
+    private static void EnsureRequiredText(string value, string message)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new DomainException(message);
+    }
+
+    private static void EnsureMaxLength(string value, int maxLength, string message)
+    {
+        if (value.Length > maxLength)
+            throw new DomainException(message);
+    }
+
+    private static void EnsureValidBundleDownloadUrl(string? bundleDownloadUrl)
+    {
+        if (!string.IsNullOrWhiteSpace(bundleDownloadUrl) &&
+            !Uri.TryCreate(bundleDownloadUrl, UriKind.Absolute, out _))
+            throw new DomainException("Bundle download URL must be a valid absolute URI");
+    }
+
+    private static void EnsureValidExecutionMode(PluginExecutionMode executionMode)
+    {
+        if (!Enum.IsDefined(executionMode))
+            throw new DomainException("Plugin execution mode is invalid");
+    }
+
+    private static string? NormalizeOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 }

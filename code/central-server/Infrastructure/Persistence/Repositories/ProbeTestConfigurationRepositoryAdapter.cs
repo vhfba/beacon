@@ -5,6 +5,7 @@ using CentralServer.Domain.Repositories;
 using CentralServer.Infrastructure.Persistence.Entities;
 using CentralServer.Infrastructure.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
+
 public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRepository
 {
     private readonly CentralServerDbContext _context;
@@ -53,16 +54,11 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
 
     public async Task UpdateAsync(ProbeTestConfiguration config, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.ProbeTestConfigurations
-            .FirstOrDefaultAsync(pc => pc.ProbeId == config.ProbeId.Value && pc.TestType == config.TestType.Name, cancellationToken);
+        var entity = await FindEntityAsync(config.ProbeId, config.TestType.Name, cancellationToken);
 
         if (entity == null)
         {
-            entity = new ProbeTestConfigEntity
-            {
-                ProbeId = config.ProbeId.Value,
-                TestType = config.TestType.Name
-            };
+            entity = CreateEntity(config.ProbeId, config.TestType.Name);
             _context.ProbeTestConfigurations.Add(entity);
         }
 
@@ -71,10 +67,27 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
 
     public async Task DeleteAsync(ProbeId probeId, string testTypeName, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.ProbeTestConfigurations
-            .FirstOrDefaultAsync(pc => pc.ProbeId == probeId.Value && pc.TestType == testTypeName, cancellationToken)
+        var entity = await FindEntityAsync(probeId, testTypeName, cancellationToken)
             ?? throw new InvalidOperationException($"Configuration not found for probe {probeId} and test type {testTypeName}");
 
         _context.ProbeTestConfigurations.Remove(entity);
+    }
+
+    private async Task<ProbeTestConfigEntity?> FindEntityAsync(
+        ProbeId probeId,
+        string testTypeName,
+        CancellationToken cancellationToken)
+    {
+        return await _context.ProbeTestConfigurations
+            .FirstOrDefaultAsync(pc => pc.ProbeId == probeId.Value && pc.TestType == testTypeName, cancellationToken);
+    }
+
+    private static ProbeTestConfigEntity CreateEntity(ProbeId probeId, string testTypeName)
+    {
+        return new ProbeTestConfigEntity
+        {
+            ProbeId = probeId.Value,
+            TestType = testTypeName
+        };
     }
 }

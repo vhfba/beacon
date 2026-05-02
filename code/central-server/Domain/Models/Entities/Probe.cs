@@ -1,4 +1,5 @@
 namespace CentralServer.Domain.Models;
+
 public class Probe
 {
     public ProbeId Id { get; private set; }
@@ -17,19 +18,14 @@ public class Probe
 
     public Probe(ProbeId id, string name, string location, string ipAddress, string? ssid = null, string? agentVersion = null)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Probe name cannot be empty");
-        if (string.IsNullOrWhiteSpace(location))
-            throw new DomainException("Probe location cannot be empty");
-        if (string.IsNullOrWhiteSpace(ipAddress))
-            throw new DomainException("IP address cannot be empty");
+        EnsureReportedDetailsArePresent(name, location, ipAddress);
 
         Id = id;
         Name = name;
         Location = location;
         IpAddress = ipAddress;
-        Ssid = string.IsNullOrWhiteSpace(ssid) ? null : ssid.Trim();
-        AgentVersion = string.IsNullOrWhiteSpace(agentVersion) ? null : agentVersion.Trim();
+        Ssid = NormalizeOptional(ssid);
+        AgentVersion = NormalizeOptional(agentVersion);
         Status = ProbeStatus.Registered;
         CreatedAt = DateTime.UtcNow;
         Version = 0;
@@ -69,25 +65,22 @@ public class Probe
 
     public void UpdateReportedDetails(string name, string location, string ipAddress, string? ssid, string? agentVersion)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Probe name cannot be empty");
-        if (string.IsNullOrWhiteSpace(location))
-            throw new DomainException("Probe location cannot be empty");
-        if (string.IsNullOrWhiteSpace(ipAddress))
-            throw new DomainException("IP address cannot be empty");
+        EnsureReportedDetailsArePresent(name, location, ipAddress);
 
         Name = name.Trim();
         Location = location.Trim();
         IpAddress = ipAddress.Trim();
-        Ssid = string.IsNullOrWhiteSpace(ssid) ? null : ssid.Trim();
-        AgentVersion = string.IsNullOrWhiteSpace(agentVersion) ? null : agentVersion.Trim();
+        Ssid = NormalizeOptional(ssid);
+        AgentVersion = NormalizeOptional(agentVersion);
         Version++;
     }
+
     public void UpdateStatus(ProbeStatus newStatus)
     {
         Status = newStatus;
         Version++;
     }
+
     public void RecordHeartbeatAndActivate()
     {
         LastHeartbeat = DateTime.UtcNow;
@@ -109,8 +102,24 @@ public class Probe
         if (Status != ProbeStatus.Active && Status != ProbeStatus.Decommissioned)
             UpdateStatus(ProbeStatus.Active);
     }
+
     public void RecordConfigFetch()
     {
         LastConfigFetch = DateTime.UtcNow;
+    }
+
+    private static void EnsureReportedDetailsArePresent(string name, string location, string ipAddress)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Probe name cannot be empty");
+        if (string.IsNullOrWhiteSpace(location))
+            throw new DomainException("Probe location cannot be empty");
+        if (string.IsNullOrWhiteSpace(ipAddress))
+            throw new DomainException("IP address cannot be empty");
+    }
+
+    private static string? NormalizeOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 }

@@ -1,5 +1,6 @@
 namespace CentralServer.Presentation.GraphQL;
 
+using CentralServer.Application.DTOs;
 using CentralServer.Application.UseCases;
 using CentralServer.Application.Services;
 using CentralServer.Presentation.GraphQL.Mappings;
@@ -21,32 +22,12 @@ public class PluginMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => RegisterPluginWithDashboardAsync(input, useCase, dashboardAutomationService, cancellationToken),
+            result => new RegisterPluginResponse
             {
-                if (!string.IsNullOrWhiteSpace(input.DashboardJson))
-                {
-                    dashboardAutomationService.ValidateDashboardJson(input.DashboardJson);
-                }
-
-                var plugin = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                string? message = null;
-
-                if (!string.IsNullOrWhiteSpace(input.DashboardJson))
-                {
-                    var summary = await dashboardAutomationService.ApplyDashboardJsonAsync(
-                        plugin.Id,
-                        input.DashboardJson,
-                        cancellationToken);
-
-                    message = $"Plugin registered. Grafana dashboard sync {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
-                }
-
-                return new RegisterPluginResponse
-                {
-                    Success = true,
-                    Message = message,
-                    Plugin = plugin.ToGraphQLType()
-                };
+                Success = true,
+                Message = result.Message,
+                Plugin = result.Plugin.ToGraphQLType()
             },
             message => new RegisterPluginResponse
             {
@@ -64,14 +45,11 @@ public class PluginMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            plugin => new SetPluginAvailabilityResponse
             {
-                var plugin = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new SetPluginAvailabilityResponse
-                {
-                    Success = true,
-                    Plugin = plugin.ToGraphQLType()
-                };
+                Success = true,
+                Plugin = plugin.ToGraphQLType()
             },
             message => new SetPluginAvailabilityResponse
             {
@@ -105,4 +83,33 @@ public class PluginMutations
                 PluginId = pluginId
             });
     }
+
+    private static async Task<RegisterPluginResult> RegisterPluginWithDashboardAsync(
+        RegisterPluginInputType input,
+        RegisterPluginUseCase useCase,
+        PluginDashboardAutomationService dashboardAutomationService,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(input.DashboardJson))
+        {
+            dashboardAutomationService.ValidateDashboardJson(input.DashboardJson);
+        }
+
+        var plugin = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
+        string? message = null;
+
+        if (!string.IsNullOrWhiteSpace(input.DashboardJson))
+        {
+            var summary = await dashboardAutomationService.ApplyDashboardJsonAsync(
+                plugin.Id,
+                input.DashboardJson,
+                cancellationToken);
+
+            message = $"Plugin registered. Grafana dashboard sync {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
+        }
+
+        return new RegisterPluginResult(plugin, message);
+    }
+
+    private sealed record RegisterPluginResult(PluginDTO Plugin, string? Message);
 }

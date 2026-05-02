@@ -1,6 +1,5 @@
 namespace CentralServer.Presentation.GraphQL.Types;
 
-using CentralServer.Application.DTOs;
 using HotChocolate;
 
 public record SetProbeTestEnabledInputType
@@ -13,14 +12,4 @@ public record SetProbeTestEnabledInputType
 
     [GraphQLType("Boolean!")]
     public bool Enabled { get; init; }
-
-    public SetProbeTestEnabledInput ToDTO()
-    {
-        return new SetProbeTestEnabledInput
-        {
-            ProbeId = ProbeId,
-            TestType = TestType,
-            Enabled = Enabled
-        };
-    }
 }

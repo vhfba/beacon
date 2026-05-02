@@ -1,6 +1,5 @@
 namespace CentralServer.Presentation.GraphQL.Types;
 
-using CentralServer.Application.DTOs;
 using HotChocolate;
 
 public record TriggerProbeActionInputType
@@ -13,14 +12,4 @@ public record TriggerProbeActionInputType
 
     [GraphQLType("String!")]
     public string TriggeredBy { get; init; } = string.Empty;
-
-    public TriggerProbeActionInput ToDTO()
-    {
-        return new TriggerProbeActionInput
-        {
-            ProbeId = ProbeId,
-            PluginId = PluginId,
-            TriggeredBy = TriggeredBy
-        };
-    }
 }

@@ -27,14 +27,13 @@
   <ItemGroup>
     <!-- ASP.NET Core -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 
     <!-- HotChocolate GraphQL -->
-    <PackageReference Include="HotChocolate.AspNetCore" Version="14.0.0" />
-    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="14.0.0" />
-    <PackageReference Include="HotChocolate.Types" Version="14.0.0" />
-    <PackageReference Include="HotChocolate.Execution" Version="14.0.0" />
-    <PackageReference Include="HotChocolate.Language" Version="14.0.0" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="14.3.1" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="14.3.1" />
+    <PackageReference Include="HotChocolate.Types" Version="14.3.1" />
+    <PackageReference Include="HotChocolate.Execution" Version="14.3.1" />
+    <PackageReference Include="HotChocolate.Language" Version="14.3.1" />
 
     <!-- Entity Framework Core -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
@@ -52,13 +51,6 @@
 
     <!-- Logging and Telemetry -->
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
-    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.10.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.10.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.10" />
-
-    <!-- Validation -->
-    <PackageReference Include="FluentValidation" Version="11.8.1" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />
 
   </ItemGroup>
 

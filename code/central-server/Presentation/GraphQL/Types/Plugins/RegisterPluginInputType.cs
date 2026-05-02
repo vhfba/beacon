@@ -1,7 +1,5 @@
 namespace CentralServer.Presentation.GraphQL.Types;
 
-using CentralServer.Application.DTOs;
-using CentralServer.Domain.Models;
 using HotChocolate;
 
 public record RegisterPluginInputType
@@ -29,21 +27,4 @@ public record RegisterPluginInputType
 
     [GraphQLType("PluginExecutionModeType!")]
     public PluginExecutionModeType ExecutionMode { get; init; } = PluginExecutionModeType.Scheduled;
-
-    public RegisterPluginInput ToDTO()
-    {
-        return new RegisterPluginInput
-        {
-            Id = Id,
-            Name = Name,
-            Version = Version,
-            Checksum = Checksum,
-            Description = Description,
-            BundleDownloadUrl = BundleDownloadUrl,
-            DashboardJson = DashboardJson,
-            ExecutionMode = ExecutionMode == PluginExecutionModeType.Action
-                ? PluginExecutionMode.Action
-                : PluginExecutionMode.Scheduled
-        };
-    }
 }

@@ -19,16 +19,13 @@ public class ProbeMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            result => new ProbeHeartbeatResponse
             {
-                var result = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new ProbeHeartbeatResponse
-                {
-                    Success = true,
-                    AutoRegistered = result.AutoRegistered,
-                    Probe = result.Probe.ToGraphQLType(),
-                    Runtime = result.Runtime.ToGraphQLType()
-                };
+                Success = true,
+                AutoRegistered = result.AutoRegistered,
+                Probe = result.Probe.ToGraphQLType(),
+                Runtime = result.Runtime.ToGraphQLType()
             },
             message => new ProbeHeartbeatResponse
             {
@@ -46,16 +43,13 @@ public class ProbeMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            result => new ReportProbeMetricsResponse
             {
-                var result = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new ReportProbeMetricsResponse
-                {
-                    Success = true,
-                    ProbeId = result.ProbeId,
-                    AcceptedSamples = result.AcceptedSamples,
-                    ReceivedAtUtc = result.ReceivedAtUtc
-                };
+                Success = true,
+                ProbeId = result.ProbeId,
+                AcceptedSamples = result.AcceptedSamples,
+                ReceivedAtUtc = result.ReceivedAtUtc
             },
             message => new ReportProbeMetricsResponse
             {
@@ -74,14 +68,11 @@ public class ProbeMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(probeId, status, cancellationToken),
+            probe => new UpdateProbeStatusResponse
             {
-                var probe = await useCase.ExecuteAsync(probeId, status, cancellationToken);
-                return new UpdateProbeStatusResponse
-                {
-                    Success = true,
-                    Probe = probe.ToGraphQLType()
-                };
+                Success = true,
+                Probe = probe.ToGraphQLType()
             },
             message => new UpdateProbeStatusResponse
             {
@@ -99,14 +90,11 @@ public class ProbeMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            updated => new UpdateProbeActionStatusResponse
             {
-                var updated = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new UpdateProbeActionStatusResponse
-                {
-                    Success = true,
-                    Execution = updated.ToGraphQLType()
-                };
+                Success = true,
+                Execution = updated.ToGraphQLType()
             },
             message => new UpdateProbeActionStatusResponse
             {

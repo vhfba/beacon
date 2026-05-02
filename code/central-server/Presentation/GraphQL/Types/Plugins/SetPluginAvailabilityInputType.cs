@@ -1,6 +1,5 @@
 namespace CentralServer.Presentation.GraphQL.Types;
 
-using CentralServer.Application.DTOs;
 using HotChocolate;
 
 public record SetPluginAvailabilityInputType
@@ -10,13 +9,4 @@ public record SetPluginAvailabilityInputType
 
     [GraphQLType("Boolean!")]
     public bool Available { get; init; }
-
-    public SetPluginAvailabilityInput ToDTO()
-    {
-        return new SetPluginAvailabilityInput
-        {
-            PluginId = PluginId,
-            Available = Available
-        };
-    }
 }

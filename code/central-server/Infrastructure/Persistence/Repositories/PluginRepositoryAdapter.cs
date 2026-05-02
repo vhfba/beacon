@@ -2,8 +2,10 @@ namespace CentralServer.Infrastructure.Persistence.Repositories;
 
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
+using CentralServer.Infrastructure.Persistence.Entities;
 using CentralServer.Infrastructure.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
+
 public class PluginRepositoryAdapter : IPluginRepository
 {
     private readonly CentralServerDbContext _context;
@@ -60,9 +62,7 @@ public class PluginRepositoryAdapter : IPluginRepository
 
     public async Task UpdateAsync(Plugin plugin, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.Plugins.FirstOrDefaultAsync(p => p.Id == plugin.Id, cancellationToken)
-            ?? throw new InvalidOperationException($"Plugin {plugin.Id} not found");
-
+        var entity = await GetRequiredEntityAsync(plugin.Id, cancellationToken);
         plugin.ApplyToEntity(entity);
 
         _context.Plugins.Update(entity);
@@ -70,9 +70,13 @@ public class PluginRepositoryAdapter : IPluginRepository
 
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.Plugins.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
-            ?? throw new InvalidOperationException($"Plugin {id} not found");
-
+        var entity = await GetRequiredEntityAsync(id, cancellationToken);
         _context.Plugins.Remove(entity);
+    }
+
+    private async Task<PluginEntity> GetRequiredEntityAsync(string id, CancellationToken cancellationToken)
+    {
+        return await _context.Plugins.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
+            ?? throw new InvalidOperationException($"Plugin {id} not found");
     }
 }

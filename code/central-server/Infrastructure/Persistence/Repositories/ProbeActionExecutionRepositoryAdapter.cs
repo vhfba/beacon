@@ -2,6 +2,7 @@ namespace CentralServer.Infrastructure.Persistence.Repositories;
 
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
+using CentralServer.Infrastructure.Persistence.Entities;
 using CentralServer.Infrastructure.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
 
@@ -69,12 +70,18 @@ public class ProbeActionExecutionRepositoryAdapter : IProbeActionExecutionReposi
 
     public async Task UpdateAsync(ProbeActionExecution execution, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.ProbeActionExecutions
-            .FirstOrDefaultAsync(e => e.ExecutionId == execution.ExecutionId, cancellationToken)
-            ?? throw new InvalidOperationException($"Action execution {execution.ExecutionId} not found");
-
+        var entity = await GetRequiredEntityAsync(execution.ExecutionId, cancellationToken);
         execution.ApplyToEntity(entity);
 
         _context.ProbeActionExecutions.Update(entity);
+    }
+
+    private async Task<ProbeActionExecutionEntity> GetRequiredEntityAsync(
+        string executionId,
+        CancellationToken cancellationToken)
+    {
+        return await _context.ProbeActionExecutions
+            .FirstOrDefaultAsync(e => e.ExecutionId == executionId, cancellationToken)
+            ?? throw new InvalidOperationException($"Action execution {executionId} not found");
     }
 }

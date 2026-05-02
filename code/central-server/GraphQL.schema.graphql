@@ -1,14 +1,270 @@
-# GraphQL Schema for BEACON Central Server (.NET 9)
-# Per ADR-003: GraphQL API for both Admin and Probe clients
-# Per ADR-008: HotChocolate GraphQL implementation
+﻿schema {
+  query: Query
+  mutation: Mutation
+}
 
-## Enums
+type DeletePluginResponse {
+  success: Boolean!
+  message: String
+  pluginId: String
+}
 
-enum ProbeStatusType {
-  REGISTERED
-  ACTIVE
-  INACTIVE
-  DECOMMISSIONED
+type DeleteProbeResponse {
+  success: Boolean!
+  message: String
+  probeId: String
+}
+
+type FleetStatusResponse {
+  probes: [ProbeType!]!
+}
+
+type Mutation {
+  recordProbeHeartbeat(input: ProbeHeartbeatInputTypeInput!): ProbeHeartbeatResponse! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
+  reportProbeMetrics(input: ReportProbeMetricsInputTypeInput!): ReportProbeMetricsResponse! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
+  updateProbeStatus(probeId: String! status: String!): UpdateProbeStatusResponse! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
+  updateProbeActionStatus(input: UpdateProbeActionStatusInputTypeInput!): UpdateProbeActionStatusResponse! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
+  registerPlugin(input: RegisterPluginInputTypeInput!): RegisterPluginResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  setPluginAvailability(input: SetPluginAvailabilityInputTypeInput!): SetPluginAvailabilityResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  deletePlugin(pluginId: String!): DeletePluginResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  updateProbeTestConfig(input: UpdateProbeTestConfigInputTypeInput!): UpdateProbeTestConfigResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  setProbeTestEnabled(input: SetProbeTestEnabledInputTypeInput!): SetProbeTestEnabledResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  setProbePlugins(input: SetProbePluginsInputTypeInput!): SetProbePluginsResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  deleteProbe(probeId: String!): DeleteProbeResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  triggerProbeAction(input: TriggerProbeActionInputTypeInput!): TriggerProbeActionResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+}
+
+type PluginType {
+  id: String!
+  name: String!
+  version: String!
+  checksum: String!
+  description: String
+  releasedAt: DateTime!
+  available: Boolean!
+  executionMode: PluginExecutionModeType!
+  bundleUrl: String!
+  bundleDownloadUrl: String
+  dashboardJson: String
+}
+
+type ProbeActionExecutionType {
+  executionId: String!
+  probeId: String!
+  pluginId: String!
+  triggeredBy: String!
+  status: ProbeActionExecutionStatusType!
+  requestedAtUtc: DateTime!
+  deliveredAtUtc: DateTime
+  startedAtUtc: DateTime
+  completedAtUtc: DateTime
+  errorMessage: String
+}
+
+type ProbeConfigType {
+  probeId: String!
+  enabledTests: [ProbeTestConfigType!]!
+  availablePlugins: [PluginType!]!
+}
+
+type ProbeHeartbeatResponse {
+  success: Boolean!
+  autoRegistered: Boolean!
+  message: String
+  probe: ProbeType
+  runtime: ProbeRuntimeType
+}
+
+type ProbePluginAssignmentType {
+  probeId: String!
+  pluginId: String!
+  pluginName: String!
+  pluginVersion: String!
+  pluginAvailable: Boolean!
+  assignedAt: DateTime!
+}
+
+type ProbeRuntimeType {
+  probeId: String!
+  status: String!
+  canEmitMetrics: Boolean!
+  enabledTests: [String!]!
+  site: String!
+  ipAddress: String!
+  polledAtUtc: DateTime!
+}
+
+type ProbeTestConfigType {
+  probeId: String!
+  testType: String!
+  intervalSeconds: Int!
+  enabled: Boolean!
+}
+
+type ProbeType {
+  id: String!
+  name: String!
+  location: String!
+  ipAddress: String!
+  ssid: String
+  agentVersion: String
+  status: ProbeStatusType!
+  createdAt: DateTime!
+  lastHeartbeat: DateTime
+  lastConfigFetch: DateTime
+  lastMetricsPush: DateTime
+  lastSeenAt: DateTime
+}
+
+type Query {
+  probeConfig(probeId: String!): ProbeConfigType! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
+  probeRuntime(probeId: String!): ProbeRuntimeType! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
+  probePluginAssignments(probeId: String!): [ProbePluginAssignmentType!]! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  probeActionExecutions(probeId: String! limit: Int): [ProbeActionExecutionType!]! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  pendingProbeActions(probeId: String! limit: Int): [ProbeActionExecutionType!]! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
+  plugins: [PluginType!]! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  plugin(id: String!): PluginType @authorize(policy: "AdminOnly") @cost(weight: "10")
+  fleetStatus: FleetStatusResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+}
+
+type RegisterPluginResponse {
+  success: Boolean!
+  message: String
+  plugin: PluginType
+}
+
+type ReportProbeMetricsResponse {
+  success: Boolean!
+  message: String
+  probeId: String!
+  acceptedSamples: Int!
+  receivedAtUtc: DateTime!
+}
+
+type SetPluginAvailabilityResponse {
+  success: Boolean!
+  message: String
+  plugin: PluginType
+}
+
+type SetProbePluginsResponse {
+  success: Boolean!
+  message: String
+  assignments: [ProbePluginAssignmentType!]!
+}
+
+type SetProbeTestEnabledResponse {
+  success: Boolean!
+  message: String
+  config: ProbeTestConfigType
+}
+
+type TriggerProbeActionResponse {
+  success: Boolean!
+  message: String
+  execution: ProbeActionExecutionType
+}
+
+type UpdateProbeActionStatusResponse {
+  success: Boolean!
+  message: String
+  execution: ProbeActionExecutionType
+}
+
+type UpdateProbeStatusResponse {
+  success: Boolean!
+  message: String
+  probe: ProbeType
+}
+
+type UpdateProbeTestConfigResponse {
+  success: Boolean!
+  message: String
+  config: ProbeTestConfigType
+}
+
+input MetricLabelInputTypeInput {
+  key: String!
+  value: String!
+}
+
+input MetricSampleInputTypeInput {
+  name: String!
+  kind: String!
+  value: Float!
+  timestampUtc: DateTime
+  labels: [MetricLabelInputTypeInput!]!
+}
+
+input ProbeHeartbeatInputTypeInput {
+  probeId: String!
+  name: String!
+  location: String!
+  ipAddress: String!
+  ssid: String
+  agentVersion: String
+}
+
+input RegisterPluginInputTypeInput {
+  id: String!
+  name: String!
+  version: String!
+  checksum: String!
+  description: String
+  bundleDownloadUrl: String
+  dashboardJson: String
+  executionMode: PluginExecutionModeType!
+}
+
+input ReportProbeMetricsInputTypeInput {
+  probeId: String!
+  samples: [MetricSampleInputTypeInput!]!
+}
+
+input SetPluginAvailabilityInputTypeInput {
+  pluginId: String!
+  available: Boolean!
+}
+
+input SetProbePluginsInputTypeInput {
+  probeId: String!
+  pluginIds: [String!]!
+}
+
+input SetProbeTestEnabledInputTypeInput {
+  probeId: String!
+  testType: String!
+  enabled: Boolean!
+}
+
+input TriggerProbeActionInputTypeInput {
+  probeId: String!
+  pluginId: String!
+  triggeredBy: String!
+}
+
+input UpdateProbeActionStatusInputTypeInput {
+  probeId: String!
+  executionId: String!
+  status: String!
+  errorMessage: String
+}
+
+input UpdateProbeTestConfigInputTypeInput {
+  probeId: String!
+  testType: String!
+  intervalSeconds: Int!
+  enabled: Boolean!
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
 }
 
 enum PluginExecutionModeType {
@@ -25,319 +281,21 @@ enum ProbeActionExecutionStatusType {
   TIMED_OUT
 }
 
-## Scalars
-
-scalar DateTime
-
-## Object Types
-
-"""
-Probe type - represents a Raspberry Pi device
-"""
-type Probe {
-  id: String!
-  name: String!
-  location: String!
-  ipAddress: String!
-  status: ProbeStatusType!
-  createdAt: DateTime!
-  lastHeartbeat: DateTime
-  lastConfigFetch: DateTime
+enum ProbeStatusType {
+  REGISTERED
+  ACTIVE
+  INACTIVE
+  DECOMMISSIONED
 }
 
-"""
-Test type configuration for a probe
-"""
-type ProbeTestConfig {
-  probeId: String!
-  testType: String!
-  intervalSeconds: Int!
-  enabled: Boolean!
-}
+"The authorize directive."
+directive @authorize("The name of the authorization policy that determines access to the annotated resource." policy: String "Roles that are allowed to access the annotated resource." roles: [String!] "Defines when when the authorize directive shall be applied.By default the authorize directives are applied during the validation phase." apply: ApplyPolicy! = BEFORE_RESOLVER) repeatable on OBJECT | FIELD_DEFINITION
 
-"""
-Probe configuration response - narrow scope for probe agents
-"""
-type ProbeConfig {
-  probeId: String!
-  enabledTests: [ProbeTestConfig!]!
-  availablePlugins: [Plugin!]!
-}
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION
 
-"""
-Plugin entity
-"""
-type Plugin {
-  id: String!
-  name: String!
-  version: String!
-  checksum: String!
-  description: String
-  releasedAt: DateTime!
-  available: Boolean!
-  executionMode: PluginExecutionModeType!
-  bundleUrl: String!
-  bundleDownloadUrl: String
-  dashboardJson: String
-}
+"The `@specifiedBy` directive is used within the type system definition language to provide a URL for specifying the behavior of custom scalar definitions."
+directive @specifiedBy("The specifiedBy URL points to a human-readable specification. This field will only read a result for scalar types." url: String!) on SCALAR
 
-"""
-Action execution record for a probe
-"""
-type ProbeActionExecution {
-  executionId: String!
-  probeId: String!
-  pluginId: String!
-  triggeredBy: String!
-  status: ProbeActionExecutionStatusType!
-  requestedAtUtc: DateTime!
-  deliveredAtUtc: DateTime
-  startedAtUtc: DateTime
-  completedAtUtc: DateTime
-  errorMessage: String
-}
-
-"""
-Probe-plugin assignment view
-"""
-type ProbePluginAssignment {
-  probeId: String!
-  pluginId: String!
-  pluginName: String!
-  pluginVersion: String!
-  pluginAvailable: Boolean!
-  assignedAt: DateTime!
-}
-
-"""
-Fleet status response
-"""
-type FleetStatusResponse {
-  probes: [Probe!]!
-}
-
-## Input Types
-
-"""
-Input for updating probe test configuration
-"""
-input UpdateProbeTestConfigInput {
-  probeId: String!
-  testType: String!
-  intervalSeconds: Int!
-  enabled: Boolean! = true
-}
-
-"""
-Input for registering a plugin
-"""
-input RegisterPluginInput {
-  id: String!
-  name: String!
-  version: String!
-  checksum: String!
-  description: String
-  bundleDownloadUrl: String
-  dashboardJson: String
-  executionMode: PluginExecutionModeType! = SCHEDULED
-}
-
-"""
-Input for triggering a one-off action on a probe
-"""
-input TriggerProbeActionInput {
-  probeId: String!
-  pluginId: String!
-  triggeredBy: String!
-}
-
-"""
-Input for enabling or disabling a probe test
-"""
-input SetProbeTestEnabledInput {
-  probeId: String!
-  testType: String!
-  enabled: Boolean!
-}
-
-"""
-Input for enabling or disabling a plugin
-"""
-input SetPluginAvailabilityInput {
-  pluginId: String!
-  available: Boolean!
-}
-
-"""
-Input for assigning plugin IDs to a probe
-"""
-input SetProbePluginsInput {
-  probeId: String!
-  pluginIds: [String!]!
-}
-
-## Response Types
-
-"""
-Response from updateProbeTestConfig mutation
-"""
-type UpdateProbeTestConfigResponse {
-  success: Boolean!
-  message: String
-  config: ProbeTestConfig
-}
-
-"""
-Response from updateProbeStatus mutation
-"""
-type UpdateProbeStatusResponse {
-  success: Boolean!
-  message: String
-  probe: Probe
-}
-
-"""
-Response from registerPlugin mutation
-"""
-type RegisterPluginResponse {
-  success: Boolean!
-  message: String
-  plugin: Plugin
-}
-
-"""
-Response from setProbeTestEnabled mutation
-"""
-type SetProbeTestEnabledResponse {
-  success: Boolean!
-  message: String
-  config: ProbeTestConfig
-}
-
-"""
-Response from setPluginAvailability mutation
-"""
-type SetPluginAvailabilityResponse {
-  success: Boolean!
-  message: String
-  plugin: Plugin
-}
-
-"""
-Response from setProbePlugins mutation
-"""
-type SetProbePluginsResponse {
-  success: Boolean!
-  message: String
-  assignments: [ProbePluginAssignment!]!
-}
-
-"""
-Response from deleteProbe mutation
-"""
-type DeleteProbeResponse {
-  success: Boolean!
-  message: String
-  probeId: String
-}
-
-"""
-Response from deletePlugin mutation
-"""
-type DeletePluginResponse {
-  success: Boolean!
-  message: String
-  pluginId: String
-}
-
-"""
-Response from triggerProbeAction mutation
-"""
-type TriggerProbeActionResponse {
-  success: Boolean!
-  message: String
-  execution: ProbeActionExecution
-}
-
-## Query Root
-
-type Query {
-  """
-  Get the status of all probes in the fleet (Admin only)
-  """
-  fleetStatus: FleetStatusResponse!
-
-  """
-  Get configuration for a specific probe (called by probes for polling)
-  """
-  probeConfig(probeId: String!): ProbeConfig!
-
-  """
-  List all plugins (available and disabled)
-  """
-  plugins: [Plugin!]!
-
-  """
-  Get a plugin by id
-  """
-  plugin(id: String!): Plugin
-
-  """
-  Get probe plugin assignments for a specific probe
-  """
-  probePluginAssignments(probeId: String!): [ProbePluginAssignment!]!
-
-  """
-  List action execution history for a probe
-  """
-  probeActionExecutions(probeId: String!, limit: Int! = 50): [ProbeActionExecution!]!
-}
-
-## Mutation Root
-
-type Mutation {
-  """
-  Update test configuration for a probe
-  """
-  updateProbeTestConfig(input: UpdateProbeTestConfigInput!): UpdateProbeTestConfigResponse!
-
-  """
-  Update the status of a probe (e.g., mark as INACTIVE)
-  """
-  updateProbeStatus(probeId: String!, status: String!): UpdateProbeStatusResponse!
-
-  """
-  Register a plugin for probe distribution
-  """
-  registerPlugin(input: RegisterPluginInput!): RegisterPluginResponse!
-
-  """
-  Enable or disable a test for a probe without changing interval
-  """
-  setProbeTestEnabled(input: SetProbeTestEnabledInput!): SetProbeTestEnabledResponse!
-
-  """
-  Enable or disable plugin availability for distribution
-  """
-  setPluginAvailability(input: SetPluginAvailabilityInput!): SetPluginAvailabilityResponse!
-
-  """
-  Add or remove plugins for a specific probe
-  """
-  setProbePlugins(input: SetProbePluginsInput!): SetProbePluginsResponse!
-
-  """
-  Delete a probe and remove all plugin assignments
-  """
-  deleteProbe(probeId: String!): DeleteProbeResponse!
-
-  """
-  Delete a plugin and remove it from every probe assignment
-  """
-  deletePlugin(pluginId: String!): DeletePluginResponse!
-
-  """
-  Trigger a one-off action execution for a probe
-  """
-  triggerProbeAction(input: TriggerProbeActionInput!): TriggerProbeActionResponse!
-}
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time")

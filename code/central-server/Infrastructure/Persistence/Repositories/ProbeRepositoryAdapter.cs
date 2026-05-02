@@ -2,8 +2,10 @@ namespace CentralServer.Infrastructure.Persistence.Repositories;
 
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
+using CentralServer.Infrastructure.Persistence.Entities;
 using CentralServer.Infrastructure.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
+
 public class ProbeRepositoryAdapter : IProbeRepository
 {
     private readonly CentralServerDbContext _context;
@@ -45,9 +47,7 @@ public class ProbeRepositoryAdapter : IProbeRepository
 
     public async Task UpdateAsync(Probe probe, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.Probes.FirstOrDefaultAsync(p => p.Id == probe.Id.Value, cancellationToken)
-            ?? throw new InvalidOperationException($"Probe {probe.Id.Value} not found");
-
+        var entity = await GetRequiredEntityAsync(probe.Id, cancellationToken);
         probe.ApplyToEntity(entity);
 
         _context.Probes.Update(entity);
@@ -55,9 +55,15 @@ public class ProbeRepositoryAdapter : IProbeRepository
 
     public async Task DeleteAsync(ProbeId id, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.Probes.FirstOrDefaultAsync(p => p.Id == id.Value, cancellationToken)
-            ?? throw new InvalidOperationException($"Probe {id.Value} not found");
-
+        var entity = await GetRequiredEntityAsync(id, cancellationToken);
         _context.Probes.Remove(entity);
+    }
+
+    private async Task<ProbeEntity> GetRequiredEntityAsync(
+        ProbeId id,
+        CancellationToken cancellationToken)
+    {
+        return await _context.Probes.FirstOrDefaultAsync(p => p.Id == id.Value, cancellationToken)
+            ?? throw new InvalidOperationException($"Probe {id.Value} not found");
     }
 }

@@ -19,14 +19,11 @@ public class ProbeAdministrationMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            config => new UpdateProbeTestConfigResponse
             {
-                var config = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new UpdateProbeTestConfigResponse
-                {
-                    Success = true,
-                    Config = config.ToGraphQLType()
-                };
+                Success = true,
+                Config = config.ToGraphQLType()
             },
             message => new UpdateProbeTestConfigResponse
             {
@@ -44,14 +41,11 @@ public class ProbeAdministrationMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            config => new SetProbeTestEnabledResponse
             {
-                var config = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new SetProbeTestEnabledResponse
-                {
-                    Success = true,
-                    Config = config.ToGraphQLType()
-                };
+                Success = true,
+                Config = config.ToGraphQLType()
             },
             message => new SetProbeTestEnabledResponse
             {
@@ -69,14 +63,11 @@ public class ProbeAdministrationMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            assignments => new SetProbePluginsResponse
             {
-                var assignments = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new SetProbePluginsResponse
-                {
-                    Success = true,
-                    Assignments = assignments.Select(a => a.ToGraphQLType()).ToList()
-                };
+                Success = true,
+                Assignments = assignments.Select(a => a.ToGraphQLType()).ToList()
             },
             message => new SetProbePluginsResponse
             {
@@ -119,14 +110,11 @@ public class ProbeAdministrationMutations
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            async () =>
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            execution => new TriggerProbeActionResponse
             {
-                var execution = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
-                return new TriggerProbeActionResponse
-                {
-                    Success = true,
-                    Execution = execution.ToGraphQLType()
-                };
+                Success = true,
+                Execution = execution.ToGraphQLType()
             },
             message => new TriggerProbeActionResponse
             {

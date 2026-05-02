@@ -1,6 +1,5 @@
 namespace CentralServer.Presentation.GraphQL.Types;
 
-using CentralServer.Application.DTOs;
 using HotChocolate;
 
 public record MetricSampleInputType
@@ -18,18 +17,4 @@ public record MetricSampleInputType
     public DateTimeOffset? TimestampUtc { get; init; }
 
     public List<MetricLabelInputType> Labels { get; init; } = [];
-
-    public MetricSampleInput ToDTO()
-    {
-        return new MetricSampleInput
-        {
-            Name = Name,
-            Kind = Kind,
-            Value = Value,
-            TimestampUtc = TimestampUtc,
-            Labels = Labels
-                .Where(label => !string.IsNullOrWhiteSpace(label.Key))
-                .ToDictionary(label => label.Key, label => label.Value ?? string.Empty, StringComparer.Ordinal)
-        };
-    }
 }
