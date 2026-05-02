@@ -135,6 +135,22 @@ td{padding:12px 14px;vertical-align:middle}
 .probe-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:1px}
 .t-footer{padding:10px 14px;font-size:12px;color:var(--hint);border-top:1px solid var(--border);background:var(--surface-2)}
 
+.map-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.map-toolbar .inp{height:34px}
+.campus-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.site-band{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden}
+.site-band-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+.site-band-title{font-size:13px;font-weight:700;color:var(--text)}
+.site-band-sub{font-size:11px;color:var(--muted)}
+.probe-tile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:12px}
+.probe-tile{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:10px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:border-color .15s,background .15s}
+.probe-tile:hover{border-color:var(--accent);background:var(--accent-bg)}
+.probe-tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.probe-tile-name{font-size:13px;font-weight:600;color:var(--text)}
+.probe-tile-id{font-size:10px;color:var(--hint);font-family:'JetBrains Mono',monospace;margin-top:1px}
+.probe-tile-meta{font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px}
+.coverage-line{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
+
 /* ── badges ── */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge-ok{background:var(--success-bg);color:var(--success)}
@@ -143,6 +159,11 @@ td{padding:12px 14px;vertical-align:middle}
 .badge-sky{background:var(--sky-bg);color:var(--sky)}
 .badge-gray{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
 .badge-accent{background:var(--accent-bg);color:var(--accent)}
+.badge-coverage-excellent{background:var(--success-bg);color:var(--success)}
+.badge-coverage-good{background:var(--sky-bg);color:var(--sky)}
+.badge-coverage-weak{background:var(--warn-bg);color:color-mix(in srgb,var(--warn) 80%,#000)}
+.badge-coverage-unusable{background:var(--danger-bg);color:var(--danger)}
+.badge-coverage-no-data{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
 
 /* ── panel (slide-in) ── */
 #panel-overlay{position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.25);backdrop-filter:blur(2px);display:none;opacity:0;transition:opacity .2s}
@@ -177,6 +198,15 @@ textarea.inp{height:auto;padding:8px 10px;resize:vertical}
 .plugin-card-desc{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .plugin-card-actions{display:flex;gap:6px;margin-top:auto}
 .plugin-card-actions .btn{flex:1;justify-content:center;height:30px;font-size:12px}
+.plugin-config-list{display:grid;gap:8px}
+.plugin-config-row{border:1px solid var(--border);border-radius:var(--radius);padding:10px;background:var(--surface-2);display:grid;gap:8px}
+.plugin-config-main{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.plugin-config-title{font-size:13px;font-weight:600;color:var(--text)}
+.plugin-config-meta{font-size:11px;color:var(--muted)}
+.plugin-config-controls{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:end}
+.checkline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.checkline input{width:15px;height:15px}
+.assigned-dashboard-btn{height:24px;font-size:11px;padding:0 8px}
 
 /* ── tool cards (plugin tools) ── */
 .tool-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:20px}
@@ -283,6 +313,7 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
   </div>
   <nav>
     <button class="ntab active" data-view="fleet">Fleet</button>
+    <button class="ntab" data-view="map">Map</button>
     <button class="ntab" data-view="plugins">Plugins</button>
     <button class="ntab" data-view="actions">Actions</button>
     <button class="ntab" data-view="monitoring">Monitoring</button>
@@ -384,6 +415,34 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
   </div>
 
   <!-- ═══════════════════════════════ PLUGINS VIEW ═══════════════════════════════ -->
+  <div id="view-map" class="view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Campus Grid</div>
+        <div class="view-sub">Probe locations grouped by building with live coverage quality</div>
+      </div>
+      <div class="map-toolbar">
+        <select id="map-status-filter" class="inp">
+          <option value="all">All status</option>
+          <option value="online">Online</option>
+          <option value="stale">Stale</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <select id="map-coverage-filter" class="inp">
+          <option value="all">All coverage</option>
+          <option value="excellent">Excellent</option>
+          <option value="good">Good</option>
+          <option value="weak">Weak</option>
+          <option value="unusable">Unusable</option>
+          <option value="no_data">No data</option>
+        </select>
+      </div>
+    </div>
+    <div id="campus-grid" class="campus-grid">
+      <div class="empty"><p>No probes loaded</p></div>
+    </div>
+  </div>
+
   <div id="view-plugins" class="view">
     <div class="view-header">
       <div>
@@ -487,6 +546,15 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;font-weight:500;color:var(--muted)">Dashboard</label>
+          <select id="monitor-dashboard" class="inp" style="width:240px">
+            <option value="">Probe health</option>
+          </select>
+          <button class="icon-btn" id="refresh-dashboards-btn" type="button" title="Refresh dashboards">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
           <label style="font-size:12px;font-weight:500;color:var(--muted)">Site</label>
           <input id="monitor-site" class="inp" value="Building A" style="width:150px"/>
         </div>
@@ -501,7 +569,7 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
         <div id="dash-placeholder" class="dash-placeholder">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <p>No dashboard loaded</p>
-          <small>Select a site and click "Open Dashboard" to embed Grafana</small>
+          <small>Select a dashboard and site, then click "Open Dashboard"</small>
         </div>
         <iframe id="monitor-frame" src="about:blank"></iframe>
       </div>
@@ -549,86 +617,16 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
       </form>
     </div>
 
-    <!-- Test config -->
     <div class="form-section">
-      <div class="section-title">Test Configuration</div>
-      <form id="panel-config-form" class="form-row">
-        <input id="panel-cfg-probe-id" type="hidden"/>
-        <div class="form-col">
-          <label>Type</label>
-          <select id="panel-cfg-type" class="inp">
-            <option value="">No available tests</option>
-          </select>
-        </div>
-        <div class="form-col">
-          <label>Interval (s)</label>
-          <input id="panel-cfg-interval" class="inp" type="number" min="5" max="3600" value="30"/>
-        </div>
-        <div class="form-col">
-          <label>Enabled</label>
-          <select id="panel-cfg-enabled" class="inp">
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </div>
-        <div class="form-col" style="flex:0;align-self:flex-end">
-          <button type="submit" class="btn btn-primary">Apply</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Toggle test -->
-    <div class="form-section">
-      <div class="section-title">Toggle Test</div>
-      <form id="toggle-form" class="form-row">
-        <input id="toggle-probe-id" type="hidden"/>
-        <div class="form-col">
-          <label>Test Type</label>
-          <select id="toggle-type" class="inp">
-            <option value="">No available tests</option>
-          </select>
-        </div>
-        <div class="form-col">
-          <label>Action</label>
-          <select id="toggle-enabled" class="inp">
-            <option value="true">Enable</option>
-            <option value="false">Disable</option>
-          </select>
-        </div>
-        <div class="form-col" style="flex:0;align-self:flex-end">
-          <button type="submit" class="btn btn-primary">Apply</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Probe config query -->
-    <div class="form-section">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div>
-          <div class="section-title" style="margin:0">Query Probe Config</div>
-          <div class="section-desc" style="margin:4px 0 0">Fetch enabled tests &amp; available plugins</div>
-        </div>
-        <form id="probe-config-form">
-          <input id="probe-config-probe-id" type="hidden"/>
-          <button type="submit" class="btn btn-ghost">
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Fetch
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Plugin assignments -->
-    <div class="form-section">
-      <div class="section-title">Plugin Assignments</div>
-      <div class="section-desc">Assign scheduled tests and action plugins separately (Ctrl/Cmd+click for multi-select)</div>
+      <div class="section-title">Configure Probe Plugins</div>
+      <div class="section-desc">Assign plugins and enable scheduled tests in one save.</div>
       <form id="probe-plugins-form">
         <input id="probe-plugins-probe-id" type="hidden"/>
-        <label style="display:block;margin-bottom:6px">Scheduled Plugins</label>
-        <select id="probe-scheduled-plugins-select" multiple class="inp" style="width:100%;height:120px;margin-bottom:12px"></select>
-        <label style="display:block;margin-bottom:6px">Action Plugins</label>
-        <select id="probe-action-plugins-select" multiple class="inp" style="width:100%;height:120px;margin-bottom:10px"></select>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Save Assignments</button>
+        <div class="thr-group-title">Scheduled plugins</div>
+        <div id="scheduled-plugin-config-list" class="plugin-config-list"></div>
+        <div class="thr-group-title">Action plugins</div>
+        <div id="action-plugin-config-list" class="plugin-config-list"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Save Plugin Configuration</button>
       </form>
     </div>
 
@@ -771,9 +769,12 @@ const S = {
   probes: [],
   plugins: [],
   assignments: [],
+  coverage: [],
   probeConfig: null,
   pendingActions: [],
   actionHistory: [],
+  dashboards: [],
+  dashboardsLoaded: false,
   selectedId: null,
   drawerOpen: false,
   settingsOpen: false,
@@ -868,6 +869,7 @@ function switchView(v) {
     el.classList.toggle('active', el.dataset.view===v);
   });
   $(`view-${v}`).classList.add('active');
+  if (v === 'monitoring' && !S.dashboardsLoaded) loadGrafanaDashboards(false);
 }
 document.querySelectorAll('.ntab').forEach(btn => {
   btn.addEventListener('click', ()=> switchView(btn.dataset.view));
@@ -928,6 +930,29 @@ function statusCls(s) {
   return 'badge-sky';
 }
 
+function coverageForProbe(id) {
+  return S.coverage.find(c => c.probeId === id) || {grade:'NO_DATA',score:0};
+}
+
+function coverageBadge(coverage) {
+  const grade = String(coverage?.grade || 'NO_DATA').toLowerCase();
+  const label = grade === 'no_data' ? 'NO DATA' : grade.toUpperCase();
+  return `<span class="badge badge-coverage-${esc(grade.replace('_','-'))}">${esc(label)}</span>`;
+}
+
+function normalizeSite(location) {
+  const raw = String(location || 'Unknown site').trim() || 'Unknown site';
+  const parts = raw.split(/[/>-]/).map(p => p.trim()).filter(Boolean);
+  return parts[0] || raw;
+}
+
+function mapStatusBucket(probe) {
+  const hb = hbState(probe.lastHeartbeat, probe.status);
+  if (hb.label === 'ONLINE') return 'online';
+  if (String(probe.status || '').toUpperCase() === 'INACTIVE' || String(probe.status || '').toUpperCase() === 'DECOMMISSIONED') return 'inactive';
+  return 'stale';
+}
+
 /* ════════════════════════════════════════
    RENDER FLEET
 ════════════════════════════════════════ */
@@ -947,6 +972,7 @@ function renderFleet(probes) {
       <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
       <p>No probes found</p><small>Register your first probe to get started</small>
     </div></td></tr>`;
+    renderCampusGrid();
     return;
   }
 
@@ -971,6 +997,69 @@ function renderFleet(probes) {
       </td>
     </tr>`;
   }).join('');
+  renderCampusGrid();
+}
+
+function renderCampusGrid() {
+  const root = $('campus-grid');
+  if (!root) return;
+
+  const statusFilter = $('map-status-filter')?.value || 'all';
+  const coverageFilter = $('map-coverage-filter')?.value || 'all';
+  const visible = S.probes.filter(p => {
+    const statusOk = statusFilter === 'all' || mapStatusBucket(p) === statusFilter;
+    const grade = String(coverageForProbe(p.id).grade || 'NO_DATA').toLowerCase();
+    const coverageOk = coverageFilter === 'all' || grade === coverageFilter;
+    return statusOk && coverageOk;
+  });
+
+  if (!visible.length) {
+    root.innerHTML = '<div class="empty"><p>No probes match the selected filters</p></div>';
+    return;
+  }
+
+  const groups = new Map();
+  visible.forEach(p => {
+    const site = normalizeSite(p.location);
+    if (!groups.has(site)) groups.set(site, []);
+    groups.get(site).push(p);
+  });
+
+  root.innerHTML = Array.from(groups.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([site, probes]) => `<section class="site-band">
+      <div class="site-band-hdr">
+        <div>
+          <div class="site-band-title">${esc(site)}</div>
+          <div class="site-band-sub">${probes.length} probe(s)</div>
+        </div>
+      </div>
+      <div class="probe-tile-grid">
+        ${probes.map(p => {
+          const hb = hbState(p.lastHeartbeat, p.status);
+          const coverage = coverageForProbe(p.id);
+          return `<button type="button" class="probe-tile" data-id="${esc(p.id)}">
+            <div class="probe-tile-top">
+              <div>
+                <div class="probe-tile-name">${esc(p.name)}</div>
+                <div class="probe-tile-id">${esc(p.id)}</div>
+              </div>
+              <span class="badge ${statusCls(p.status)}">${esc(p.status)}</span>
+            </div>
+            <div class="probe-tile-meta">
+              <span>${esc(p.location)}</span>
+              ${p.ssid ? `<span>SSID ${esc(p.ssid)}</span>` : ''}
+              <span>${esc(hb.label)} ${esc(hb.detail)}</span>
+            </div>
+            <div class="coverage-line">
+              ${coverageBadge(coverage)}
+              <span>${coverage.grade === 'NO_DATA' ? '-' : `${coverage.score}/100`}</span>
+            </div>
+          </button>`;
+        }).join('')}
+      </div>
+    </section>`)
+    .join('');
 }
 
 /* ════════════════════════════════════════
@@ -1010,6 +1099,7 @@ function renderPlugins(plugins) {
       </div>
       ${p.description?`<div class="plugin-card-desc">${esc(p.description)}</div>`:''}
       <div class="plugin-card-actions">
+        ${p.hasDashboard && p.dashboardUid ? `<button class="btn btn-ghost plugin-dashboard" data-uid="${esc(p.dashboardUid)}" data-title="${esc(p.name)}">Dashboard</button>` : ''}
         <button class="btn ${av?'btn-danger':'btn-ghost'} plugin-toggle" data-id="${esc(p.id)}" data-next="${!av}" style="font-size:12px">${av?'Disable':'Enable'}</button>
         <button class="btn btn-danger plugin-delete" data-id="${esc(p.id)}" style="width:32px;padding:0;justify-content:center;flex:0">
           <svg viewBox="0 0 24 24" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
@@ -1137,47 +1227,88 @@ async function refreshActionsView(showToast=true) {
   }
 }
 
-function renderPluginAssignSelect() {
-  const scheduledSel = $('probe-scheduled-plugins-select');
-  const actionSel = $('probe-action-plugins-select');
-  const legacySel = $('probe-plugins-select');
-  const assigned = new Set(S.assignments.map(a=>a.pluginId));
+function enabledConfigFor(testType) {
+  return (S.probeConfig?.enabledTests || []).find(t => t.testType === testType) || null;
+}
+
+function pluginConfigRow(plugin, mode) {
+  const assigned = S.assignments.some(a => a.pluginId === plugin.id);
+  const cfg = enabledConfigFor(plugin.id);
+  const checkedAttr = assigned ? 'checked' : '';
+  const disabledAttr = assigned ? '' : 'disabled';
+  const interval = cfg?.intervalSeconds || 30;
+  const testEnabled = cfg?.enabled === true || (assigned && !!cfg);
+  const dashboard = plugin.hasDashboard && plugin.dashboardUid
+    ? `<button type="button" class="btn btn-ghost assigned-dashboard-btn" data-uid="${esc(plugin.dashboardUid)}" data-title="${esc(plugin.name)}">Dashboard</button>`
+    : '';
+
+  if (mode === 'ACTION') {
+    return `<div class="plugin-config-row" data-plugin-id="${esc(plugin.id)}">
+      <div class="plugin-config-main">
+        <div>
+          <div class="plugin-config-title">${esc(plugin.name)}</div>
+          <div class="plugin-config-meta">${esc(plugin.id)} · v${esc(plugin.version)}${plugin.available ? '' : ' · disabled'}</div>
+        </div>
+        ${dashboard}
+      </div>
+      <label class="checkline"><input type="checkbox" class="plugin-assign-check" data-plugin-id="${esc(plugin.id)}" ${checkedAttr}/> Assigned action plugin</label>
+    </div>`;
+  }
+
+  return `<div class="plugin-config-row" data-plugin-id="${esc(plugin.id)}">
+    <div class="plugin-config-main">
+      <div>
+        <div class="plugin-config-title">${esc(plugin.name)}</div>
+        <div class="plugin-config-meta">${esc(plugin.id)} · v${esc(plugin.version)}${plugin.available ? '' : ' · disabled'}</div>
+      </div>
+      ${dashboard}
+    </div>
+    <label class="checkline"><input type="checkbox" class="plugin-assign-check" data-plugin-id="${esc(plugin.id)}" ${checkedAttr}/> Assigned</label>
+    <div class="plugin-config-controls">
+      <label class="checkline"><input type="checkbox" class="plugin-test-enable-check" data-plugin-id="${esc(plugin.id)}" ${testEnabled ? 'checked' : ''} ${disabledAttr}/> Enable scheduled test</label>
+      <div class="form-col">
+        <label>Interval</label>
+        <input class="inp plugin-test-interval" data-plugin-id="${esc(plugin.id)}" type="number" min="5" max="3600" value="${esc(interval)}" ${disabledAttr}/>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPluginConfigLists() {
+  const scheduledRoot = $('scheduled-plugin-config-list');
+  const actionRoot = $('action-plugin-config-list');
+  if (!scheduledRoot || !actionRoot) return;
+
   const scheduledPlugins = S.plugins.filter(p => p.executionMode !== 'ACTION');
   const actionPlugins = S.plugins.filter(p => p.executionMode === 'ACTION');
-
-  if (scheduledSel) {
-    scheduledSel.innerHTML = scheduledPlugins.map(p =>
-      `<option value="${esc(p.id)}" ${assigned.has(p.id)?'selected':''}>${esc(p.name)} v${esc(p.version)}${p.available?'':' [disabled]'}</option>`
-    ).join('') || '<option value="" disabled>No scheduled plugins available</option>';
-  }
-
-  if (actionSel) {
-    actionSel.innerHTML = actionPlugins.map(p =>
-      `<option value="${esc(p.id)}" ${assigned.has(p.id)?'selected':''}>${esc(p.name)} v${esc(p.version)}${p.available?'':' [disabled]'}</option>`
-    ).join('') || '<option value="" disabled>No action plugins available</option>';
-  }
-
-  if (legacySel && !scheduledSel && !actionSel) {
-    legacySel.innerHTML = S.plugins.map(p =>
-      `<option value="${esc(p.id)}" ${assigned.has(p.id)?'selected':''}>${esc(p.name)} v${esc(p.version)}${p.available?'':' [disabled]'}</option>`
-    ).join('') || '<option value="" disabled>No plugins available</option>';
-  }
-  renderTestTypeSelectors();
+  scheduledRoot.innerHTML = scheduledPlugins.length
+    ? scheduledPlugins.map(p => pluginConfigRow(p, 'SCHEDULED')).join('')
+    : emptyList('No scheduled plugins available');
+  actionRoot.innerHTML = actionPlugins.length
+    ? actionPlugins.map(p => pluginConfigRow(p, 'ACTION')).join('')
+    : emptyList('No action plugins available');
   renderPanelActionPluginSelect();
 }
 
+function renderPluginAssignSelect() {
+  renderPluginConfigLists();
+}
+
 function collectAssignedPluginIds() {
-  const scheduledSel = $('probe-scheduled-plugins-select');
-  const actionSel = $('probe-action-plugins-select');
-  const legacySel = $('probe-plugins-select');
+  return Array.from(document.querySelectorAll('.plugin-assign-check:checked'))
+    .map(input => input.dataset.pluginId)
+    .filter(Boolean);
+}
 
-  if (scheduledSel || actionSel) {
-    const scheduledIds = scheduledSel ? Array.from(scheduledSel.selectedOptions).map(o=>o.value) : [];
-    const actionIds = actionSel ? Array.from(actionSel.selectedOptions).map(o=>o.value) : [];
-    return Array.from(new Set([...scheduledIds, ...actionIds])).filter(Boolean);
-  }
-
-  return legacySel ? Array.from(legacySel.selectedOptions).map(o=>o.value).filter(Boolean) : [];
+function collectScheduledTestUpdates() {
+  return S.plugins
+    .filter(p => p.executionMode !== 'ACTION')
+    .filter(p => document.querySelector(`.plugin-assign-check[data-plugin-id="${CSS.escape(p.id)}"]`)?.checked)
+    .map(p => ({
+      testType: p.id,
+      enabled: !!document.querySelector(`.plugin-test-enable-check[data-plugin-id="${CSS.escape(p.id)}"]`)?.checked,
+      intervalSeconds: Math.max(5, Math.min(3600, Number(document.querySelector(`.plugin-test-interval[data-plugin-id="${CSS.escape(p.id)}"]`)?.value || 30)))
+    }));
 }
 
 function collectTestTypeOptions() {
@@ -1224,18 +1355,27 @@ async function loadAssignments(probeId) {
   renderPluginAssignSelect();
 }
 
+async function loadProbeConfig(probeId) {
+  const d = await gql(
+    'query C($pid:String!){probeConfig(probeId:$pid){probeId enabledTests{probeId testType intervalSeconds enabled}availablePlugins{id name version checksum available executionMode bundleUrl hasDashboard dashboardUid}}}',
+    {pid:probeId}
+  );
+  S.probeConfig = d.probeConfig || null;
+  renderPluginConfigLists();
+}
+
 function openProbePanel(id) {
   const p = S.probes.find(pr=>pr.id===id);
   if (!p) return;
   S.selectedId = id;
 
   // Populate hidden fields
-  ['status-probe-id','panel-cfg-probe-id','toggle-probe-id','probe-config-probe-id','probe-plugins-probe-id','trigger-action-probe-id','update-action-probe-id'].forEach(f=>$(f).value=id);
+  ['status-probe-id','probe-plugins-probe-id','trigger-action-probe-id','update-action-probe-id'].forEach(f=>$(f).value=id);
 
   $('panel-name').textContent = p.name;
   $('panel-id').textContent = p.id;
   $('status-value').value = p.status;
-  renderTestTypeSelectors();
+  renderPluginConfigLists();
   renderPanelActionPluginSelect();
 
   $('probe-panel').classList.add('open');
@@ -1243,6 +1383,7 @@ function openProbePanel(id) {
   document.body.style.overflow = 'hidden';
 
   $('quick-action-probe').value = id;
+  loadProbeConfig(id).catch(e=>setLog({error:String(e)}));
   loadAssignments(id);
   loadActionHistory(id).catch(e=>setLog({error:String(e)}));
   renderFleet(S.probes); // highlight row
@@ -1266,17 +1407,19 @@ async function refreshAll() {
   btn.querySelector('svg').classList.add('spinning');
 
   try {
-    const [fd, pd] = await Promise.all([
-      gql('query{fleetStatus{probes{id name location ipAddress status lastHeartbeat}}}'),
-      gql('query{plugins{id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl}}'),
+    const [fd, pd, cd] = await Promise.all([
+      gql('query{fleetStatus{probes{id name location ipAddress ssid status lastHeartbeat}}}'),
+      gql('query{plugins{id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl hasDashboard dashboardUid}}'),
+      gql('query{fleetCoverage{probeId site score grade rssiDbm snrDb linkQualityPercent pingLatencyMs pingPacketLossPercent sampleCount receivedAtUtc}}'),
     ]);
+    S.coverage = cd.fleetCoverage || [];
     renderFleet(fd.fleetStatus.probes);
     renderPlugins(pd.plugins);
     if (S.selectedId && $('probe-panel').classList.contains('open')) {
       await loadAssignments(S.selectedId);
       await Promise.allSettled([loadActionHistory(S.selectedId)]);
     }
-    setLog({fleet:fd, plugins:pd});
+    setLog({fleet:fd, plugins:pd, coverage:cd});
     setConn(true);
   } catch(e) {
     setConn(false);
@@ -1336,10 +1479,23 @@ $('fleet-body').addEventListener('click', e=>{
   if (row) openProbePanel(row.dataset.id);
 });
 
+$('campus-grid').addEventListener('click', e=>{
+  const tile = e.target.closest('.probe-tile[data-id]');
+  if (tile) openProbePanel(tile.dataset.id);
+});
+$('map-status-filter').addEventListener('change', renderCampusGrid);
+$('map-coverage-filter').addEventListener('change', renderCampusGrid);
+
 // Plugins actions
 $('plugins-grid').addEventListener('click', async e=>{
+  const dashboardBtn = e.target.closest('.plugin-dashboard');
   const toggleBtn = e.target.closest('.plugin-toggle');
   const deleteBtn = e.target.closest('.plugin-delete');
+
+  if (dashboardBtn) {
+    await openDashboardByUid(dashboardBtn.dataset.uid, dashboardBtn.dataset.title);
+    return;
+  }
 
   if (toggleBtn) {
     const id = toggleBtn.dataset.id, next = toggleBtn.dataset.next==='true';
@@ -1381,7 +1537,7 @@ $('register-plugin-form').addEventListener('submit', async e=>{
   }};
   try {
     const d = await gql(
-      'mutation R($i:RegisterPluginInputTypeInput!){registerPlugin(input:$i){success message plugin{id name version available executionMode bundleUrl bundleDownloadUrl}}}',
+      'mutation R($i:RegisterPluginInputTypeInput!){registerPlugin(input:$i){success message plugin{id name version available executionMode bundleUrl bundleDownloadUrl hasDashboard dashboardUid}}}',
       vars
     );
     setLog(d);
@@ -1405,7 +1561,7 @@ $('plugin-fetch-form').addEventListener('submit', async e=>{
   const id = $('plugin-fetch-select').value;
   if (!id) { toast('Select a plugin','warn'); return; }
   try {
-    const d = await gql('query P($id:String!){plugin(id:$id){id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl}}',{id});
+    const d = await gql('query P($id:String!){plugin(id:$id){id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl hasDashboard dashboardUid}}',{id});
     setLog(d); if (!S.drawerOpen) toggleDrawer();
     toast('Plugin details — see log','info');
   } catch(e) { toast('Fetch failed','err'); setLog({error:String(e)}); }
@@ -1443,7 +1599,7 @@ $('status-form').addEventListener('submit', async e=>{
 });
 
 // Panel config
-$('panel-config-form').addEventListener('submit', async e=>{
+if ($('panel-config-form')) $('panel-config-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const pid = $('panel-cfg-probe-id').value;
   if (!pid) { toast('No probe selected','warn'); return; }
@@ -1459,7 +1615,7 @@ $('panel-config-form').addEventListener('submit', async e=>{
 });
 
 // Toggle
-$('toggle-form').addEventListener('submit', async e=>{
+if ($('toggle-form')) $('toggle-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const pid = $('toggle-probe-id').value;
   if (!pid) { toast('No probe selected','warn'); return; }
@@ -1477,13 +1633,13 @@ $('toggle-form').addEventListener('submit', async e=>{
 });
 
 // Probe config query
-$('probe-config-form').addEventListener('submit', async e=>{
+if ($('probe-config-form')) $('probe-config-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const pid = $('probe-config-probe-id').value;
   if (!pid) { toast('No probe selected','warn'); return; }
   try {
     const d = await gql(
-      'query C($pid:String!){probeConfig(probeId:$pid){probeId enabledTests{probeId testType intervalSeconds enabled}availablePlugins{id name version checksum available executionMode bundleUrl}}}',
+      'query C($pid:String!){probeConfig(probeId:$pid){probeId enabledTests{probeId testType intervalSeconds enabled}availablePlugins{id name version checksum available executionMode bundleUrl hasDashboard dashboardUid}}}',
       {pid}
     );
     S.probeConfig = d.probeConfig || null;
@@ -1495,21 +1651,47 @@ $('probe-config-form').addEventListener('submit', async e=>{
 });
 
 // Probe plugins save
+$('probe-plugins-form').addEventListener('change', e=>{
+  const assign = e.target.closest('.plugin-assign-check');
+  if (!assign) return;
+  const row = assign.closest('.plugin-config-row');
+  row?.querySelectorAll('.plugin-test-enable-check,.plugin-test-interval').forEach(input => {
+    input.disabled = !assign.checked;
+  });
+});
+
+$('probe-plugins-form').addEventListener('click', async e=>{
+  const dashboardBtn = e.target.closest('.assigned-dashboard-btn');
+  if (!dashboardBtn) return;
+  await openDashboardByUid(dashboardBtn.dataset.uid, dashboardBtn.dataset.title);
+});
+
 $('probe-plugins-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const pid = $('probe-plugins-probe-id').value;
   if (!pid) { toast('No probe selected','warn'); return; }
   const pluginIds = collectAssignedPluginIds();
+  const testUpdates = collectScheduledTestUpdates();
   try {
     const d = await gql(
       'mutation S($i:SetProbePluginsInputTypeInput!){setProbePlugins(input:$i){success message assignments{probeId pluginId pluginName pluginVersion pluginAvailable assignedAt}}}',
       {i:{probeId:pid,pluginIds}}
     );
-    setLog(d);
     if (d.setProbePlugins?.success) {
       S.assignments = d.setProbePlugins.assignments||[];
-      renderPluginAssignSelect();
-      toast('Assignments saved','ok');
+      const updateResults = [];
+      for (const update of testUpdates) {
+        const result = await gql(
+          'mutation U($i:UpdateProbeTestConfigInputTypeInput!){updateProbeTestConfig(input:$i){success message config{probeId testType intervalSeconds enabled}}}',
+          {i:{probeId:pid,testType:update.testType,intervalSeconds:update.intervalSeconds,enabled:update.enabled}}
+        );
+        updateResults.push(result.updateProbeTestConfig);
+      }
+      await Promise.allSettled([loadProbeConfig(pid), loadAssignments(pid), loadActionHistory(pid)]);
+      renderActionsView();
+      setLog({assignments:d, scheduledTests:updateResults});
+      const enabledCount = testUpdates.filter(t => t.enabled).length;
+      toast(`Saved ${pluginIds.length} assignment(s), enabled ${enabledCount} scheduled test(s)`,'ok');
     } else toast(d.setProbePlugins?.message||'Rejected','err');
   } catch(e) { toast('Save failed','err'); setLog({error:String(e)}); }
 });
@@ -1590,12 +1772,51 @@ $('delete-probe-btn').addEventListener('click', async ()=>{
 });
 
 // Monitoring — open dashboard
+function renderGrafanaDashboardOptions() {
+  const select = $('monitor-dashboard');
+  const current = select.value;
+  const options = [
+    '<option value="">Probe health</option>',
+    ...S.dashboards.map(d => `<option value="${esc(d.uid)}">${esc(d.title)}</option>`)
+  ];
+  select.innerHTML = options.join('');
+  if ([...select.options].some(o => o.value === current)) select.value = current;
+}
+
+function ensureDashboardOption(uid, title) {
+  if (!uid || S.dashboards.some(d => d.uid === uid)) return;
+  S.dashboards.push({uid, title: title || uid, url: ''});
+  renderGrafanaDashboardOptions();
+}
+
+async function openDashboardByUid(uid, title) {
+  ensureDashboardOption(uid, title);
+  switchView('monitoring');
+  $('monitor-dashboard').value = uid || '';
+  $('open-dashboard-btn').click();
+}
+
+async function loadGrafanaDashboards(showToast=true) {
+  try {
+    const dashboards = await api('/monitoring/grafana/dashboards');
+    S.dashboards = Array.isArray(dashboards) ? dashboards : [];
+    S.dashboardsLoaded = true;
+    renderGrafanaDashboardOptions();
+    if (showToast) toast(`Loaded ${S.dashboards.length} dashboard(s)`,'ok');
+  } catch(e) {
+    S.dashboardsLoaded = false;
+    if (showToast) toast('Failed to load dashboards - check Admin key','err');
+    setLog({error:String(e)});
+  }
+}
+
 $('open-dashboard-btn').addEventListener('click', async ()=>{
   const site = $('monitor-site').value.trim() || 'default';
+  const dashboardUid = $('monitor-dashboard').value.trim() || null;
   try {
     const p = await api('/monitoring/grafana/embed-session',{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({site}),
+      body:JSON.stringify({site,dashboardUid}),
     });
     $('monitor-frame').src = p.embedUrl;
     $('monitor-frame').style.display = 'block';
@@ -1603,6 +1824,8 @@ $('open-dashboard-btn').addEventListener('click', async ()=>{
     setLog(p); toast(`Dashboard loaded for '${p.site}'`,'ok');
   } catch(e) { toast('Failed to open dashboard — check Admin key','err'); setLog({error:String(e)}); }
 });
+
+$('refresh-dashboards-btn').addEventListener('click', ()=>loadGrafanaDashboards(true));
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e=>{

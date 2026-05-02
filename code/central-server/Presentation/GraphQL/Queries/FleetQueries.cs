@@ -23,4 +23,14 @@ public class FleetQueries
             Probes = probes.Select(p => p.ToGraphQLType()).ToList()
         };
     }
+
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [GraphQLName("fleetCoverage")]
+    public async Task<List<ProbeCoverageSummaryType>> GetFleetCoverageAsync(
+        [Service] GetFleetCoverageUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var coverage = await useCase.ExecuteAsync(cancellationToken);
+        return coverage.Select(c => c.ToGraphQLType()).ToList();
+    }
 }

@@ -25,6 +25,11 @@ internal static class GrafanaDashboardConventions
         return CombineUrl(apiBaseUrl, "/api/dashboards/db");
     }
 
+    public static string BuildDashboardSearchApiUrl(string apiBaseUrl)
+    {
+        return CombineUrl(apiBaseUrl, "/api/search?type=dash-db");
+    }
+
     public static string BuildEmbedUrl(string embedBaseUrl, string dashboardUid, string site)
     {
         var encodedSite = Uri.EscapeDataString(string.IsNullOrWhiteSpace(site) ? "default" : site.Trim());

@@ -85,6 +85,11 @@ public class PluginDashboardAutomationServiceTests
     {
         public Func<string, GrafanaSyncResult>? PluginResultFactory { get; init; }
 
+        public Task<IReadOnlyList<GrafanaDashboardSummary>> ListDashboardsAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyList<GrafanaDashboardSummary>>([]);
+        }
+
         public Task<GrafanaSyncResult> UpsertPluginDashboardAsync(
             string pluginId,
             string? title,

@@ -4,6 +4,8 @@ namespace CentralServer.Application.Abstractions;
 
 public interface IGrafanaDashboardClient
 {
+    Task<IReadOnlyList<GrafanaDashboardSummary>> ListDashboardsAsync(CancellationToken cancellationToken);
+
     Task<GrafanaSyncResult> UpsertPluginDashboardAsync(
         string pluginId,
         string? title,

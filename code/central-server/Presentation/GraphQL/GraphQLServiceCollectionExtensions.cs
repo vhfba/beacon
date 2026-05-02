@@ -24,6 +24,7 @@ public static class GraphQLServiceCollectionExtensions
             .AddTypeExtension<PluginMutations>()
             .AddTypeExtension<ProbeAdministrationMutations>()
             .AddType<ProbeType>()
+            .AddType<ProbeCoverageSummaryType>()
             .AddType<ProbeRuntimeType>()
             .AddType<ProbeStatusType>()
             .AddType<ProbeTestConfigType>()

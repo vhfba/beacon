@@ -36,4 +36,10 @@ public class PluginType
 
     [GraphQLType("String")]
     public string? DashboardJson { get; set; }
+
+    [GraphQLType("Boolean!")]
+    public bool HasDashboard { get; set; }
+
+    [GraphQLType("String")]
+    public string? DashboardUid { get; set; }
 }

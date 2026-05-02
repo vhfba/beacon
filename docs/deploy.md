@@ -44,6 +44,8 @@ GRAFANA_EMBED_BASE_URL=http://localhost:3000
 GRAFANA_API_BASE_URL=http://host.docker.internal:3000
 GRAFANA_DASHBOARD_BASE_UID=beacon-probe-health
 GRAFANA_API_TOKEN=
+GRAFANA_API_USER=
+GRAFANA_API_PASSWORD=
 ```
 
 Current compose behavior:
@@ -101,6 +103,7 @@ Keep these aligned with central-server:
 
 - `GRAFANA_EMBED_BASE_URL`
 - `GRAFANA_API_BASE_URL`
+- either `GRAFANA_API_TOKEN`, or `GRAFANA_API_USER` and `GRAFANA_API_PASSWORD`
 
 ## 4. Start Monitoring Stack
 

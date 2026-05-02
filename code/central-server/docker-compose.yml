@@ -42,6 +42,8 @@ services:
       Monitoring__Grafana__ApiBaseUrl: ${GRAFANA_API_BASE_URL:-http://host.docker.internal:3000}
       Monitoring__Grafana__DashboardBaseUid: ${GRAFANA_DASHBOARD_BASE_UID:-beacon-probe-health}
       Monitoring__Grafana__ApiToken: ${GRAFANA_API_TOKEN:-}
+      Monitoring__Grafana__ApiUser: ${GRAFANA_API_USER:-}
+      Monitoring__Grafana__ApiPassword: ${GRAFANA_API_PASSWORD:-}
     ports:
       - "${CENTRAL_SERVER_PORT:-5000}:8080"
     volumes:

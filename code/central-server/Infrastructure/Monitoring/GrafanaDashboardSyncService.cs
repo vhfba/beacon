@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using CentralServer.Application.Abstractions;
 using CentralServer.Application.DTOs;
@@ -25,6 +26,42 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
         _logger = logger;
     }
 
+    public async Task<IReadOnlyList<GrafanaDashboardSummary>> ListDashboardsAsync(CancellationToken cancellationToken)
+    {
+        var options = _monitoringOptions.CurrentValue.Grafana;
+        if (string.IsNullOrWhiteSpace(options.ApiBaseUrl) || !HasGrafanaApiCredentials(options))
+        {
+            return [];
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Get, GrafanaDashboardConventions.BuildDashboardSearchApiUrl(options.ApiBaseUrl));
+        request.Headers.Authorization = BuildAuthorizationHeader(options);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogWarning("Grafana dashboard search failed: {StatusCode} {Body}", response.StatusCode, errorBody);
+            return [];
+        }
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        try
+        {
+            var results = JsonSerializer.Deserialize<List<GrafanaSearchResult>>(json, JsonOptions) ?? [];
+            return results
+                .Where(item => !string.IsNullOrWhiteSpace(item.Uid) && !string.IsNullOrWhiteSpace(item.Title))
+                .OrderBy(item => item.Title, StringComparer.OrdinalIgnoreCase)
+                .Select(item => new GrafanaDashboardSummary(item.Uid!, item.Title!, item.Url ?? string.Empty))
+                .ToList();
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Grafana dashboard search returned invalid JSON");
+            return [];
+        }
+    }
+
     public async Task<GrafanaSyncResult> UpsertPluginDashboardAsync(
         string pluginId,
         string? title,
@@ -34,12 +71,12 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
         var options = _monitoringOptions.CurrentValue.Grafana;
         var dashboardUid = GrafanaDashboardConventions.BuildPluginDashboardUid(pluginId);
 
-        if (string.IsNullOrWhiteSpace(options.ApiBaseUrl) || string.IsNullOrWhiteSpace(options.ApiToken))
+        if (string.IsNullOrWhiteSpace(options.ApiBaseUrl) || !HasGrafanaApiCredentials(options))
         {
             return new GrafanaSyncResult(
                 Applied: false,
                 DashboardUid: dashboardUid,
-                Message: "Grafana API settings are missing; plugin dashboard sync skipped.");
+                Message: "Grafana API settings are missing; configure an API token or API user/password before plugin dashboard sync.");
         }
 
         try
@@ -51,8 +88,7 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
                 : title;
 
             return await SaveDashboardAsync(
-                options.ApiBaseUrl,
-                options.ApiToken,
+                options,
                 dashboardUid,
                 dashboard,
                 $"Dashboard updated from plugin '{pluginId}' registration",
@@ -76,8 +112,7 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
     }
 
     private async Task<GrafanaSyncResult> SaveDashboardAsync(
-        string apiBaseUrl,
-        string apiToken,
+        GrafanaMonitoringOptions options,
         string dashboardUid,
         JsonObject dashboard,
         string changeMessage,
@@ -91,8 +126,8 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
             ["message"] = changeMessage
         };
 
-        var saveRequest = new HttpRequestMessage(HttpMethod.Post, GrafanaDashboardConventions.BuildDashboardApiUrl(apiBaseUrl));
-        saveRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
+        var saveRequest = new HttpRequestMessage(HttpMethod.Post, GrafanaDashboardConventions.BuildDashboardApiUrl(options.ApiBaseUrl));
+        saveRequest.Headers.Authorization = BuildAuthorizationHeader(options);
         saveRequest.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
 
         var saveResponse = await _httpClient.SendAsync(saveRequest, cancellationToken);
@@ -104,7 +139,7 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
             return new GrafanaSyncResult(
                 Applied: false,
                 DashboardUid: dashboardUid,
-                Message: $"Grafana dashboard import failed with status {(int)saveResponse.StatusCode}.");
+                Message: BuildFailureMessage((int)saveResponse.StatusCode, errorBody));
         }
 
         return new GrafanaSyncResult(
@@ -112,4 +147,41 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
             DashboardUid: dashboardUid,
             Message: successMessage);
     }
+
+    private static bool HasGrafanaApiCredentials(GrafanaMonitoringOptions options)
+    {
+        return !string.IsNullOrWhiteSpace(options.ApiToken)
+            || (!string.IsNullOrWhiteSpace(options.ApiUser) && !string.IsNullOrWhiteSpace(options.ApiPassword));
+    }
+
+    private static AuthenticationHeaderValue BuildAuthorizationHeader(GrafanaMonitoringOptions options)
+    {
+        if (!string.IsNullOrWhiteSpace(options.ApiToken))
+        {
+            return new AuthenticationHeaderValue("Bearer", options.ApiToken);
+        }
+
+        var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{options.ApiUser}:{options.ApiPassword}"));
+        return new AuthenticationHeaderValue("Basic", credentials);
+    }
+
+    private static string BuildFailureMessage(int statusCode, string errorBody)
+    {
+        var message = $"Grafana dashboard import failed with status {statusCode}.";
+        if (string.IsNullOrWhiteSpace(errorBody))
+        {
+            return message;
+        }
+
+        var trimmed = errorBody.Trim();
+        var detail = trimmed.Length > 300 ? trimmed[..300] : trimmed;
+        return $"{message} Grafana response: {detail}";
+    }
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    private sealed record GrafanaSearchResult(string? Uid, string? Title, string? Url);
 }

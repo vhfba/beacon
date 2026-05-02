@@ -18,6 +18,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<RecordProbeHeartbeatUseCase>();
         services.AddScoped<ReportProbeMetricsUseCase>();
         services.AddScoped<ExportPrometheusMetricsUseCase>();
+        services.AddScoped<GetFleetCoverageUseCase>();
         services.AddScoped<GetProbePluginAssignmentsUseCase>();
         services.AddScoped<UpdateProbeTestConfigUseCase>();
         services.AddScoped<UpdateProbeStatusUseCase>();

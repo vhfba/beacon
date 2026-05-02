@@ -23,4 +23,8 @@ public sealed class GrafanaMonitoringOptions
     public string DashboardBaseUid { get; init; } = "beacon-probe-health";
 
     public string ApiToken { get; init; } = string.Empty;
+
+    public string ApiUser { get; init; } = string.Empty;
+
+    public string ApiPassword { get; init; } = string.Empty;
 }

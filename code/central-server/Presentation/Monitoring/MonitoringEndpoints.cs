@@ -27,7 +27,9 @@ public static class MonitoringEndpoints
             IGrafanaDashboardClient grafanaDashboardClient) =>
         {
             var site = string.IsNullOrWhiteSpace(request.Site) ? "default" : request.Site.Trim();
-            var dashboardUid = monitoringOptions.Value.Grafana.DashboardBaseUid;
+            var dashboardUid = string.IsNullOrWhiteSpace(request.DashboardUid)
+                ? monitoringOptions.Value.Grafana.DashboardBaseUid
+                : request.DashboardUid.Trim();
 
             return Results.Ok(new
             {
@@ -41,8 +43,18 @@ public static class MonitoringEndpoints
             .WithName("CreateGrafanaEmbedSession")
             .RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
+        endpoints.MapGet("/monitoring/grafana/dashboards", async (
+            IGrafanaDashboardClient grafanaDashboardClient,
+            CancellationToken cancellationToken) =>
+        {
+            var dashboards = await grafanaDashboardClient.ListDashboardsAsync(cancellationToken);
+            return Results.Ok(dashboards);
+        })
+            .WithName("ListGrafanaDashboards")
+            .RequireAuthorization(AuthorizationPolicies.AdminOnly);
+
         return endpoints;
     }
 }
 
-public sealed record GrafanaEmbedSessionRequest(string? Site);
+public sealed record GrafanaEmbedSessionRequest(string? Site, string? DashboardUid);

@@ -29,8 +29,27 @@ public static class GraphQLTypeMappings
         };
     }
 
+    public static ProbeCoverageSummaryType ToGraphQLType(this ProbeCoverageSummaryDTO dto)
+    {
+        return new ProbeCoverageSummaryType
+        {
+            ProbeId = dto.ProbeId,
+            Site = dto.Site,
+            Score = dto.Score,
+            Grade = dto.Grade,
+            RssiDbm = dto.RssiDbm,
+            SnrDb = dto.SnrDb,
+            LinkQualityPercent = dto.LinkQualityPercent,
+            PingLatencyMs = dto.PingLatencyMs,
+            PingPacketLossPercent = dto.PingPacketLossPercent,
+            SampleCount = dto.SampleCount,
+            ReceivedAtUtc = dto.ReceivedAtUtc
+        };
+    }
+
     public static PluginType ToGraphQLType(this PluginDTO dto)
     {
+        var hasDashboard = !string.IsNullOrWhiteSpace(dto.DashboardJson);
         return new PluginType
         {
             Id = dto.Id,
@@ -45,8 +64,28 @@ public static class GraphQLTypeMappings
                 : PluginExecutionModeType.Scheduled,
             BundleUrl = dto.BundleUrl,
             BundleDownloadUrl = dto.BundleDownloadUrl,
-            DashboardJson = dto.DashboardJson
+            DashboardJson = dto.DashboardJson,
+            HasDashboard = hasDashboard,
+            DashboardUid = hasDashboard ? BuildPluginDashboardUid(dto.Id) : null
         };
+    }
+
+    private static string BuildPluginDashboardUid(string pluginId)
+    {
+        var slug = new string((pluginId ?? string.Empty)
+            .Trim()
+            .ToLowerInvariant()
+            .Select(ch => (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') ? ch : '-')
+            .ToArray())
+            .Trim('-');
+
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            slug = "plugin";
+        }
+
+        var uid = $"beacon-plugin-{slug}";
+        return uid.Length <= 40 ? uid : uid[..40];
     }
 
     public static ProbeTestConfigType ToGraphQLType(this ProbeTestConfigurationDTO dto)

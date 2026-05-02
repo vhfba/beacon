@@ -171,6 +171,67 @@ public class ProbeRuntimeGraphQLIntegrationTests : IClassFixture<CentralServerWe
     }
 
     [Fact]
+    public async Task FleetCoverage_WhenMetricsExist_ReturnsCoverageSummary()
+    {
+        await _factory.SeedProbeAsync("probe-coverage", "10.3.0.6", ProbeStatus.Active);
+
+        var probeClient = _factory.CreateProbeClient();
+        var mutationResponse = await probeClient.PostAsJsonAsync("/graphql", new
+        {
+            query = """
+                mutation($input: ReportProbeMetricsInputTypeInput!) {
+                  reportProbeMetrics(input: $input) {
+                    success
+                    acceptedSamples
+                  }
+                }
+                """,
+            variables = new
+            {
+                input = new
+                {
+                    probeId = "probe-coverage",
+                    samples = new[]
+                    {
+                        Metric("beacon_wifi_rssi_dbm", -55),
+                        Metric("beacon_wifi_snr_db", 35),
+                        Metric("beacon_wifi_link_quality_percent", 94),
+                        Metric("beacon_ping_latency_ms", 18),
+                        Metric("beacon_ping_packet_loss_percent", 0)
+                    }
+                }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, mutationResponse.StatusCode);
+
+        var adminClient = _factory.CreateAdminClient();
+        var coverageResponse = await adminClient.PostAsJsonAsync("/graphql", new
+        {
+            query = """
+                query {
+                  fleetCoverage {
+                    probeId
+                    site
+                    score
+                    grade
+                    rssiDbm
+                    sampleCount
+                  }
+                }
+                """
+        });
+
+        Assert.Equal(HttpStatusCode.OK, coverageResponse.StatusCode);
+        var payload = await coverageResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var coverage = payload.GetProperty("data").GetProperty("fleetCoverage").EnumerateArray().ToArray();
+        Assert.Contains(coverage, item =>
+            item.GetProperty("probeId").GetString() == "probe-coverage"
+            && item.GetProperty("grade").GetString() == "EXCELLENT"
+            && item.GetProperty("score").GetInt32() == 100);
+    }
+
+    [Fact]
     public async Task ProbeConfig_WhenRequested_StillUpdatesLastConfigFetch()
     {
         await _factory.SeedProbeAsync("probe-config", "10.3.0.9", ProbeStatus.Active);
@@ -207,5 +268,20 @@ public class ProbeRuntimeGraphQLIntegrationTests : IClassFixture<CentralServerWe
         await repository.CreateAsync(execution);
         await unitOfWork.SaveChangesAsync();
         return execution.ExecutionId;
+    }
+
+    private static object Metric(string name, double value)
+    {
+        return new
+        {
+            name,
+            kind = "gauge",
+            value,
+            labels = new[]
+            {
+                new { key = "probe_id", value = "probe-coverage" },
+                new { key = "site", value = "Building A" }
+            }
+        };
     }
 }

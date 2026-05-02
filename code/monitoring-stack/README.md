@@ -80,4 +80,4 @@ If the metric model changes, update:
 
 - keep real Grafana credentials out of version control
 - use `.env.example` as the template
-- set a real Grafana API token before relying on dashboard sync features
+- set a real Grafana API token, or configure central-server with `GRAFANA_API_USER` and `GRAFANA_API_PASSWORD`, before relying on dashboard sync features
