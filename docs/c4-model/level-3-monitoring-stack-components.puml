@@ -9,14 +9,14 @@ System_Ext(syncClient, "Central Server Monitoring Integration", "Calls Grafana H
 
 System_Boundary(monitoring, "Monitoring Stack") {
 
-  Container_Boundary(prometheus, "Prometheus") {
+  Boundary(prometheus, "Prometheus", "Container") {
     Component(scraper, "Scrape Manager", "Prometheus", "Executes pull jobs per scrape_config")
     Component(tsdb, "TSDB", "Prometheus storage", "Local time-series storage")
     Component(rules, "Rules Engine", "Prometheus", "Recording and alert rule evaluation")
     Component(promql, "Query Engine", "PromQL", "PromQL evaluation")
   }
 
-  Container_Boundary(grafana, "Grafana") {
+  Boundary(grafana, "Grafana", "Container") {
     Component(ds, "Datasource Plugin", "Prometheus connector", "Connects dashboards to Prometheus HTTP API")
     Component(dash, "Dashboard Engine", "Grafana", "Panel rendering and templating")
     Component(api, "Dashboard HTTP API", "Grafana API", "Imports and updates dashboard JSON")

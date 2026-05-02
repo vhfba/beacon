@@ -8,7 +8,7 @@ System_Ext(central, "Central Server", "GraphQL control plane, bundle delivery, a
 System_Ext(targets, "Site Wi-Fi and Network Targets", "Endpoints exercised by plugins")
 
 System_Boundary(agentSystem, "Probe Agent") {
-  Container_Boundary(agent, "Probe Agent Runtime") {
+  Boundary(agent, "Probe Agent Runtime", "Container") {
     Component(client, "Central Client", "Python HTTP/GraphQL client", "Calls probeConfig, probeRuntime, heartbeat, action, and metrics operations")
     Component(pluginManager, "Plugin Manager", "Bundle cache and loader", "Downloads, validates, extracts, and loads plugin bundles")
     Component(scheduler, "Scheduler", "Runtime loop", "Runs scheduled plugins on configured intervals")

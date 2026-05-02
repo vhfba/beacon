@@ -17,6 +17,7 @@ BEACON will only modify Grafana dashboards through plugin registration metadata.
 2. Central-server validates that JSON and can import it into Grafana using a plugin-scoped dashboard UID.
 3. The monitoring embed endpoint only returns an embed URL; it does not mutate Grafana dashboards or thresholds.
 4. Site-specific threshold update flows are removed from the platform.
+5. Admin-facing UI elements may derive plugin dashboard links from the same deterministic dashboard UID convention instead of storing separate dashboard URLs in BEACON state.
 
 ## Alternatives considered
 

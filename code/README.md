@@ -26,10 +26,12 @@ BEACON currently works as a central aggregation model:
 
 - register and manage probes
 - register and distribute scheduled or action plugins
-- assign plugins to probes
+- assign plugins to probes and enable scheduled execution
 - configure scheduled checks such as `PING`, `HTTP`, `IPERF`, and `WIFI`
 - trigger on-demand actions such as `WIFI_SCAN_ACTION`
 - aggregate probe metrics centrally for monitoring dashboards
+- expose plugin-linked Grafana dashboards and fleet coverage summaries
+- render a location-grouped campus monitoring view from probe metadata
 
 ## Documentation Map
 

@@ -1,7 +1,7 @@
 @startuml
 title BEACON - System Context (C1)
 
-!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
 Person(admin, "Admin", "Manages probes, plugins, actions, and dashboards")
 System(beacon, "BEACON Platform", "Distributed probe management and network observability platform")

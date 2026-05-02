@@ -145,12 +145,12 @@ Recommended order:
 1. Build plugin bundles from `code/probe-agent`.
 2. Start central-server.
 3. Register plugins through GraphQL.
-4. Register a probe.
+4. Start a probe so it auto-registers through heartbeat.
 5. Assign plugins with `setProbePlugins`.
 6. Enable scheduled tests with `updateProbeTestConfig`.
 7. Start probe-agent.
-8. Confirm probe heartbeat, action polling, and metrics reporting.
-9. Start monitoring-stack and verify Grafana panels.
+8. Confirm probe heartbeat, action polling, metrics reporting, and coverage score updates.
+9. Start monitoring-stack and verify Grafana panels and plugin dashboard links.
 
 ## 7. Verify End To End
 
@@ -172,6 +172,9 @@ Recommended order:
 - Prometheus target `beacon-central-server` is `UP`.
 - Queries return BEACON metrics with `probe_id` labels.
 - Grafana dashboard `beacon-probe-health` renders data.
+- `fleetCoverage` returns scores and grades for probes that pushed Wi-Fi or ping metrics.
+- the simulator `Map` tab groups probes by location and shows status plus coverage quality.
+- plugin cards with imported dashboards open the matching Grafana dashboard from the monitoring view.
 
 ## 8. Troubleshooting
 
@@ -189,6 +192,11 @@ Recommended order:
   - Confirm plugins are assigned with `setProbePlugins`.
   - Confirm scheduled plugins also have `updateProbeTestConfig` entries.
   - Confirm action plugins are queued with `triggerProbeAction`.
+
+- Plugin dashboard exists but has no graphs:
+  - Confirm the probe is assigned the scheduled plugin.
+  - Confirm the scheduled plugin also has an enabled `updateProbeTestConfig` entry.
+  - Confirm `/metrics` contains the expected `beacon_*` series before checking Grafana.
 
 - Grafana embed links are wrong:
   - Recheck `GRAFANA_EMBED_BASE_URL`.

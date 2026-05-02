@@ -4,7 +4,7 @@
 |--------|-----|
 |Date|[2026-05-01]|
 |Status|Accepted|
-|Depends on|ADR-002, ADR-007, ADR-008|
+|Depends on|ADR-002, ADR-007, ADR-008, ADR-015|
 |Tags|beacon, prometheus, metrics, redis, monitoring|
 
 ## Context
@@ -18,6 +18,7 @@ BEACON will use central-server as the single Prometheus scrape target for probe 
 3. Central-server exposes a single Prometheus-compatible `/metrics` endpoint that renders the latest aggregated samples.
 4. Prometheus scrapes only central-server `/metrics`.
 5. Probe liveness remains a domain concern derived from probe status plus heartbeat freshness, not from direct Prometheus scrape success against each probe.
+6. The same latest-snapshot store may be reused by central-server application features such as fleet-level coverage summaries, so long as BEACON does not treat it as long-term historical storage.
 
 ## Alternatives considered
 
@@ -53,6 +54,7 @@ Why it was rejected: The current need is latest-snapshot export, not long-term a
 - ADR-002 (plugin-based probe execution)
 - ADR-007 (.NET 9 / C# central server)
 - ADR-008 (HotChocolate GraphQL in .NET)
+- ADR-015 (Redis latest snapshot store)
 
 ## Supersedes
 - ADR-001

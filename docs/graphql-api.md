@@ -37,8 +37,10 @@ Authorization model:
   Probe-facing config payload with enabled scheduled tests and available plugins.
 - `ProbeRuntime`
   Runtime eligibility view returned during heartbeat/runtime flows.
+- `ProbeCoverageSummary`
+  Central-server computed coverage quality summary built from the latest pushed metric snapshot.
 - `Plugin`
-  Distributed plugin metadata, including execution mode and bundle information.
+  Distributed plugin metadata, including execution mode, bundle information, and optional Grafana dashboard metadata.
 - `ProbePluginAssignment`
   Mapping between a probe and its assigned plugins.
 - `ProbeActionExecution`
@@ -55,6 +57,7 @@ Authorization model:
 ### Admin queries
 
 - `fleetStatus`
+- `fleetCoverage`
 - `plugins`
 - `plugin(id: String!)`
 - `probePluginAssignments(probeId: String!)`
@@ -84,6 +87,26 @@ query {
 }
 ```
 
+### Example: fleet coverage
+
+```graphql
+query {
+  fleetCoverage {
+    probeId
+    site
+    score
+    grade
+    rssiDbm
+    snrDb
+    linkQualityPercent
+    pingLatencyMs
+    pingPacketLossPercent
+    sampleCount
+    receivedAtUtc
+  }
+}
+```
+
 ### Example: probe config
 
 ```graphql
@@ -102,6 +125,8 @@ query ProbeConfig($probeId: String!) {
       checksum
       bundleUrl
       bundleDownloadUrl
+      hasDashboard
+      dashboardUid
     }
   }
 }
@@ -161,6 +186,8 @@ mutation RegisterPlugin($input: RegisterPluginInputTypeInput!) {
       version
       available
       executionMode
+      hasDashboard
+      dashboardUid
     }
   }
 }
@@ -290,13 +317,13 @@ Notes:
 
 ### `POST /monitoring/grafana/embed-session`
 
-Returns the dashboard embed target for a site.
+Returns the dashboard embed target for a selected Grafana dashboard and site.
 
 - Auth: admin API key
 - Body:
 
 ```json
-{ "site": "building-a" }
+{ "site": "building-a", "dashboardUid": "beacon-plugin-ping" }
 ```
 
 Response fields:
@@ -311,6 +338,18 @@ Notes:
 
 - this endpoint no longer updates Grafana thresholds or clones site dashboards
 - Grafana dashboard import only happens during plugin registration when `dashboardJson` is provided
+
+### `GET /monitoring/grafana/dashboards`
+
+Returns the Grafana dashboards available for the simulator monitoring selector.
+
+- Auth: admin API key
+
+Response items:
+
+- `uid`
+- `title`
+- `url`
 
 ### `GET /plugins/{pluginId}/{version}/bundle`
 
@@ -334,11 +373,18 @@ curl -L ^
 1. Admin registers a plugin with `executionMode: SCHEDULED`.
 2. Probe boots and self-registers through `recordProbeHeartbeat`.
 3. Admin assigns plugins to a probe with `setProbePlugins`.
-4. Admin enables intervals with `updateProbeTestConfig`.
+4. Admin enables scheduled execution with `updateProbeTestConfig`.
 5. Probe reads `probeConfig` and `pendingProbeActions`.
 6. Probe runs scheduled plugins and pushes metrics with `reportProbeMetrics`.
-7. Prometheus scrapes `/metrics`.
-8. Grafana reads Prometheus.
+7. Central-server computes coverage summaries from the latest snapshots.
+8. Prometheus scrapes `/metrics`.
+9. Grafana reads Prometheus and the simulator UI reads `fleetCoverage`.
+
+Coverage scoring note:
+
+- central-server computes the `fleetCoverage` score from the latest pushed snapshot
+- score is clamped to `0..100`
+- grades are `EXCELLENT`, `GOOD`, `WEAK`, `UNUSABLE`, or `NO_DATA`
 
 ### On-demand action flow
 

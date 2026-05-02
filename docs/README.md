@@ -33,6 +33,8 @@ Current architecture diagrams focus on:
 - plugin assignment and bundle delivery
 - Prometheus scraping only central-server `/metrics`
 - Grafana embed and plugin-dashboard synchronization flows
+- central-server computed coverage scoring from latest probe snapshots
+- campus-grid monitoring grouped from probe location labels
 
 Current C4 views include:
 

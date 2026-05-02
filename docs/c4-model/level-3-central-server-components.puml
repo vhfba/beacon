@@ -10,27 +10,27 @@ System_Ext(grafana, "Grafana", "Dashboard UI and HTTP API")
 
 System_Boundary(central, "Central Server") {
 
-  Container_Boundary(presentation, "Presentation") {
+  Boundary(presentation, "Presentation", "Layer") {
     Component(graphql, "GraphQL Resolvers", "HotChocolate", "Admin and probe queries and mutations")
     Component(security, "Auth + GraphQL Hardening", "ASP.NET Core middleware", "API key auth, authorization policies, and query guardrails")
     Component(bundleEndpoint, "Plugin Bundle Endpoint", "Minimal API endpoint", "Serves validated plugin zip archives")
     Component(monitoringEndpoints, "Monitoring Endpoints", "Minimal API endpoints", "/metrics export and Grafana embed session")
   }
 
-  Container_Boundary(application, "Application") {
+  Boundary(application, "Application", "Layer") {
     Component(useCases, "Use Case Layer", "Application services", "Fleet, plugin, assignment, action, and metrics workflows")
     Component(runtimeCoordinator, "ProbeRuntimeCoordinator", "Application service", "Auto-registers probes and records passive heartbeat updates")
     Component(dashboardAutomation, "PluginDashboardAutomationService", "Application service", "Validates and imports plugin-provided dashboard JSON")
   }
 
-  Container_Boundary(infrastructure, "Infrastructure") {
+  Boundary(infrastructure, "Infrastructure", "Layer") {
     Component(repositories, "Repository Adapters", "EF Core adapters", "Persist probes, plugins, assignments, and action executions in PostgreSQL")
     Component(metricsStore, "Probe Metrics Store", "Redis or in-memory adapter", "Stores latest probe-reported metric snapshots")
     Component(grafanaSync, "GrafanaDashboardSyncService", "HTTP client adapter", "Imports or updates Grafana dashboards")
   }
 
-  ComponentDb(db, "PostgreSQL", "Relational database", "Primary persistence")
-  ComponentDb(redis, "Redis", "Key-value store", "Metric snapshot cache with TTL")
+  Component(db, "PostgreSQL", "Relational database", "Primary persistence")
+  Component(redis, "Redis", "Key-value store", "Metric snapshot cache with TTL")
 }
 
 Rel(admin, security, "Authenticated admin access", "HTTP")

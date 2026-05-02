@@ -9,6 +9,7 @@ The central server is the BEACON control plane. It owns probe inventory, plugin 
 - store latest probe metric snapshots in Redis
 - serve plugin bundle archives to probe agents
 - expose `/metrics` for Prometheus and `/monitoring/grafana/embed-session` for dashboard embedding
+- compute fleet coverage summaries from the latest probe snapshots
 - host the local simulator UI at `/beacon-simulator.html`
 
 ## Stack
@@ -66,12 +67,13 @@ The main composition happens in [Program.cs](/C:/Users/joaom/Faculdade/beacon/co
 
 - `ReportProbeMetricsUseCase`
 - `ExportPrometheusMetricsUseCase`
+- `GetFleetCoverageUseCase`
 
 ## Runtime Model
 
 ### Scheduled plugins
 
-Scheduled plugins are assigned to a probe after it auto-registers and then activated through `updateProbeTestConfig`.
+Scheduled plugins are assigned to a probe after it auto-registers and then activated through `updateProbeTestConfig`. The simulator UI now presents this as one combined configuration workflow, while the backend keeps the same GraphQL mutations for assignment and scheduled test enablement.
 
 Examples:
 
@@ -95,6 +97,7 @@ Primary endpoints:
 - `POST /graphql`
 - `GET /metrics`
 - `GET /health`
+- `GET /monitoring/grafana/dashboards`
 - `POST /monitoring/grafana/embed-session`
 - `GET /plugins/{pluginId}/{version}/bundle`
 
@@ -136,6 +139,7 @@ Current coverage includes:
 - GraphQL runtime flows
 - health and security integration
 - central `/metrics` export
+- fleet coverage scoring and plugin dashboard metadata
 
 ## Plugin Bundles
 
@@ -156,3 +160,4 @@ curl -L -H "X-Api-Key: <probe-key>" http://localhost:5000/plugins/PING/1.0.0/bun
 - [Deployment guide](../../docs/deploy.md)
 - [ADR-007](../../docs/adr/ADR-007-use-dotnet-9-with-csharp-for-the-central-server.md)
 - [ADR-008](../../docs/adr/ADR-008-use-hotchocolate-graphql-for-dotnet.md)
+- [ADR-015](../../docs/adr/ADR-015-use-redis-for-latest-probe-metric-snapshots.md)
