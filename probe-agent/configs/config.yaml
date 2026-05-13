@@ -1,0 +1,31 @@
+device_id: raspberrypi-001
+
+graphql_url: http://192.168.1.100:4000/graphql
+
+heartbeat_interval: 30
+
+metrics_interval: 60
+
+wifi_interface: wlan0
+
+ethernet_interface: eth0
+
+wifi_credentials:
+  ssid: ""
+  password: ""
+
+enabled_tests:
+  - wifi
+  - ethernet
+
+ethernet_config:
+  dhcp: false
+
+  static:
+    address: ""
+    netmask: ""
+    gateway: ""
+
+    dns:
+      - ""
+      - ""
