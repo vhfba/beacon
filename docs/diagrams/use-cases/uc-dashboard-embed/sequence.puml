@@ -1,0 +1,23 @@
+@startuml sequence-dashboard-embed
+' Reasoning: internal detail is migrated from the existing dashboard-embed
+' sequence and constrained to the embed-session workflow.
+title BEACON - Sequence - Dashboard Embed
+
+autonumber
+
+actor Admin as admin
+boundary "Monitoring Endpoint" as endpoint
+control "Authentication And Authorization" as auth
+control "Embed Workflow" as embed
+control "Dashboard Sync Adapter" as dashboard
+
+admin -> endpoint : Request dashboard embed for site/dashboard
+endpoint -> auth : Authorize admin monitoring access
+auth --> endpoint : Authorized
+endpoint -> embed : Build embed session
+embed -> dashboard : Resolve dashboard identifier and URL
+dashboard --> embed : Dashboard target
+embed --> endpoint : Embed response
+endpoint --> admin : dashboardUid, embedUrl, sync metadata
+
+@enduml

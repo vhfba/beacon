@@ -1,0 +1,23 @@
+@startuml sequence-fleet-status
+' Reasoning: internal detail is migrated from the existing get-fleet-status
+' sequence and kept at query workflow level.
+title BEACON - Sequence - Fleet Status
+
+autonumber
+
+actor Admin as admin
+boundary "Control API" as api
+control "Authentication And Authorization" as auth
+control "Fleet Status Workflow" as fleet
+database "Domain Data Store" as domain
+
+admin -> api : fleetStatus()
+api -> auth : Authorize admin query
+auth --> api : Authorized
+api -> fleet : Build fleet status view
+fleet -> domain : Read probe inventory and freshness timestamps
+domain --> fleet : Probe state
+fleet --> api : Fleet status view
+api --> admin : Probe list with lifecycle and freshness
+
+@enduml

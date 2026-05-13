@@ -1,0 +1,14 @@
+@startuml ssd-fleet-status
+' Reasoning: fleet status is an admin black-box read. BEACON returns the
+' current probe inventory and freshness view.
+title BEACON - SSD - Fleet Status
+
+autonumber
+
+actor Admin as admin
+participant "BEACON Platform" as beacon
+
+admin -> beacon : Request fleet status
+beacon --> admin : Return probes with lifecycle and freshness fields
+
+@enduml

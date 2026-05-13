@@ -1,0 +1,35 @@
+@startuml
+title BEACON - Deployment Diagram
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+Deployment_Node(local, "Local Development Host", "Docker Desktop or Docker Engine") {
+  Deployment_Node(centralCompose, "central-server compose project", "Docker Compose") {
+    Container(central, "central-server", ".NET 9 / ASP.NET Core / HotChocolate", "Control plane, GraphQL API, plugin bundle delivery, metrics export, and monitoring integration")
+    ContainerDb(postgres, "postgres", "PostgreSQL", "Primary persistence for probes, plugins, assignments, action executions, and test configuration")
+    ContainerDb(redis, "redis", "Redis", "Latest per-probe metric snapshot store")
+  }
+
+  Deployment_Node(monitoringCompose, "monitoring-stack compose project", "Docker Compose") {
+    Container(prometheus, "prometheus", "Prometheus", "Scrapes central-server /metrics and stores time-series data")
+    Container(grafana, "grafana", "Grafana", "Dashboards, embeds, and plugin-provided visualizations")
+  }
+
+  Deployment_Node(optionalProbe, "Optional local probe runtime", "Python 3 process") {
+    Container(probe, "probe-agent", "Python", "Simulates a probe, executes plugins, and reports heartbeat and metrics")
+  }
+}
+
+System_Ext(targets, "Site Wi-Fi And Network Targets", "Access points, gateways, HTTP targets, and iPerf endpoints measured by probes")
+
+Rel(probe, central, "GraphQL runtime operations and plugin bundle download", "HTTP")
+Rel(probe, targets, "Runs Wi-Fi, ping, HTTP, and iPerf checks")
+Rel(central, postgres, "Read/write domain state")
+Rel(central, redis, "Read/write latest metric snapshots")
+Rel(prometheus, central, "Scrape /metrics", "HTTP GET")
+Rel(grafana, prometheus, "Execute PromQL queries", "HTTP")
+Rel(central, grafana, "Import plugin dashboards and build embed URLs", "Grafana HTTP API")
+
+SHOW_LEGEND()
+
+@enduml

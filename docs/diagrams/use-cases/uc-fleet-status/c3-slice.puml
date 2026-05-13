@@ -1,0 +1,29 @@
+@startuml c3-slice-fleet-status
+' Reasoning: this slice includes only the components used to authorize and
+' serve the fleet status read model.
+title BEACON - C3 Slice - Fleet Status
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(admin, "Admin")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(api, "Control API", "API endpoint", "Serves fleet status query")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authorizes admin access")
+    Component(fleet, "Fleet Status Workflow", "Application component", "Builds probe fleet status view")
+    Component(repositories, "Repository Adapters", "Persistence adapters", "Read probe inventory and timestamps")
+  }
+
+  ComponentDb(domainStore, "Domain Data Store", "Data store", "Stores probe inventory and lifecycle state")
+}
+
+Rel(admin, auth, "Request fleet status")
+Rel(auth, api, "Authorize request")
+Rel(api, fleet, "Load fleet status")
+Rel(fleet, repositories, "Read probe inventory")
+Rel(repositories, domainStore, "Read probe state")
+Rel(fleet, api, "Return status view")
+Rel(api, admin, "Return fleet status")
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml sequence-probe-registration
+' Reasoning: internal detail is adapted from the existing register-probe and
+' heartbeat sequences, focused on the first-heartbeat auto-registration path.
+title BEACON - Sequence - Probe Registration
+
+autonumber
+
+actor "Probe Runtime" as probe
+boundary "Control API" as api
+control "Authentication And Authorization" as auth
+control "Runtime Coordinator" as runtime
+database "Domain Data Store" as domain
+
+probe -> api : recordProbeHeartbeat(probe identity, runtime details)
+api -> auth : Authenticate probe key
+auth --> api : Authorized
+api -> runtime : Record heartbeat
+runtime -> domain : Find probe by ID
+domain --> runtime : Probe not found
+runtime -> domain : Create registered probe
+domain --> runtime : Registered probe
+runtime -> domain : Read runtime eligibility inputs
+domain --> runtime : Probe status and enabled tests
+runtime --> api : Registration result and runtime view
+api --> probe : success, autoRegistered=true, runtime eligibility
+
+@enduml

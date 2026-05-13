@@ -1,0 +1,29 @@
+@startuml c3-slice-probe-registration
+' Reasoning: this slice includes only the components needed to authenticate a
+' first heartbeat, create a probe inventory record, and return runtime state.
+title BEACON - C3 Slice - Probe Registration
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person_Ext(probe, "Probe Runtime")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(api, "Control API", "API endpoint", "Receives probe heartbeat")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authenticates probe access")
+    Component(runtime, "Runtime Coordinator", "Application component", "Creates probe record and computes runtime state")
+    Component(repositories, "Repository Adapters", "Persistence adapters", "Persist and read probe state")
+  }
+
+  ComponentDb(domainStore, "Domain Data Store", "Data store", "Stores probe inventory and runtime metadata")
+}
+
+Rel(probe, auth, "Send first heartbeat")
+Rel(auth, api, "Authorize request")
+Rel(api, runtime, "Record heartbeat")
+Rel(runtime, repositories, "Find or create probe")
+Rel(repositories, domainStore, "Read/write probe state")
+Rel(runtime, api, "Return registration and runtime view")
+Rel(api, probe, "Return response")
+
+@enduml

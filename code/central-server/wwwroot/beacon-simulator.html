@@ -95,10 +95,13 @@ nav{display:flex;height:var(--h);gap:2px}
 select.inp{padding-right:28px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3AF' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
 .btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius);font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap;cursor:pointer;border:1px solid transparent}
 .btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent-h)}
 .btn-ghost{background:var(--surface-2);color:var(--text);border-color:var(--border-md)}
 .btn-ghost:hover{background:var(--bg)}
+.btn-warn{background:var(--warn-bg);color:color-mix(in srgb,var(--warn) 78%,#000);border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
+.btn-warn:hover{background:color-mix(in srgb,var(--warn) 16%,transparent)}
 .btn-danger{background:var(--danger-bg);color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
 .btn-danger:hover{background:color-mix(in srgb,var(--danger) 15%,transparent)}
 .btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -114,14 +117,15 @@ main.drawer-open{padding-bottom:var(--drawer)}
 
 /* ── stat cards ── */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.stat-card:hover{border-color:var(--border-md)}
 .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
 .stat-value{font-size:22px;font-weight:600}
 .stat-value.ok{color:var(--success)}
 .stat-value.warn{color:var(--warn)}
 
 /* ── table card ── */
-.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+.table-card{background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
 .t-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--surface-2);border-bottom:1px solid var(--border)}
@@ -178,9 +182,12 @@ td{padding:12px 14px;vertical-align:middle}
 
 /* ── form sections ── */
 .form-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px}
+.form-section.primary-section{border-color:color-mix(in srgb,var(--accent) 28%,var(--border));background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+.form-section.danger-zone{border-color:color-mix(in srgb,var(--danger) 30%,var(--border));background:color-mix(in srgb,var(--danger-bg) 42%,var(--surface))}
 .form-section+.form-section{margin-top:0}
 .section-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
 .section-desc{font-size:12px;color:var(--muted);margin-bottom:10px;margin-top:-6px}
+.section-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);margin-bottom:4px}
 .form-row{display:flex;gap:8px;flex-wrap:wrap}
 .form-col{display:flex;flex-direction:column;gap:4px;flex:1;min-width:100px}
 .form-col.full{flex-basis:100%;min-width:0}
@@ -191,7 +198,8 @@ textarea.inp{height:auto;padding:8px 10px;resize:vertical}
 
 /* ── plugin cards ── */
 .plugin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.plugin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.plugin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.plugin-card:hover{border-color:var(--border-md)}
 .plugin-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .plugin-card-name{font-size:13px;font-weight:500;color:var(--text)}
 .plugin-card-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:2px}
@@ -250,6 +258,11 @@ textarea.inp{height:auto;padding:8px 10px;resize:vertical}
 .modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
 .modal-footer{display:flex;gap:8px;padding-top:4px}
 .modal-footer .btn{flex:1;justify-content:center}
+.risk-copy{font-size:13px;color:var(--muted);line-height:1.5}
+.risk-target{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;word-break:break-all}
+.risk-input-wrap{display:none}
+.risk-input-wrap.open{display:flex}
+.risk-impact{border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);background:var(--warn-bg);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:color-mix(in srgb,var(--warn) 75%,#000)}
 
 /* ── output drawer ── */
 #output-drawer{position:fixed;inset-block-end:0;inset-inline:0;z-index:48;height:var(--drawer);background:#0D1117;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
@@ -598,8 +611,10 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
   <div class="panel-body">
 
     <!-- Status -->
-    <div class="form-section">
+    <div class="form-section primary-section">
+      <div class="section-eyebrow">Admin control</div>
       <div class="section-title">Update Status</div>
+      <div class="section-desc">Status changes affect whether the runtime can emit metrics.</div>
       <form id="status-form" class="form-row">
         <input id="status-probe-id" type="hidden"/>
         <div class="form-col">
@@ -645,7 +660,7 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
           <label>Triggered By</label>
           <input id="trigger-action-triggered-by" class="inp" value="admin-ui"/>
         </div>
-        <button type="submit" class="btn btn-primary">Queue Action</button>
+        <button type="submit" class="btn btn-warn">Queue Action</button>
       </form>
     </div>
 
@@ -658,8 +673,10 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
       </div>
     </div>
 
-    <div class="form-section">
+    <div class="form-section danger-zone">
+      <div class="section-eyebrow">Danger zone</div>
       <div class="section-title">Update Execution Status</div>
+      <div class="section-desc">Only update execution state when you are reconciling a probe-side action result.</div>
       <form id="update-action-status-form" class="field" style="gap:10px">
         <input id="update-action-probe-id" type="hidden"/>
         <div class="form-col">
@@ -746,6 +763,31 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
 </div>
 
 <!-- ═══════════════════════ OUTPUT DRAWER ═══════════════════════ -->
+<div class="modal-wrap" id="modal-risk">
+  <div class="modal-bg" id="risk-confirm-bg"></div>
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="risk-title">Confirm action</span>
+      <button class="icon-btn" id="risk-confirm-x" type="button">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="risk-copy" id="risk-message"></p>
+      <div class="risk-target" id="risk-target"></div>
+      <div class="risk-impact" id="risk-impact"></div>
+      <div class="form-col full risk-input-wrap" id="risk-input-wrap">
+        <label id="risk-input-label">Type the value to confirm</label>
+        <input id="risk-confirm-input" class="inp mono" autocomplete="off"/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="risk-confirm-cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="risk-confirm-button">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="output-drawer">
   <div id="drawer-hdr">
     <div class="drawer-hdr-left">
@@ -807,6 +849,66 @@ function closeModal(id) {
   $(id).classList.remove('open');
   document.body.style.overflow = '';
 }
+
+let riskResolver = null;
+let riskExpectedValue = '';
+
+function updateRiskConfirmState() {
+  const input = $('risk-confirm-input');
+  const button = $('risk-confirm-button');
+  if (!riskExpectedValue) {
+    button.disabled = false;
+    return;
+  }
+  button.disabled = input.value.trim() !== riskExpectedValue;
+}
+
+function resolveRisk(value) {
+  closeModal('modal-risk');
+  $('risk-confirm-input').value = '';
+  riskExpectedValue = '';
+  const resolver = riskResolver;
+  riskResolver = null;
+  if (resolver) resolver(value);
+}
+
+function confirmRisk(options) {
+  const {
+    title,
+    message,
+    target,
+    impact,
+    confirmLabel = 'Confirm',
+    confirmClass = 'btn-danger',
+    typedValue = null,
+  } = options;
+
+  $('risk-title').textContent = title;
+  $('risk-message').textContent = message;
+  $('risk-target').textContent = target || '';
+  $('risk-target').style.display = target ? 'block' : 'none';
+  $('risk-impact').textContent = impact || '';
+  $('risk-impact').style.display = impact ? 'block' : 'none';
+  $('risk-confirm-button').textContent = confirmLabel;
+  $('risk-confirm-button').className = `btn ${confirmClass}`;
+  riskExpectedValue = typedValue || '';
+  $('risk-input-wrap').classList.toggle('open', !!typedValue);
+  $('risk-input-label').textContent = typedValue ? `Type "${typedValue}" to confirm` : 'Type the value to confirm';
+  $('risk-confirm-input').value = '';
+  updateRiskConfirmState();
+  openModal('modal-risk');
+  if (typedValue) setTimeout(() => $('risk-confirm-input').focus(), 0);
+
+  return new Promise(resolve => {
+    riskResolver = resolve;
+  });
+}
+
+$('risk-confirm-input').addEventListener('input', updateRiskConfirmState);
+$('risk-confirm-button').addEventListener('click', () => resolveRisk(true));
+$('risk-confirm-cancel').addEventListener('click', () => resolveRisk(false));
+$('risk-confirm-x').addEventListener('click', () => resolveRisk(false));
+$('risk-confirm-bg').addEventListener('click', () => resolveRisk(false));
 
 /* ════════════════════════════════════════
    TOASTS
@@ -1100,7 +1202,7 @@ function renderPlugins(plugins) {
       ${p.description?`<div class="plugin-card-desc">${esc(p.description)}</div>`:''}
       <div class="plugin-card-actions">
         ${p.hasDashboard && p.dashboardUid ? `<button class="btn btn-ghost plugin-dashboard" data-uid="${esc(p.dashboardUid)}" data-title="${esc(p.name)}">Dashboard</button>` : ''}
-        <button class="btn ${av?'btn-danger':'btn-ghost'} plugin-toggle" data-id="${esc(p.id)}" data-next="${!av}" style="font-size:12px">${av?'Disable':'Enable'}</button>
+        <button class="btn ${av?'btn-warn':'btn-ghost'} plugin-toggle" data-id="${esc(p.id)}" data-next="${!av}" style="font-size:12px">${av?'Disable':'Enable'}</button>
         <button class="btn btn-danger plugin-delete" data-id="${esc(p.id)}" style="width:32px;padding:0;justify-content:center;flex:0">
           <svg viewBox="0 0 24 24" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </button>
@@ -1449,9 +1551,19 @@ $('apply-preset-btn').addEventListener('click', ()=>{
 $('open-register-plugin').addEventListener('click', ()=>openModal('modal-plugin'));
 $('refresh-actions-view-btn').addEventListener('click', ()=>refreshActionsView());
 $('quick-action-form').addEventListener('submit', async e=>{
+  e.preventDefault();
   const probeId = $('quick-action-probe').value;
   const pluginId = $('quick-action-plugin').value;
   if (!probeId || !pluginId) { toast('Choose a probe and action plugin', 'warn'); return; }
+  const ok = await confirmRisk({
+    title: 'Queue quick action',
+    message: 'Queue a manual action from the Actions view.',
+    target: `${probeId} -> ${pluginId}`,
+    impact: 'The selected probe may claim and execute this action on its next polling cycle.',
+    confirmLabel: 'Queue action',
+    confirmClass: 'btn-warn'
+  });
+  if (!ok) return;
   try {
     const d = await gql(
       'mutation Q($i:TriggerProbeActionInputTypeInput!){triggerProbeAction(input:$i){success message execution{executionId probeId pluginId status requestedAtUtc}}}',
@@ -1499,6 +1611,17 @@ $('plugins-grid').addEventListener('click', async e=>{
 
   if (toggleBtn) {
     const id = toggleBtn.dataset.id, next = toggleBtn.dataset.next==='true';
+    if (!next) {
+      const ok = await confirmRisk({
+        title: 'Disable plugin',
+        message: 'This plugin will no longer be available for new probe configuration and assignment decisions.',
+        target: id,
+        impact: 'Existing assignments may remain visible, but operators should verify affected probes after disabling it.',
+        confirmLabel: 'Disable plugin',
+        confirmClass: 'btn-warn'
+      });
+      if (!ok) return;
+    }
     try {
       const d = await gql(
         'mutation($i:SetPluginAvailabilityInputTypeInput!){setPluginAvailability(input:$i){success message plugin{id name version available}}}',
@@ -1512,7 +1635,15 @@ $('plugins-grid').addEventListener('click', async e=>{
   }
   if (deleteBtn) {
     const id = deleteBtn.dataset.id;
-    if (!confirm(`Delete plugin '${id}'? This removes it from all probes.`)) return;
+    const ok = await confirmRisk({
+      title: 'Delete plugin',
+      message: 'Delete this plugin from the control plane.',
+      target: id,
+      impact: 'This removes the plugin from the catalog and from probe assignments. This cannot be undone from the UI.',
+      confirmLabel: 'Delete plugin',
+      typedValue: id
+    });
+    if (!ok) return;
     try {
       const d = await gql(
         'mutation($id:String!){deletePlugin(pluginId:$id){success message pluginId}}',
@@ -1589,10 +1720,25 @@ $('status-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const pid = $('status-probe-id').value;
   if (!pid) { toast('No probe selected','warn'); return; }
+  const nextStatus = $('status-value').value;
+  if (nextStatus === 'INACTIVE' || nextStatus === 'DECOMMISSIONED') {
+    const ok = await confirmRisk({
+      title: `${nextStatus === 'DECOMMISSIONED' ? 'Decommission' : 'Deactivate'} probe`,
+      message: `Change probe ${pid} to ${nextStatus}.`,
+      target: pid,
+      impact: nextStatus === 'DECOMMISSIONED'
+        ? 'Decommissioned probes should not continue normal runtime activity. Use this only when removing a probe from service.'
+        : 'Inactive probes are not expected to emit runtime metrics until reactivated.',
+      confirmLabel: nextStatus === 'DECOMMISSIONED' ? 'Decommission probe' : 'Deactivate probe',
+      confirmClass: nextStatus === 'DECOMMISSIONED' ? 'btn-danger' : 'btn-warn',
+      typedValue: nextStatus === 'DECOMMISSIONED' ? pid : null
+    });
+    if (!ok) return;
+  }
   try {
     const d = await gql(
       'mutation U($pid:String!,$s:String!){updateProbeStatus(probeId:$pid,status:$s){success message probe{id status lastHeartbeat}}}',
-      {pid,s:$('status-value').value}
+      {pid,s:nextStatus}
     );
     setLog(d); toast('Status updated','ok'); await refreshAll();
   } catch(e) { toast('Status update failed','err'); setLog({error:String(e)}); }
@@ -1703,6 +1849,15 @@ $('trigger-action-form').addEventListener('submit', async e=>{
   if (!pid) { toast('No probe selected','warn'); return; }
   const pluginId = $('trigger-action-plugin-id').value;
   if (!pluginId) { toast('No action plugin available for this probe','warn'); return; }
+  const ok = await confirmRisk({
+    title: 'Queue probe action',
+    message: 'Queue a manual action for this probe.',
+    target: `${pid} -> ${pluginId}`,
+    impact: 'The probe may claim and execute this action on its next polling cycle.',
+    confirmLabel: 'Queue action',
+    confirmClass: 'btn-warn'
+  });
+  if (!ok) return;
   try {
     const d = await gql(
       'mutation A($i:TriggerProbeActionInputTypeInput!){triggerProbeAction(input:$i){success message execution{executionId probeId pluginId status requestedAtUtc}}}',
@@ -1732,12 +1887,24 @@ $('update-action-status-form').addEventListener('submit', async e=>{
   const executionId = $('update-action-execution-id').value.trim();
   if (!pid) { toast('No probe selected','warn'); return; }
   if (!executionId) { toast('Execution ID is required','warn'); return; }
+  const nextStatus = $('update-action-status').value;
+  if (['SUCCEEDED','FAILED','TIMED_OUT'].includes(nextStatus)) {
+    const ok = await confirmRisk({
+      title: 'Set terminal execution status',
+      message: `Mark this execution as ${nextStatus}.`,
+      target: executionId,
+      impact: 'Terminal execution states should match the result reported by the probe runtime.',
+      confirmLabel: 'Update execution',
+      confirmClass: nextStatus === 'SUCCEEDED' ? 'btn-primary' : 'btn-warn'
+    });
+    if (!ok) return;
+  }
   try {
     const d = await api(`/probes/${encodeURIComponent(pid)}/actions/${encodeURIComponent(executionId)}/status`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        status:$('update-action-status').value,
+        status:nextStatus,
         errorMessage:$('update-action-error').value.trim() || null,
       }),
     });
@@ -1759,7 +1926,15 @@ $('refresh-history-btn').addEventListener('click', async ()=>{
 $('delete-probe-btn').addEventListener('click', async ()=>{
   const pid = S.selectedId;
   if (!pid) return;
-  if (!confirm(`Delete probe '${pid}'? This removes all plugin assignments too.`)) return;
+  const ok = await confirmRisk({
+    title: 'Delete probe',
+    message: 'Delete this probe from the control plane.',
+    target: pid,
+    impact: 'This removes its plugin assignments and local inventory record. This cannot be undone from the UI.',
+    confirmLabel: 'Delete probe',
+    typedValue: pid
+  });
+  if (!ok) return;
   try {
     const d = await gql(
       'mutation D($pid:String!){deleteProbe(probeId:$pid){success message probeId}}',

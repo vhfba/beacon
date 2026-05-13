@@ -1,0 +1,35 @@
+@startuml sequence-report-metrics
+' Reasoning: internal detail is migrated from the existing report-probe-metrics
+' sequence and includes the later scrape path because it is part of the metric flow.
+title BEACON - Sequence - Report Metrics
+
+autonumber
+
+actor "Probe Runtime" as probe
+actor "Metrics Collector" as collector
+boundary "Control API" as api
+boundary "Metrics Export" as export
+control "Authentication And Authorization" as auth
+control "Metric Reporting Workflow" as workflow
+database "Domain Data Store" as domain
+database "Metric Snapshot Store" as snapshots
+
+probe -> api : reportProbeMetrics(probeId, samples)
+api -> auth : Authenticate probe
+auth --> api : Authorized
+api -> workflow : Validate and process samples
+workflow -> domain : Confirm probe may emit metrics
+domain --> workflow : Probe state
+workflow -> workflow : Normalize sample names, kinds, and labels
+workflow -> snapshots : Store latest snapshot
+snapshots --> workflow : Snapshot stored
+workflow -> domain : Record latest metric push time
+workflow --> api : Accepted sample count
+api --> probe : Report result
+
+collector -> export : Scrape aggregate metrics
+export -> snapshots : Read current snapshots
+snapshots --> export : Latest samples
+export --> collector : Metrics exposition
+
+@enduml

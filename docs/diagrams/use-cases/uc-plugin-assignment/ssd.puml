@@ -1,0 +1,14 @@
+@startuml ssd-plugin-assignment
+' Reasoning: plugin assignment is an admin-facing black-box operation. BEACON
+' validates the requested assignment and returns the resulting probe assignment.
+title BEACON - SSD - Plugin Assignment
+
+autonumber
+
+actor Admin as admin
+participant "BEACON Platform" as beacon
+
+admin -> beacon : Assign selected plugins to probe
+beacon --> admin : Return updated plugin assignment view
+
+@enduml

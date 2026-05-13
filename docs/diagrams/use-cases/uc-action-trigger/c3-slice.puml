@@ -1,0 +1,32 @@
+@startuml c3-slice-action-trigger
+' Reasoning: this slice includes only components used to queue, deliver, and
+' update an on-demand action execution.
+title BEACON - C3 Slice - Action Trigger
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(admin, "Admin")
+Person_Ext(probe, "Probe Runtime")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(api, "Control API", "API endpoint", "Receives action commands and probe polling")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authorizes admin and probe access")
+    Component(actionWorkflow, "Action Workflow", "Application component", "Queues, delivers, and updates action executions")
+    Component(repositories, "Repository Adapters", "Persistence adapters", "Read assignments and persist action executions")
+  }
+
+  ComponentDb(domainStore, "Domain Data Store", "Data store", "Stores probes, plugins, assignments, and action executions")
+}
+
+Rel(admin, auth, "Trigger action")
+Rel(probe, auth, "Poll and update action")
+Rel(auth, api, "Authorize request")
+Rel(api, actionWorkflow, "Queue/poll/update action")
+Rel(actionWorkflow, repositories, "Validate eligibility and persist state")
+Rel(repositories, domainStore, "Read/write action state")
+Rel(actionWorkflow, api, "Return action view")
+Rel(api, admin, "Return action result/history")
+Rel(api, probe, "Return pending action or status result")
+
+@enduml

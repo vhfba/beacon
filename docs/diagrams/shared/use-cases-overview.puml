@@ -1,0 +1,69 @@
+@startuml use-cases-overview
+' Reasoning: this shared view shows all system actors and externally visible
+' use cases. It avoids implementation components; detailed behavior is covered
+' by each use case's SSD, C3 slice, and internal sequence.
+title BEACON - Use Cases Overview
+
+left to right direction
+
+actor Admin as admin
+actor "Probe Runtime" as probe
+actor "Metrics Collector" as metrics
+actor "Dashboard Consumer" as consumer
+actor "Dashboard Service" as dashboard
+
+rectangle "BEACON Platform" as beacon {
+  usecase "View fleet status" as UC_Fleet
+  usecase "Register plugin" as UC_RegisterPlugin
+  usecase "Assign plugins to probe" as UC_AssignPlugins
+  usecase "Enable scheduled test" as UC_EnableTest
+  usecase "Trigger on-demand action" as UC_TriggerAction
+  usecase "Review action history" as UC_ActionHistory
+  usecase "Open dashboard embed" as UC_DashboardEmbed
+  usecase "Import plugin dashboard" as UC_ImportDashboard
+
+  usecase "Auto-register probe" as UC_ProbeRegistration
+  usecase "Send heartbeat" as UC_Heartbeat
+  usecase "Poll runtime eligibility" as UC_Runtime
+  usecase "Poll configuration" as UC_Config
+  usecase "Fetch plugin bundle" as UC_Bundle
+  usecase "Run scheduled plugins" as UC_RunScheduled
+  usecase "Poll pending actions" as UC_PendingActions
+  usecase "Update action status" as UC_ActionStatus
+  usecase "Report metrics" as UC_ReportMetrics
+  usecase "Export aggregated metrics" as UC_ExportMetrics
+}
+
+admin --> UC_Fleet
+admin --> UC_RegisterPlugin
+admin --> UC_AssignPlugins
+admin --> UC_EnableTest
+admin --> UC_TriggerAction
+admin --> UC_ActionHistory
+admin --> UC_DashboardEmbed
+
+probe --> UC_ProbeRegistration
+probe --> UC_Heartbeat
+probe --> UC_Runtime
+probe --> UC_Config
+probe --> UC_Bundle
+probe --> UC_RunScheduled
+probe --> UC_PendingActions
+probe --> UC_ActionStatus
+probe --> UC_ReportMetrics
+
+metrics --> UC_ExportMetrics
+consumer --> UC_DashboardEmbed
+dashboard --> UC_DashboardEmbed
+
+UC_ProbeRegistration ..> UC_Heartbeat : <<include>>
+UC_RunScheduled ..> UC_Config : <<include>>
+UC_RunScheduled ..> UC_Bundle : <<include>>
+UC_RunScheduled ..> UC_ReportMetrics : <<include>>
+UC_TriggerAction ..> UC_AssignPlugins : <<include>>
+UC_TriggerAction ..> UC_PendingActions : <<include>>
+UC_TriggerAction ..> UC_ActionStatus : <<include>>
+UC_RegisterPlugin <.. UC_ImportDashboard : <<extend>>
+UC_DashboardEmbed ..> UC_Fleet : <<extend>>
+
+@enduml

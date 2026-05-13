@@ -1,0 +1,35 @@
+@startuml
+title BEACON - Container Diagram (C2)
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(admin, "Admin")
+System_Ext(targets, "Site Wi-Fi and Network Targets", "Endpoints exercised by probe plugins")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Container(central, "Control Plane", "Application", "Manages probes, plugin assignments, action queueing, metric aggregation, and monitoring integration")
+  ContainerDb(domainStore, "Domain Data Store", "Data store", "Stores probes, plugins, assignments, action executions, and test configuration")
+  ContainerDb(snapshotStore, "Metric Snapshot Store", "Data store", "Stores latest per-probe metric snapshots for central export")
+  Container(agent, "Probe Runtime", "Application", "Polls configuration, downloads plugins, executes checks, sends heartbeat, reports metrics, and processes actions")
+  Container(metricsCollector, "Metrics Collector", "Observability service", "Scrapes exported BEACON metrics and evaluates rules")
+  Container(dashboardService, "Dashboard Service", "Observability service", "Provides dashboards, embeds, and plugin-provided visualizations")
+}
+
+Rel(admin, central, "Manage fleet and control runtime")
+Rel(admin, dashboardService, "View dashboards")
+
+Rel(agent, central, "Runtime operations and plugin bundle download")
+Rel(agent, targets, "Run scheduled and action checks")
+
+Rel(central, domainStore, "Read/write domain state")
+Rel(central, snapshotStore, "Store and export latest metric snapshots")
+Rel(metricsCollector, central, "Scrape exported metrics")
+Rel(dashboardService, metricsCollector, "Query time-series data")
+Rel(central, dashboardService, "Synchronize dashboards and build embed URLs")
+
+note bottom of central
+  The control plane is the source of truth
+  and the single scrape target for BEACON metrics.
+end note
+
+@enduml

@@ -156,8 +156,8 @@ curl -L -H "X-Api-Key: <probe-key>" http://localhost:5000/plugins/PING/1.0.0/bun
 ## Related Docs
 
 - [Platform overview](../README.md)
-- [API reference](../../docs/graphql-api.md)
-- [Deployment guide](../../docs/deploy.md)
+- [API reference](../../docs/reference/api.md)
+- [Deployment guide](../../docs/operations/local-deployment.md)
 - [ADR-007](../../docs/adr/ADR-007-use-dotnet-9-with-csharp-for-the-central-server.md)
 - [ADR-008](../../docs/adr/ADR-008-use-hotchocolate-graphql-for-dotnet.md)
 - [ADR-015](../../docs/adr/ADR-015-use-redis-for-latest-probe-metric-snapshots.md)

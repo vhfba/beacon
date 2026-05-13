@@ -1,0 +1,14 @@
+@startuml ssd-dashboard-embed
+' Reasoning: dashboard embed is black-box from the admin/consumer view. The
+' external dashboard service is represented only as an effect of BEACON's response.
+title BEACON - SSD - Dashboard Embed
+
+autonumber
+
+actor Admin as admin
+participant "BEACON Platform" as beacon
+
+admin -> beacon : Request dashboard embed for site/dashboard
+beacon --> admin : Return dashboard identifier and embed URL
+
+@enduml

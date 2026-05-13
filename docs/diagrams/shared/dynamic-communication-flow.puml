@@ -1,0 +1,33 @@
+@startuml communication-flow
+title BEACON - Communication Flow (C4 Dynamic)
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+
+LAYOUT_LEFT_RIGHT()
+
+Person(admin, "Admin")
+Container_Boundary(beacon, "BEACON Platform") {
+  Container(control, "Control Plane", "Application", "Manages fleet state, plugin delivery, actions, and metric aggregation")
+  ContainerDb(domainStore, "Domain Data Store", "Data store", "Stores probe, plugin, assignment, and action state")
+  ContainerDb(snapshotStore, "Metric Snapshot Store", "Data store", "Stores the latest probe metric snapshots")
+  Container(probe, "Probe Runtime", "Application", "Runs assigned checks and reports runtime state")
+  Container(metricsCollector, "Metrics Collector", "Observability service", "Scrapes exported BEACON metrics")
+  Container(dashboardService, "Dashboard Service", "Observability service", "Renders dashboards and embeds")
+}
+
+System_Ext(targets, "Site Wi-Fi And Network Targets", "Access points, gateways, service endpoints, and test targets")
+
+RelIndex(1, admin, control, "Manage fleet, plugins, assignments, actions, and dashboard embeds")
+RelIndex(2, probe, control, "Poll configuration, send heartbeat, request actions, report metrics, and update action status")
+RelIndex(3, probe, control, "Download assigned plugin bundles")
+RelIndex(4, probe, targets, "Execute scheduled checks and on-demand diagnostics")
+RelIndex(5, control, domainStore, "Read and write domain state")
+RelIndex(6, control, snapshotStore, "Store latest metric snapshots")
+RelIndex(7, metricsCollector, control, "Scrape exported aggregate metrics")
+RelIndex(8, dashboardService, metricsCollector, "Query time-series data")
+RelIndex(9, admin, dashboardService, "Open dashboards and embeds")
+RelIndex(10, control, dashboardService, "Import plugin dashboards during plugin registration")
+
+SHOW_LEGEND()
+
+@enduml

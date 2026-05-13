@@ -1,0 +1,14 @@
+@startuml ssd-probe-registration
+' Reasoning: probe registration is a black-box platform interaction. The
+' actor is the Probe Runtime; BEACON responds by registering or recognizing it.
+title BEACON - SSD - Probe Registration
+
+autonumber
+
+actor "Probe Runtime" as probe
+participant "BEACON Platform" as beacon
+
+probe -> beacon : Send first heartbeat with probe identity and runtime details
+beacon --> probe : Return registration result and runtime eligibility
+
+@enduml

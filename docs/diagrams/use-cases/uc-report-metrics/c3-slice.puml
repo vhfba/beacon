@@ -1,0 +1,35 @@
+@startuml c3-slice-report-metrics
+' Reasoning: this slice includes only components needed to accept samples,
+' store latest snapshots, update probe freshness, and expose aggregate metrics.
+title BEACON - C3 Slice - Report Metrics
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person_Ext(probe, "Probe Runtime")
+System_Ext(metricsCollector, "Metrics Collector", "Scrapes exported metrics")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(api, "Control API", "API endpoint", "Receives metric reports")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authenticates probe access")
+    Component(metricsWorkflow, "Metric Reporting Workflow", "Application component", "Validates and normalizes samples")
+    Component(metricsStore, "Probe Metrics Store", "Snapshot-store adapter", "Stores latest probe snapshots")
+    Component(monitoringEndpoints, "Monitoring Endpoints", "API endpoints", "Exports aggregate metrics")
+    Component(repositories, "Repository Adapters", "Persistence adapters", "Read probe state and update metric freshness")
+  }
+
+  ComponentDb(domainStore, "Domain Data Store", "Data store", "Stores probe metadata")
+  ComponentDb(snapshotStore, "Metric Snapshot Store", "Data store", "Stores latest per-probe samples")
+}
+
+Rel(probe, auth, "Report samples")
+Rel(auth, api, "Authorize request")
+Rel(api, metricsWorkflow, "Process report")
+Rel(metricsWorkflow, repositories, "Confirm probe and record push time")
+Rel(repositories, domainStore, "Read/write probe state")
+Rel(metricsWorkflow, metricsStore, "Store latest snapshot")
+Rel(metricsStore, snapshotStore, "Read/write snapshots")
+Rel(metricsCollector, monitoringEndpoints, "Scrape exported metrics")
+Rel(monitoringEndpoints, metricsStore, "Read aggregate samples")
+
+@enduml

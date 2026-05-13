@@ -1,0 +1,14 @@
+@startuml ssd-report-metrics
+' Reasoning: metric reporting is black-box from the probe perspective. The
+' platform accepts normalized samples and later exposes aggregate metrics.
+title BEACON - SSD - Report Metrics
+
+autonumber
+
+actor "Probe Runtime" as probe
+participant "BEACON Platform" as beacon
+
+probe -> beacon : Report normalized metric samples
+beacon --> probe : Return accepted sample count and receipt time
+
+@enduml

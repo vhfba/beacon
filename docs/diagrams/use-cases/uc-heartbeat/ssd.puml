@@ -1,0 +1,14 @@
+@startuml ssd-heartbeat
+' Reasoning: heartbeat is a recurring black-box liveness interaction. The
+' platform returns current runtime state without exposing internal storage.
+title BEACON - SSD - Heartbeat
+
+autonumber
+
+actor "Probe Runtime" as probe
+participant "BEACON Platform" as beacon
+
+probe -> beacon : Send heartbeat with runtime details
+beacon --> probe : Return heartbeat result and runtime eligibility
+
+@enduml

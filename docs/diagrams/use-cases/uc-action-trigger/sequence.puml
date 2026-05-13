@@ -1,0 +1,63 @@
+@startuml sequence-action-trigger
+' Reasoning: internal detail extends the existing trigger-probe-action sequence
+' to cover the complete on-demand action lifecycle documented in the API.
+title BEACON - Sequence - Action Trigger
+
+autonumber
+
+actor Admin as admin
+actor "Probe Runtime" as probe
+boundary "Control API" as api
+control "Authentication And Authorization" as auth
+control "Action Workflow" as actions
+database "Domain Data Store" as domain
+
+admin -> api : triggerProbeAction(probeId, pluginId)
+api -> auth : Authorize admin command
+auth --> api : Authorized
+api -> actions : Queue action execution
+actions -> domain : Read probe, plugin, and assignment state
+domain --> actions : Eligibility inputs
+actions -> actions : Validate availability, execution mode, and assignment
+actions -> domain : Create queued action execution
+domain --> actions : Queued action
+actions --> api : Action execution view
+api --> admin : Queued action response
+
+probe -> api : pendingProbeActions(probeId)
+api -> auth : Authenticate probe
+auth --> api : Authorized
+api -> actions : Get pending actions
+actions -> domain : Read queued actions for probe
+domain --> actions : Pending actions
+actions --> api : Pending action list
+api --> probe : Action to execute
+
+probe -> api : updateProbeActionStatus(RUNNING)
+api -> auth : Authenticate probe
+auth --> api : Authorized
+api -> actions : Update action status
+actions -> domain : Persist running status
+domain --> actions : Updated action
+actions --> api : Status update result
+api --> probe : Acknowledged
+
+probe -> api : updateProbeActionStatus(SUCCEEDED or FAILED)
+api -> auth : Authenticate probe
+auth --> api : Authorized
+api -> actions : Complete action execution
+actions -> domain : Persist completion status and result metadata
+domain --> actions : Completed action
+actions --> api : Completion result
+api --> probe : Acknowledged
+
+admin -> api : probeActionExecutions(probeId)
+api -> auth : Authorize admin query
+auth --> api : Authorized
+api -> actions : Load action history
+actions -> domain : Read action executions
+domain --> actions : Action history
+actions --> api : Action history view
+api --> admin : Action executions
+
+@enduml

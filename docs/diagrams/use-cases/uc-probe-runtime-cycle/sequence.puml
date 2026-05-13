@@ -1,0 +1,44 @@
+@startuml sequence-probe-runtime-cycle
+' Reasoning: internal detail combines the existing runtime, configuration, and
+' plugin execution diagrams into one runtime-cycle flow.
+title BEACON - Sequence - Probe Runtime Cycle
+
+autonumber
+
+actor "Probe Runtime" as probe
+boundary "Control API" as api
+boundary "Plugin Bundle Endpoint" as bundles
+control "Authentication And Authorization" as auth
+control "Runtime Workflow" as runtime
+control "Configuration Workflow" as config
+database "Domain Data Store" as domain
+
+probe -> api : probeRuntime(probeId)
+api -> auth : Authenticate probe
+auth --> api : Authorized
+api -> runtime : Resolve runtime eligibility
+runtime -> domain : Read probe status and enabled tests
+domain --> runtime : Runtime inputs
+runtime --> api : Runtime view
+api --> probe : Status and metric eligibility
+
+probe -> api : probeConfig(probeId)
+api -> auth : Authenticate probe
+auth --> api : Authorized
+api -> config : Build probe configuration
+config -> domain : Read enabled tests, assignments, and plugin metadata
+domain --> config : Configuration inputs
+config -> config : Filter assigned plugins by availability
+config --> api : Probe configuration
+api --> probe : Enabled tests and plugin download metadata
+
+loop For each missing or changed assigned plugin
+  probe -> bundles : Download plugin bundle
+  bundles -> auth : Authenticate bundle request
+  auth --> bundles : Authorized
+  bundles -> domain : Validate plugin metadata and availability
+  domain --> bundles : Bundle is available
+  bundles --> probe : Plugin archive
+end
+
+@enduml

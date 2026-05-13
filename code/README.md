@@ -36,5 +36,5 @@ BEACON currently works as a central aggregation model:
 ## Documentation Map
 
 - Cross-repo docs: [docs/README.md](../docs/README.md)
-- API reference: [docs/graphql-api.md](../docs/graphql-api.md)
-- Deployment: [docs/deploy.md](../docs/deploy.md)
+- API reference: [docs/reference/api.md](../docs/reference/api.md)
+- Deployment: [docs/operations/local-deployment.md](../docs/operations/local-deployment.md)

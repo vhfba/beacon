@@ -1,0 +1,29 @@
+@startuml c3-slice-heartbeat
+' Reasoning: this slice includes only components needed for recurring heartbeat
+' update and runtime eligibility response.
+title BEACON - C3 Slice - Heartbeat
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person_Ext(probe, "Probe Runtime")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(api, "Control API", "API endpoint", "Receives heartbeat mutation")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authenticates probe access")
+    Component(runtime, "Runtime Coordinator", "Application component", "Records heartbeat and computes runtime view")
+    Component(repositories, "Repository Adapters", "Persistence adapters", "Read and update probe state")
+  }
+
+  ComponentDb(domainStore, "Domain Data Store", "Data store", "Stores probe heartbeat and runtime metadata")
+}
+
+Rel(probe, auth, "Send heartbeat")
+Rel(auth, api, "Authorize request")
+Rel(api, runtime, "Record heartbeat")
+Rel(runtime, repositories, "Update heartbeat and read runtime inputs")
+Rel(repositories, domainStore, "Read/write probe state")
+Rel(runtime, api, "Return heartbeat result")
+Rel(api, probe, "Return runtime view")
+
+@enduml

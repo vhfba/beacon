@@ -1,0 +1,21 @@
+@startuml ssd-action-trigger
+' Reasoning: on-demand action execution spans an admin trigger and probe pickup.
+' The platform remains a black box in the SSD.
+title BEACON - SSD - Action Trigger
+
+autonumber
+
+actor Admin as admin
+actor "Probe Runtime" as probe
+participant "BEACON Platform" as beacon
+
+admin -> beacon : Trigger on-demand action for probe and plugin
+beacon --> admin : Return queued action execution
+probe -> beacon : Poll pending actions
+beacon --> probe : Return queued action
+probe -> beacon : Report action status updates
+beacon --> probe : Acknowledge action status
+admin -> beacon : Review action history
+beacon --> admin : Return action execution history
+
+@enduml

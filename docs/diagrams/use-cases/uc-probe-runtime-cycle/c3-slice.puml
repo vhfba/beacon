@@ -1,0 +1,34 @@
+@startuml c3-slice-probe-runtime-cycle
+' Reasoning: this slice shows only the components used while a probe polls
+' runtime state, retrieves configuration, and downloads assigned bundles.
+title BEACON - C3 Slice - Probe Runtime Cycle
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person_Ext(probe, "Probe Runtime")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(api, "Control API", "API endpoint", "Serves runtime and configuration reads")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authenticates probe access")
+    Component(runtime, "Runtime Workflow", "Application component", "Computes probe eligibility")
+    Component(config, "Configuration Workflow", "Application component", "Builds enabled tests and plugin view")
+    Component(bundleEndpoint, "Plugin Bundle Endpoint", "API endpoint", "Serves validated plugin archives")
+    Component(repositories, "Repository Adapters", "Persistence adapters", "Read probe, test, plugin, and assignment state")
+  }
+
+  ComponentDb(domainStore, "Domain Data Store", "Data store", "Stores probe runtime and plugin assignment state")
+}
+
+Rel(probe, auth, "Poll runtime/configuration")
+Rel(auth, api, "Authorize request")
+Rel(api, runtime, "Get runtime eligibility")
+Rel(api, config, "Get probe configuration")
+Rel(runtime, repositories, "Read probe and enabled tests")
+Rel(config, repositories, "Read assignments and plugin metadata")
+Rel(repositories, domainStore, "Read domain state")
+Rel(probe, bundleEndpoint, "Download assigned bundles")
+Rel(bundleEndpoint, repositories, "Validate plugin availability")
+Rel(bundleEndpoint, probe, "Return plugin archive")
+
+@enduml

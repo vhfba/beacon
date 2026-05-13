@@ -1,0 +1,17 @@
+@startuml
+title BEACON - System Context (C1)
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(admin, "Admin", "Manages probes, plugins, actions, and dashboards")
+System(beacon, "BEACON Platform", "Distributed probe management and network observability platform")
+
+System_Ext(targets, "Site Wi-Fi and Network Targets", "Access points, gateways, service targets, and throughput endpoints measured by probes")
+System_Ext(dashboardUsers, "Dashboard Consumers", "Users who view monitoring dashboards or embeds")
+
+Rel(admin, beacon, "Registers probes, assigns plugins, configures checks, triggers actions, and opens embeds")
+Rel(dashboardUsers, beacon, "Consume monitoring dashboards")
+Rel(beacon, targets, "Executes scheduled and on-demand network checks")
+
+
+@enduml

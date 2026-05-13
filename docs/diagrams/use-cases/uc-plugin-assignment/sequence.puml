@@ -1,0 +1,27 @@
+@startuml sequence-plugin-assignment
+' Reasoning: internal detail is migrated from the existing set-probe-plugins
+' sequence and kept at workflow level rather than repository/class level.
+title BEACON - Sequence - Plugin Assignment
+
+autonumber
+
+actor Admin as admin
+boundary "Control API" as api
+control "Authentication And Authorization" as auth
+control "Assignment Workflow" as assignment
+database "Domain Data Store" as domain
+
+admin -> api : setProbePlugins(probeId, pluginIds)
+api -> auth : Authorize admin command
+auth --> api : Authorized
+api -> assignment : Apply plugin assignment
+assignment -> domain : Confirm probe exists
+domain --> assignment : Probe state
+assignment -> domain : Confirm requested plugins exist and are known
+domain --> assignment : Plugin metadata
+assignment -> domain : Replace probe assignments
+domain --> assignment : Current assignments
+assignment --> api : Assignment result
+api --> admin : success, assignments
+
+@enduml

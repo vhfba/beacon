@@ -1,0 +1,18 @@
+@startuml ssd-probe-runtime-cycle
+' Reasoning: the runtime cycle is a black-box polling interaction. The probe
+' asks BEACON for runtime/configuration data and receives executable work state.
+title BEACON - SSD - Probe Runtime Cycle
+
+autonumber
+
+actor "Probe Runtime" as probe
+participant "BEACON Platform" as beacon
+
+probe -> beacon : Poll runtime eligibility
+beacon --> probe : Return status and execution eligibility
+probe -> beacon : Poll configuration and assigned plugins
+beacon --> probe : Return enabled tests and plugin bundle metadata
+probe -> beacon : Download required plugin bundles
+beacon --> probe : Return plugin bundle archives
+
+@enduml

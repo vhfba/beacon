@@ -1,0 +1,27 @@
+@startuml sequence-heartbeat
+' Reasoning: internal detail is migrated from the existing probe-heartbeat
+' sequence and focused on the recurring heartbeat path.
+title BEACON - Sequence - Heartbeat
+
+autonumber
+
+actor "Probe Runtime" as probe
+boundary "Control API" as api
+control "Authentication And Authorization" as auth
+control "Runtime Coordinator" as runtime
+database "Domain Data Store" as domain
+
+probe -> api : recordProbeHeartbeat(probe identity, runtime details)
+api -> auth : Authenticate probe
+auth --> api : Authorized
+api -> runtime : Record heartbeat
+runtime -> domain : Find probe by ID
+domain --> runtime : Existing probe
+runtime -> domain : Update heartbeat, status, and runtime details
+domain --> runtime : Updated probe
+runtime -> domain : Read enabled tests and status
+domain --> runtime : Runtime inputs
+runtime --> api : Heartbeat result and runtime view
+api --> probe : success, autoRegistered=false, runtime eligibility
+
+@enduml

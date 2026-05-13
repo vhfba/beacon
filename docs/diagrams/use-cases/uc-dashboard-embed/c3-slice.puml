@@ -1,0 +1,28 @@
+@startuml c3-slice-dashboard-embed
+' Reasoning: this slice includes only monitoring access, embed URL construction,
+' and the dashboard service integration used by this flow.
+title BEACON - C3 Slice - Dashboard Embed
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(admin, "Admin")
+System_Ext(dashboardService, "Dashboard Service", "Renders dashboards and embeds")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(endpoint, "Monitoring Endpoint", "API endpoint", "Receives embed-session requests")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authorizes admin monitoring access")
+    Component(embed, "Embed Workflow", "Application component", "Builds dashboard embed response")
+    Component(dashboardSync, "Dashboard Sync Adapter", "Integration adapter", "Builds dashboard URLs and accesses dashboard metadata")
+  }
+}
+
+Rel(admin, auth, "Request dashboard embed")
+Rel(auth, endpoint, "Authorize request")
+Rel(endpoint, embed, "Build embed session")
+Rel(embed, dashboardSync, "Resolve dashboard target")
+Rel(dashboardSync, dashboardService, "Build dashboard URL")
+Rel(embed, endpoint, "Return embed response")
+Rel(endpoint, admin, "Return embed URL")
+
+@enduml

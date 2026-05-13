@@ -1,58 +1,62 @@
-# BEACON Docs
+# BEACON Documentation
 
-This folder is the source of truth for cross-repository documentation.
+This directory is the source of truth for BEACON product, architecture, design, reference, and operations documentation.
 
-## Start Here
+The documentation is organized so reviewers can understand the system before reading code. Logical architecture describes responsibilities and contracts without binding them to concrete technology choices. Deployment, reference, and ADR documents then explain the implementation choices that realize that architecture.
 
-- [Platform Overview](../code/README.md)
-- [Central Server](../code/central-server/README.md)
-- [Probe Agent](../code/probe-agent/README.md)
-- [Monitoring Stack](../code/monitoring-stack/README.md)
-- [API Reference](./graphql-api.md)
-- [Deployment Guide](./deploy.md)
+## Reading Paths
 
-## What Lives Here
+### Engineering reviewers
 
-- `graphql-api.md`
-  Current GraphQL and operational HTTP reference for the .NET central server.
-- `deploy.md`
-  Local and container deployment guide for the full platform.
-- `adr/`
-  Architecture decision records, including historical decisions that were later superseded.
-- `architecture/`
-  PlantUML communication, use-case, and sequence diagrams for the current control plane.
-- `c4-model/`
-  C4 context, container, and component views for the current deployable system.
+1. [Problem statement](./product/problem-statement.md)
+2. [Goals and non-goals](./product/goals-and-non-goals.md)
+3. [Logical architecture](./architecture/logical-architecture.md)
+4. [Runtime flows](./architecture/runtime-flows.md)
+5. [Data and ownership](./architecture/data-and-ownership.md)
+6. [Failure modes](./architecture/failure-modes.md)
+7. [ADRs](./adr/)
 
-## Architecture Coverage
+### Implementers
 
-Current architecture diagrams focus on:
+1. [Design workflow](./designs/README.md)
+2. [Design doc template](./designs/design-doc-template.md)
+3. [API reference](./reference/api.md)
+4. [Plugin contract](./reference/plugin-contract.md)
+5. [Metrics reference](./reference/metrics.md)
 
-- central-server as the control plane
-- probe-agent heartbeat, config polling, action polling, and metric reporting
-- plugin assignment and bundle delivery
-- Prometheus scraping only central-server `/metrics`
-- Grafana embed and plugin-dashboard synchronization flows
-- central-server computed coverage scoring from latest probe snapshots
-- campus-grid monitoring grouped from probe location labels
+### Operators
 
-Current C4 views include:
+1. [Local deployment](./operations/local-deployment.md)
+2. [Troubleshooting](./operations/troubleshooting.md)
+3. [Runbooks](./operations/runbooks.md)
 
-- system context
-- container view
-- central-server component view
-- probe-agent component view
-- monitoring-stack component view
+### Academic evaluators
 
-## Recommended Reading Order
+1. [Problem statement](./product/problem-statement.md)
+2. [Goals and non-goals](./product/goals-and-non-goals.md)
+3. [System context diagram](./diagrams/c4/c1-system-context.puml)
+4. [Logical container diagram](./diagrams/c4/c2-container-logical.puml)
+5. [Local deployment diagram](./diagrams/c4/c4-deployment-local.puml)
 
-1. Read [code/README.md](../code/README.md) for the platform shape.
-2. Read [code/central-server/README.md](../code/central-server/README.md) for the control plane and domain model.
-3. Read [code/probe-agent/README.md](../code/probe-agent/README.md) for probe runtime behavior.
-4. Read [docs/graphql-api.md](./graphql-api.md) when integrating with the API.
-5. Read [docs/deploy.md](./deploy.md) when standing up the full stack.
+## Documentation Map
 
-## Notes On Historical Material
+- `product/`: problem framing, target users, scope, and glossary.
+- `architecture/`: technology-neutral system design, data ownership, observability, security, and failure behavior.
+- `designs/`: design-before-coding workflow and reusable design doc template.
+- `diagrams/`: C4, sequence, and use-case diagrams.
+- `reference/`: concrete API, metrics, and plugin contracts.
+- `operations/`: deployment, troubleshooting, and runbooks.
+- `examples/`: sample dashboard definitions and other reusable documentation artifacts.
+- `adr/`: architecture decision records, including historical decisions.
 
-- ADRs `ADR-004`, `ADR-005`, and `ADR-006` document the pre-.NET design and are kept for decision history only.
-- ADRs `ADR-001`, `ADR-009`, and `ADR-010` are now historical and point to the newer decisions that replaced their earlier runtime and monitoring assumptions.
+## Documentation Standards
+
+- Architecture docs and logical C4 diagrams use role names such as Control Plane, Probe Runtime, Metric Snapshot Store, Metrics Collector, Dashboard Service, and Site Network Targets.
+- Concrete runtimes, frameworks, databases, observability products, ports, and local commands belong in reference, operations, deployment, and ADR docs.
+- Sequence diagrams describe behavior and contracts. They should not mirror internal class calls unless the purpose is explicitly to document implementation internals.
+- Any change to component boundaries, API contracts, metric names, plugin manifests, or deployment assumptions must update docs and ADRs in the same change.
+
+## Historical Notes
+
+- ADRs `ADR-004`, `ADR-005`, and `ADR-006` document the pre-current implementation direction and are kept for decision history.
+- ADRs `ADR-001`, `ADR-009`, and `ADR-010` are historical and point to newer runtime and monitoring decisions.

@@ -1,0 +1,29 @@
+@startuml c3-slice-plugin-assignment
+' Reasoning: this slice includes only admin authorization, assignment workflow,
+' plugin/probe validation, and domain persistence.
+title BEACON - C3 Slice - Plugin Assignment
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(admin, "Admin")
+
+System_Boundary(beacon, "BEACON Platform") {
+  Boundary(control, "Control Plane", "Container") {
+    Component(api, "Control API", "API endpoint", "Receives assignment command")
+    Component(auth, "Authentication And Authorization", "Middleware", "Authorizes admin access")
+    Component(assignments, "Assignment Workflow", "Application component", "Validates probe/plugins and replaces assignments")
+    Component(repositories, "Repository Adapters", "Persistence adapters", "Read probes/plugins and persist assignments")
+  }
+
+  ComponentDb(domainStore, "Domain Data Store", "Data store", "Stores probes, plugins, and assignments")
+}
+
+Rel(admin, auth, "Submit assignment")
+Rel(auth, api, "Authorize request")
+Rel(api, assignments, "Set probe plugins")
+Rel(assignments, repositories, "Validate probe and plugin metadata")
+Rel(repositories, domainStore, "Read/write domain state")
+Rel(assignments, api, "Return current assignments")
+Rel(api, admin, "Return response")
+
+@enduml
