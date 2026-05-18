@@ -302,8 +302,6 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                     b.HasIndex("ProbeId")
                         .HasDatabaseName("idx_probe_config_probe_id");
 
-                    b.HasIndex("TestType");
-
                     b.HasIndex("ProbeId", "Enabled")
                         .HasDatabaseName("idx_probe_config_probe_enabled");
 
@@ -410,7 +408,6 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
 
                     b.Navigation("TestConfigurations");
                 });
-
 #pragma warning restore 612, 618
         }
     }

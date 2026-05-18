@@ -32,6 +32,11 @@ public partial class RemoveProbeConfigTestTypeCatalogConstraint : Migration
                 END LOOP;
             END $$;
             """);
+
+        migrationBuilder.Sql("""
+            DROP INDEX IF EXISTS public."IX_probe_test_configurations_test_type";
+            DROP INDEX IF EXISTS public.ix_probe_test_configurations_test_type;
+            """);
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
@@ -44,6 +49,11 @@ public partial class RemoveProbeConfigTestTypeCatalogConstraint : Migration
                 WHERE tt.name = pc.test_type
             );
             """);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_probe_test_configurations_test_type",
+            table: "probe_test_configurations",
+            column: "test_type");
 
         migrationBuilder.AddForeignKey(
             name: "FK_probe_test_configurations_test_types_test_type",
