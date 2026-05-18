@@ -21,7 +21,6 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
     {
         var entities = await _context.ProbeTestConfigurations
             .Where(pc => pc.ProbeId == probeId.Value)
-            .Include(pc => pc.TestTypeEntity)
             .ToListAsync(cancellationToken);
 
         return entities.Select(entity => entity.ToDomain()).ToList();
@@ -33,7 +32,6 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
     {
         var entities = await _context.ProbeTestConfigurations
             .Where(pc => pc.ProbeId == probeId.Value && pc.Enabled)
-            .Include(pc => pc.TestTypeEntity)
             .ToListAsync(cancellationToken);
 
         return entities.Select(entity => entity.ToDomain()).ToList();
@@ -46,7 +44,6 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
     {
         var entity = await _context.ProbeTestConfigurations
             .Where(pc => pc.ProbeId == probeId.Value && pc.TestType == testTypeName)
-            .Include(pc => pc.TestTypeEntity)
             .FirstOrDefaultAsync(cancellationToken);
 
         return entity?.ToDomain();

@@ -7,7 +7,7 @@ public static class ProbeTestConfigurationEntityMappings
 {
     public static ProbeTestConfiguration ToDomain(this ProbeTestConfigEntity entity)
     {
-        var testType = new TestType(entity.TestType, entity.TestTypeEntity?.Description ?? "Unknown test type");
+        var testType = new TestType(entity.TestType, $"Scheduled probe check {entity.TestType}");
         return new ProbeTestConfiguration(
             new ProbeId(entity.ProbeId),
             testType,

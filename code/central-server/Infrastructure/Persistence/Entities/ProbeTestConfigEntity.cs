@@ -22,6 +22,4 @@ public class ProbeTestConfigEntity
     [ForeignKey(nameof(ProbeId))]
     public ProbeEntity? Probe { get; set; }
 
-    [ForeignKey(nameof(TestType))]
-    public TestTypeEntity? TestTypeEntity { get; set; }
 }

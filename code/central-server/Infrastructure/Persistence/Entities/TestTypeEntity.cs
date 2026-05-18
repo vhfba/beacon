@@ -14,5 +14,4 @@ public class TestTypeEntity
     [StringLength(500)]
     public string Description { get; set; } = string.Empty;
 
-    public ICollection<ProbeTestConfigEntity> ProbeConfigurations { get; set; } = new List<ProbeTestConfigEntity>();
 }

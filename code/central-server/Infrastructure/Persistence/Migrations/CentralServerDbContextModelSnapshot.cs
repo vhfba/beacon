@@ -396,15 +396,7 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CentralServer.Infrastructure.Persistence.Entities.TestTypeEntity", "TestTypeEntity")
-                        .WithMany("ProbeConfigurations")
-                        .HasForeignKey("TestType")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Probe");
-
-                    b.Navigation("TestTypeEntity");
                 });
 
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.PluginEntity", b =>
@@ -419,10 +411,6 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                     b.Navigation("TestConfigurations");
                 });
 
-            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.TestTypeEntity", b =>
-                {
-                    b.Navigation("ProbeConfigurations");
-                });
 #pragma warning restore 612, 618
         }
     }

@@ -9,20 +9,17 @@ using CentralServer.Domain.Repositories;
 public class UpdateProbeTestConfigUseCase
 {
     private readonly IProbeRepository _probeRepository;
-    private readonly ITestTypeRepository _testTypeRepository;
     private readonly IPluginRepository _pluginRepository;
     private readonly IProbeTestConfigurationRepository _configRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateProbeTestConfigUseCase(
         IProbeRepository probeRepository,
-        ITestTypeRepository testTypeRepository,
         IPluginRepository pluginRepository,
         IProbeTestConfigurationRepository configRepository,
         IUnitOfWork unitOfWork)
     {
         _probeRepository = probeRepository;
-        _testTypeRepository = testTypeRepository;
         _pluginRepository = pluginRepository;
         _configRepository = configRepository;
         _unitOfWork = unitOfWork;
@@ -45,10 +42,9 @@ public class UpdateProbeTestConfigUseCase
 
     private async Task<TestType> ResolveScheduledTestTypeAsync(string testTypeName, CancellationToken cancellationToken)
     {
-        var testType = await _testTypeRepository.GetByNameAsync(testTypeName, cancellationToken);
-        if (testType != null)
+        if (BuiltInTestTypeDescriptions.TryGetValue(testTypeName, out var description))
         {
-            return testType;
+            return new TestType(testTypeName, description);
         }
 
         var plugin = await _pluginRepository.GetByIdAsync(testTypeName, cancellationToken);
@@ -67,8 +63,15 @@ public class UpdateProbeTestConfigUseCase
             throw new DomainException($"Plugin {testTypeName} is not available");
         }
 
-        var pluginBackedTestType = new TestType(plugin.Id, plugin.Description ?? $"Scheduled plugin test {plugin.Name}");
-        await _testTypeRepository.CreateAsync(pluginBackedTestType, cancellationToken);
-        return pluginBackedTestType;
+        return new TestType(plugin.Id, plugin.Description ?? $"Scheduled plugin check {plugin.Name}");
     }
+
+    private static readonly IReadOnlyDictionary<string, string> BuiltInTestTypeDescriptions =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["RSSI"] = "Receive Signal Strength Indicator measurement",
+            ["PING"] = "ICMP echo request to measure latency",
+            ["HTTP"] = "HTTP connectivity and response time test",
+            ["IPERF"] = "Network throughput measurement"
+        };
 }
