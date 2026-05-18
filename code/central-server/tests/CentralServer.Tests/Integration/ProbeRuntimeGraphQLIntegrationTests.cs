@@ -6,6 +6,8 @@ using System.Text.Json;
 using CentralServer.Application.Abstractions;
 using CentralServer.Domain.Models;
 using CentralServer.Domain.Repositories;
+using CentralServer.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 public class ProbeRuntimeGraphQLIntegrationTests : IClassFixture<CentralServerWebAppFactory>
@@ -257,6 +259,54 @@ public class ProbeRuntimeGraphQLIntegrationTests : IClassFixture<CentralServerWe
 
         Assert.NotNull(probe);
         Assert.NotNull(probe!.LastConfigFetch);
+    }
+
+    [Fact]
+    public async Task DeletePlugin_WhenActionExecutionsExist_RemovesDependentRows()
+    {
+        const string probeId = "probe-delete-plugin";
+        const string pluginId = "DELETE_ACTION";
+
+        await _factory.SeedProbeAsync(probeId, "10.4.0.7", ProbeStatus.Active);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var pluginRepository = scope.ServiceProvider.GetRequiredService<IPluginRepository>();
+            var assignmentRepository = scope.ServiceProvider.GetRequiredService<IProbePluginAssignmentRepository>();
+            var actionRepository = scope.ServiceProvider.GetRequiredService<IProbeActionExecutionRepository>();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+            await pluginRepository.CreateAsync(new Plugin(pluginId, "Delete Action", "1.0.0", "sha-delete", executionMode: PluginExecutionMode.Action));
+            await assignmentRepository.SetForProbeAsync(new ProbeId(probeId), [pluginId]);
+            await actionRepository.CreateAsync(new ProbeActionExecution(new ProbeId(probeId), pluginId, "admin"));
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        var client = _factory.CreateAdminClient();
+        var response = await client.PostAsJsonAsync("/graphql", new
+        {
+            query = """
+                mutation($pluginId: String!) {
+                  deletePlugin(pluginId: $pluginId) {
+                    success
+                    message
+                    pluginId
+                  }
+                }
+                """,
+            variables = new { pluginId }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var deleted = payload.GetProperty("data").GetProperty("deletePlugin");
+        Assert.True(deleted.GetProperty("success").GetBoolean());
+        Assert.Equal(pluginId, deleted.GetProperty("pluginId").GetString());
+
+        using var verifyScope = _factory.Services.CreateScope();
+        var dbContext = verifyScope.ServiceProvider.GetRequiredService<CentralServerDbContext>();
+        Assert.False(await dbContext.Plugins.AnyAsync(p => p.Id == pluginId));
+        Assert.False(await dbContext.ProbePluginAssignments.AnyAsync(a => a.PluginId == pluginId));
+        Assert.False(await dbContext.ProbeActionExecutions.AnyAsync(a => a.PluginId == pluginId));
     }
 
     private async Task<string> SeedActionAsync(string probeId, string pluginId, string triggeredBy)

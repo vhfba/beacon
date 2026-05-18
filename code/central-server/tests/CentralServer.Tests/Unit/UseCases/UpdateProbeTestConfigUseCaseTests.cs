@@ -30,6 +30,7 @@ public class UpdateProbeTestConfigUseCaseTests
 
         Assert.Equal("WIFI", result.TestType);
         Assert.True(result.Enabled);
+        Assert.NotNull(await testTypes.GetByNameAsync("WIFI"));
     }
 
     [Fact]

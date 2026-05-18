@@ -67,6 +67,8 @@ public class UpdateProbeTestConfigUseCase
             throw new DomainException($"Plugin {testTypeName} is not available");
         }
 
-        return new TestType(plugin.Id, plugin.Description ?? $"Scheduled plugin test {plugin.Name}");
+        var pluginBackedTestType = new TestType(plugin.Id, plugin.Description ?? $"Scheduled plugin test {plugin.Name}");
+        await _testTypeRepository.CreateAsync(pluginBackedTestType, cancellationToken);
+        return pluginBackedTestType;
     }
 }

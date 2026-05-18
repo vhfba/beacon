@@ -71,6 +71,15 @@ public class PluginRepositoryAdapter : IPluginRepository
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         var entity = await GetRequiredEntityAsync(id, cancellationToken);
+        var actionExecutions = await _context.ProbeActionExecutions
+            .Where(e => e.PluginId == id)
+            .ToListAsync(cancellationToken);
+        var assignments = await _context.ProbePluginAssignments
+            .Where(a => a.PluginId == id)
+            .ToListAsync(cancellationToken);
+
+        _context.ProbeActionExecutions.RemoveRange(actionExecutions);
+        _context.ProbePluginAssignments.RemoveRange(assignments);
         _context.Plugins.Remove(entity);
     }
 
