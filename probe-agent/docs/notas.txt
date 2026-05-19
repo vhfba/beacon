@@ -12,3 +12,20 @@ https://github.com/nasa/isaac/blob/master/astrobee/hardware/wifi/include/wifi/wi
 https://github.com/bmegli/wifi-scan/blob/master/README.md
 
 https://netdevops.it/blog/monitoring-networks-with-prometheus-and-grafana-a-complete-guide/
+
+
+to stop the tests:
+
+running
+{
+  "enabled_tests": ["wifi"]
+}
+
+stopping
+{
+  "enabled_tests": []
+}
+
+
+tornar isto package
+colocar num mirror

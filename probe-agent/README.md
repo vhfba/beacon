@@ -27,8 +27,6 @@ These endpoints are for local inspection only. Prometheus should scrape central-
 
 ## Plugin Contract
 
-The cross-component plugin contract is documented in [docs/reference/plugin-contract.md](../../docs/reference/plugin-contract.md).
-
 Each plugin bundle zip must contain:
 
 - `manifest.json`
