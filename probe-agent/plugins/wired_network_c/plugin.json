@@ -1,0 +1,9 @@
+{
+  "id": "WIRED_NETWORK_C",
+  "name": "Wired Network C",
+  "version": "1.0.0",
+  "entrypoint": "./beacon_wired_network",
+  "timeout_seconds": 10,
+  "executionMode": "SCHEDULED",
+  "description": "Reports Ethernet link, carrier, speed, and interface counters for PoE/wired validation."
+}
