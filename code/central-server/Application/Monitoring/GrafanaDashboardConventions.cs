@@ -1,6 +1,6 @@
-namespace CentralServer.Infrastructure.Monitoring;
+namespace CentralServer.Application.Monitoring;
 
-internal static class GrafanaDashboardConventions
+public static class GrafanaDashboardConventions
 {
     public static string BuildPluginDashboardUid(string pluginId)
     {
@@ -28,6 +28,11 @@ internal static class GrafanaDashboardConventions
     public static string BuildDashboardSearchApiUrl(string apiBaseUrl)
     {
         return CombineUrl(apiBaseUrl, "/api/search?type=dash-db");
+    }
+
+    public static string BuildDashboardDeleteApiUrl(string apiBaseUrl, string dashboardUid)
+    {
+        return CombineUrl(apiBaseUrl, $"/api/dashboards/uid/{Uri.EscapeDataString(dashboardUid)}");
     }
 
     public static string BuildEmbedUrl(string embedBaseUrl, string dashboardUid, string site)

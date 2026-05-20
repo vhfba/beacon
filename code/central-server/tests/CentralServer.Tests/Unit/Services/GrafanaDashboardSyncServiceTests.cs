@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 using CentralServer.Infrastructure.Monitoring;
-using CentralServer.Presentation.Monitoring;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -110,6 +109,50 @@ public class GrafanaDashboardSyncServiceTests
         Assert.False(result.Applied);
         Assert.False(requested);
         Assert.Contains("configure an API token or API user/password", result.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DeletePluginDashboardAsync_UsesGrafanaDeleteByUid()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        var service = CreateService(
+            new GrafanaMonitoringOptions
+            {
+                ApiBaseUrl = "http://grafana",
+                ApiToken = "token"
+            },
+            request =>
+            {
+                capturedRequest = request;
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            });
+
+        var result = await service.DeletePluginDashboardAsync(
+            "wifi-scan",
+            CancellationToken.None);
+
+        Assert.True(result.Applied);
+        Assert.Equal(HttpMethod.Delete, capturedRequest?.Method);
+        Assert.Equal("http://grafana/api/dashboards/uid/beacon-plugin-wifi-scan", capturedRequest?.RequestUri?.ToString());
+    }
+
+    [Fact]
+    public async Task DeletePluginDashboardAsync_WhenDashboardIsMissing_IsSuccessful()
+    {
+        var service = CreateService(
+            new GrafanaMonitoringOptions
+            {
+                ApiBaseUrl = "http://grafana",
+                ApiToken = "token"
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        var result = await service.DeletePluginDashboardAsync(
+            "wifi-scan",
+            CancellationToken.None);
+
+        Assert.True(result.Applied);
+        Assert.Contains("already absent", result.Message, StringComparison.Ordinal);
     }
 
     private static GrafanaDashboardSyncService CreateService(

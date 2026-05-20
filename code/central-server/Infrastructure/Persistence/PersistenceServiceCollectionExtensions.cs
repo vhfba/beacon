@@ -28,11 +28,11 @@ public static class PersistenceServiceCollectionExtensions
         });
 
         services.AddScoped<IProbeRepository, ProbeRepositoryAdapter>();
-        services.AddScoped<ITestTypeRepository, TestTypeRepositoryAdapter>();
         services.AddScoped<IProbeTestConfigurationRepository, ProbeTestConfigurationRepositoryAdapter>();
         services.AddScoped<IPluginRepository, PluginRepositoryAdapter>();
         services.AddScoped<IProbePluginAssignmentRepository, ProbePluginAssignmentRepositoryAdapter>();
         services.AddScoped<IProbeActionExecutionRepository, ProbeActionExecutionRepositoryAdapter>();
+        services.AddScoped<IProbeControlCommandRepository, ProbeControlCommandRepositoryAdapter>();
         services.AddScoped<IUnitOfWork, CentralServerUnitOfWork>();
 
         return services;

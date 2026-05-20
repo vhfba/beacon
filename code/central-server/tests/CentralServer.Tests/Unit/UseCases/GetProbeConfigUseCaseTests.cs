@@ -18,7 +18,7 @@ public class GetProbeConfigUseCaseTests
         await probeRepo.RegisterAsync(probe);
         await configRepo.UpdateAsync(new ProbeTestConfiguration(
             probe.Id,
-            new TestType("PING", "Ping test"),
+            "PING",
             30,
             true));
         await pluginRepo.CreateAsync(new Plugin("plugin-a", "Plugin A", "1.0.0", "sha-a"));

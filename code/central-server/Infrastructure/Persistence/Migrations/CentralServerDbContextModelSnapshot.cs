@@ -162,6 +162,77 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                     b.ToTable("probe_action_executions");
                 });
 
+            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeControlCommandEntity", b =>
+                {
+                    b.Property<string>("CommandId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("command_id");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at_utc");
+
+                    b.Property<DateTime?>("DeliveredAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("delivered_at_utc");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
+                        .HasColumnName("error_message");
+
+                    b.Property<string>("PayloadJson")
+                        .HasColumnType("text")
+                        .HasColumnName("payload_json");
+
+                    b.Property<string>("ProbeId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("probe_id");
+
+                    b.Property<DateTime>("RequestedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("requested_at_utc");
+
+                    b.Property<string>("RequestedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("requested_by");
+
+                    b.Property<string>("ResultJson")
+                        .HasColumnType("text")
+                        .HasColumnName("result_json");
+
+                    b.Property<DateTime?>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at_utc");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.HasKey("CommandId");
+
+                    b.HasIndex("ProbeId")
+                        .HasDatabaseName("idx_probe_control_probe_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("idx_probe_control_status");
+
+                    b.HasIndex("ProbeId", "Status", "RequestedAtUtc")
+                        .IsDescending(false, false, true)
+                        .HasDatabaseName("idx_probe_control_probe_status_requested");
+
+                    b.ToTable("probe_control_commands");
+                });
+
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", b =>
                 {
                     b.Property<string>("Id")
@@ -308,46 +379,6 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                     b.ToTable("probe_test_configurations");
                 });
 
-            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.TestTypeEntity", b =>
-                {
-                    b.Property<string>("Name")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("description");
-
-                    b.HasKey("Name");
-
-                    b.ToTable("test_types");
-
-                    b.HasData(
-                        new
-                        {
-                            Name = "RSSI",
-                            Description = "Receive Signal Strength Indicator measurement"
-                        },
-                        new
-                        {
-                            Name = "PING",
-                            Description = "ICMP echo request to measure latency"
-                        },
-                        new
-                        {
-                            Name = "HTTP",
-                            Description = "HTTP connectivity and response time test"
-                        },
-                        new
-                        {
-                            Name = "IPERF",
-                            Description = "Network throughput measurement"
-                        });
-                });
-
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeActionExecutionEntity", b =>
                 {
                     b.HasOne("CentralServer.Infrastructure.Persistence.Entities.PluginEntity", "Plugin")
@@ -363,6 +394,17 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Plugin");
+
+                    b.Navigation("Probe");
+                });
+
+            modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeControlCommandEntity", b =>
+                {
+                    b.HasOne("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", "Probe")
+                        .WithMany("ControlCommands")
+                        .HasForeignKey("ProbeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Probe");
                 });
@@ -404,6 +446,8 @@ namespace CentralServer.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CentralServer.Infrastructure.Persistence.Entities.ProbeEntity", b =>
                 {
+                    b.Navigation("ControlCommands");
+
                     b.Navigation("PluginAssignments");
 
                     b.Navigation("TestConfigurations");

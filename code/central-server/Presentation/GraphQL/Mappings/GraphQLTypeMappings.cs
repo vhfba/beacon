@@ -1,6 +1,7 @@
 namespace CentralServer.Presentation.GraphQL.Mappings;
 
 using CentralServer.Application.DTOs;
+using CentralServer.Application.Monitoring;
 using CentralServer.Domain.Models;
 using CentralServer.Presentation.GraphQL.Types;
 
@@ -66,26 +67,8 @@ public static class GraphQLTypeMappings
             BundleDownloadUrl = dto.BundleDownloadUrl,
             DashboardJson = dto.DashboardJson,
             HasDashboard = hasDashboard,
-            DashboardUid = hasDashboard ? BuildPluginDashboardUid(dto.Id) : null
+            DashboardUid = hasDashboard ? GrafanaDashboardConventions.BuildPluginDashboardUid(dto.Id) : null
         };
-    }
-
-    private static string BuildPluginDashboardUid(string pluginId)
-    {
-        var slug = new string((pluginId ?? string.Empty)
-            .Trim()
-            .ToLowerInvariant()
-            .Select(ch => (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') ? ch : '-')
-            .ToArray())
-            .Trim('-');
-
-        if (string.IsNullOrWhiteSpace(slug))
-        {
-            slug = "plugin";
-        }
-
-        var uid = $"beacon-plugin-{slug}";
-        return uid.Length <= 40 ? uid : uid[..40];
     }
 
     public static ProbeTestConfigType ToGraphQLType(this ProbeTestConfigurationDTO dto)
@@ -164,6 +147,50 @@ public static class GraphQLTypeMappings
             ProbeActionExecutionStatus.Failed => ProbeActionExecutionStatusType.Failed,
             ProbeActionExecutionStatus.TimedOut => ProbeActionExecutionStatusType.TimedOut,
             _ => ProbeActionExecutionStatusType.Failed
+        };
+    }
+
+    public static CentralServer.Presentation.GraphQL.Types.ProbeControlCommandType ToGraphQLType(this ProbeControlCommandDTO dto)
+    {
+        return new CentralServer.Presentation.GraphQL.Types.ProbeControlCommandType
+        {
+            CommandId = dto.CommandId,
+            ProbeId = dto.ProbeId,
+            Type = dto.Type.ToGraphQLType(),
+            Status = dto.Status.ToGraphQLType(),
+            RequestedBy = dto.RequestedBy,
+            RequestedAtUtc = dto.RequestedAtUtc,
+            DeliveredAtUtc = dto.DeliveredAtUtc,
+            StartedAtUtc = dto.StartedAtUtc,
+            CompletedAtUtc = dto.CompletedAtUtc,
+            PayloadJson = dto.PayloadJson,
+            ResultJson = dto.ResultJson,
+            ErrorMessage = dto.ErrorMessage
+        };
+    }
+
+    public static ProbeControlCommandTypeType ToGraphQLType(this CentralServer.Domain.Models.ProbeControlCommandType type)
+    {
+        return type switch
+        {
+            CentralServer.Domain.Models.ProbeControlCommandType.ScanWifiNetworks => ProbeControlCommandTypeType.ScanWifiNetworks,
+            CentralServer.Domain.Models.ProbeControlCommandType.ConnectWifi => ProbeControlCommandTypeType.ConnectWifi,
+            CentralServer.Domain.Models.ProbeControlCommandType.UpdateProfile => ProbeControlCommandTypeType.UpdateProfile,
+            _ => ProbeControlCommandTypeType.ScanWifiNetworks
+        };
+    }
+
+    public static ProbeControlCommandStatusType ToGraphQLType(this ProbeControlCommandStatus status)
+    {
+        return status switch
+        {
+            ProbeControlCommandStatus.Queued => ProbeControlCommandStatusType.Queued,
+            ProbeControlCommandStatus.Delivered => ProbeControlCommandStatusType.Delivered,
+            ProbeControlCommandStatus.Running => ProbeControlCommandStatusType.Running,
+            ProbeControlCommandStatus.Succeeded => ProbeControlCommandStatusType.Succeeded,
+            ProbeControlCommandStatus.Failed => ProbeControlCommandStatusType.Failed,
+            ProbeControlCommandStatus.TimedOut => ProbeControlCommandStatusType.TimedOut,
+            _ => ProbeControlCommandStatusType.Failed
         };
     }
 }

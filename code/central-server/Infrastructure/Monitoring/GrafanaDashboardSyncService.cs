@@ -1,10 +1,11 @@
 using System.Net.Http.Headers;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using CentralServer.Application.Abstractions;
 using CentralServer.Application.DTOs;
-using CentralServer.Presentation.Monitoring;
+using CentralServer.Application.Monitoring;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -102,6 +103,57 @@ public sealed class GrafanaDashboardSyncService : IGrafanaDashboardClient
                 Applied: false,
                 DashboardUid: dashboardUid,
                 Message: "Unexpected error while importing plugin dashboard.");
+        }
+    }
+
+    public async Task<GrafanaSyncResult> DeletePluginDashboardAsync(
+        string pluginId,
+        CancellationToken cancellationToken)
+    {
+        var options = _monitoringOptions.CurrentValue.Grafana;
+        var dashboardUid = GrafanaDashboardConventions.BuildPluginDashboardUid(pluginId);
+
+        if (string.IsNullOrWhiteSpace(options.ApiBaseUrl) || !HasGrafanaApiCredentials(options))
+        {
+            return new GrafanaSyncResult(
+                Applied: false,
+                DashboardUid: dashboardUid,
+                Message: "Grafana API settings are missing; configure an API token or API user/password before plugin dashboard removal.");
+        }
+
+        try
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Delete,
+                GrafanaDashboardConventions.BuildDashboardDeleteApiUrl(options.ApiBaseUrl, dashboardUid));
+            request.Headers.Authorization = BuildAuthorizationHeader(options);
+
+            var response = await _httpClient.SendAsync(request, cancellationToken);
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new GrafanaSyncResult(
+                    Applied: true,
+                    DashboardUid: dashboardUid,
+                    Message: response.StatusCode == HttpStatusCode.NotFound
+                        ? $"Grafana dashboard for plugin '{pluginId}' was already absent."
+                        : $"Grafana dashboard removed for plugin '{pluginId}'.");
+            }
+
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogWarning("Grafana dashboard delete failed for UID {DashboardUid}: {StatusCode} {Body}", dashboardUid, response.StatusCode, errorBody);
+
+            return new GrafanaSyncResult(
+                Applied: false,
+                DashboardUid: dashboardUid,
+                Message: BuildFailureMessage((int)response.StatusCode, errorBody));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting plugin dashboard for {PluginId}", pluginId);
+            return new GrafanaSyncResult(
+                Applied: false,
+                DashboardUid: dashboardUid,
+                Message: "Unexpected error while deleting plugin dashboard.");
         }
     }
 

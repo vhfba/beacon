@@ -2,7 +2,6 @@ namespace CentralServer.Presentation.DependencyInjection;
 
 using CentralServer.Application.Abstractions;
 using CentralServer.Infrastructure.Monitoring;
-using CentralServer.Presentation.Monitoring;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

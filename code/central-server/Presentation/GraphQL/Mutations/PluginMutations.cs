@@ -42,14 +42,16 @@ public class PluginMutations
     public async Task<SetPluginAvailabilityResponse> SetPluginAvailabilityAsync(
         SetPluginAvailabilityInputType input,
         [Service] SetPluginAvailabilityUseCase useCase,
+        [Service] PluginDashboardAutomationService dashboardAutomationService,
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
-            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
-            plugin => new SetPluginAvailabilityResponse
+            () => SetPluginAvailabilityWithDashboardAsync(input, useCase, dashboardAutomationService, cancellationToken),
+            result => new SetPluginAvailabilityResponse
             {
                 Success = true,
-                Plugin = plugin.ToGraphQLType()
+                Message = result.Message,
+                Plugin = result.Plugin.ToGraphQLType()
             },
             message => new SetPluginAvailabilityResponse
             {
@@ -64,15 +66,24 @@ public class PluginMutations
     public async Task<DeletePluginResponse> DeletePluginAsync(
         string pluginId,
         [Service] DeletePluginUseCase useCase,
+        [Service] PluginDashboardAutomationService dashboardAutomationService,
         CancellationToken cancellationToken)
     {
         return await DomainMutationExecutor.ExecuteAsync(
             async () =>
             {
-                await useCase.ExecuteAsync(pluginId, cancellationToken);
+                var plugin = await useCase.ExecuteAsync(pluginId, cancellationToken);
+                string? message = null;
+                if (!string.IsNullOrWhiteSpace(plugin.DashboardJson))
+                {
+                    var summary = await dashboardAutomationService.RemoveDashboardAsync(plugin.Id, cancellationToken);
+                    message = $"Plugin deleted. Grafana dashboard removal {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
+                }
+
                 return new DeletePluginResponse
                 {
                     Success = true,
+                    Message = message,
                     PluginId = pluginId
                 };
             },
@@ -82,6 +93,35 @@ public class PluginMutations
                 Message = message,
                 PluginId = pluginId
             });
+    }
+
+    private static async Task<SetPluginAvailabilityResult> SetPluginAvailabilityWithDashboardAsync(
+        SetPluginAvailabilityInputType input,
+        SetPluginAvailabilityUseCase useCase,
+        PluginDashboardAutomationService dashboardAutomationService,
+        CancellationToken cancellationToken)
+    {
+        var plugin = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
+        string? message = null;
+
+        if (!string.IsNullOrWhiteSpace(plugin.DashboardJson))
+        {
+            if (plugin.Available)
+            {
+                var summary = await dashboardAutomationService.ApplyDashboardJsonAsync(
+                    plugin.Id,
+                    plugin.DashboardJson,
+                    cancellationToken);
+                message = $"Plugin enabled. Grafana dashboard sync {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
+            }
+            else
+            {
+                var summary = await dashboardAutomationService.RemoveDashboardAsync(plugin.Id, cancellationToken);
+                message = $"Plugin disabled. Grafana dashboard removal {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
+            }
+        }
+
+        return new SetPluginAvailabilityResult(plugin, message);
     }
 
     private static async Task<RegisterPluginResult> RegisterPluginWithDashboardAsync(
@@ -110,6 +150,8 @@ public class PluginMutations
 
         return new RegisterPluginResult(plugin, message);
     }
+
+    private sealed record SetPluginAvailabilityResult(PluginDTO Plugin, string? Message);
 
     private sealed record RegisterPluginResult(PluginDTO Plugin, string? Message);
 }

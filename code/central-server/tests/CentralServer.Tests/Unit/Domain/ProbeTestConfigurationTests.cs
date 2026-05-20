@@ -10,9 +10,8 @@ public class ProbeTestConfigurationTests
     public void Constructor_ValidBoundaryIntervals_AreAccepted(int interval)
     {
         var probeId = new ProbeId("probe-09");
-        var testType = new TestType("DNS", "DNS resolve test");
 
-        var config = new ProbeTestConfiguration(probeId, testType, interval);
+        var config = new ProbeTestConfiguration(probeId, "DNS", interval);
 
         Assert.Equal(interval, config.IntervalSeconds);
     }
@@ -23,23 +22,40 @@ public class ProbeTestConfigurationTests
     public void Constructor_InvalidInterval_ThrowsDomainException(int interval)
     {
         var probeId = new ProbeId("probe-10");
-        var testType = new TestType("PING", "ICMP latency test");
 
-        Assert.Throws<DomainException>(() => new ProbeTestConfiguration(probeId, testType, interval));
+        Assert.Throws<DomainException>(() => new ProbeTestConfiguration(probeId, "PING", interval));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Constructor_InvalidPluginId_ThrowsDomainException(string invalidPluginId)
+    {
+        var probeId = new ProbeId("probe-10");
+
+        Assert.Throws<DomainException>(() => new ProbeTestConfiguration(probeId, invalidPluginId, 30));
+    }
+
+    [Fact]
+    public void Constructor_PluginIdTooLong_ThrowsDomainException()
+    {
+        var probeId = new ProbeId("probe-10");
+        var longPluginId = new string('X', 51);
+
+        Assert.Throws<DomainException>(() => new ProbeTestConfiguration(probeId, longPluginId, 30));
     }
 
     [Fact]
     public void WithEnabled_ChangesOnlyEnabledFlag()
     {
         var probeId = new ProbeId("probe-11");
-        var testType = new TestType("HTTP", "HTTP health check");
-        var config = new ProbeTestConfiguration(probeId, testType, 30, enabled: true);
+        var config = new ProbeTestConfiguration(probeId, "HTTP", 30, enabled: true);
 
         var updated = config.WithEnabled(false);
 
         Assert.False(updated.Enabled);
         Assert.Equal(config.IntervalSeconds, updated.IntervalSeconds);
-        Assert.Equal(config.TestType.Name, updated.TestType.Name);
+        Assert.Equal(config.PluginId, updated.PluginId);
         Assert.Equal(config.ProbeId.Value, updated.ProbeId.Value);
     }
 
@@ -47,14 +63,13 @@ public class ProbeTestConfigurationTests
     public void WithInterval_ChangesOnlyInterval()
     {
         var probeId = new ProbeId("probe-12");
-        var testType = new TestType("PING", "ICMP health check");
-        var config = new ProbeTestConfiguration(probeId, testType, 20, enabled: false);
+        var config = new ProbeTestConfiguration(probeId, "PING", 20, enabled: false);
 
         var updated = config.WithInterval(45);
 
         Assert.Equal(45, updated.IntervalSeconds);
         Assert.False(updated.Enabled);
-        Assert.Equal(config.TestType.Name, updated.TestType.Name);
+        Assert.Equal(config.PluginId, updated.PluginId);
         Assert.Equal(config.ProbeId.Value, updated.ProbeId.Value);
     }
 }

@@ -11,11 +11,11 @@ public class CentralServerDbContext : DbContext
     }
 
     public DbSet<ProbeEntity> Probes { get; set; }
-    public DbSet<TestTypeEntity> TestTypes { get; set; }
     public DbSet<ProbeTestConfigEntity> ProbeTestConfigurations { get; set; }
     public DbSet<PluginEntity> Plugins { get; set; }
     public DbSet<ProbePluginAssignmentEntity> ProbePluginAssignments { get; set; }
     public DbSet<ProbeActionExecutionEntity> ProbeActionExecutions { get; set; }
+    public DbSet<ProbeControlCommandEntity> ProbeControlCommands { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

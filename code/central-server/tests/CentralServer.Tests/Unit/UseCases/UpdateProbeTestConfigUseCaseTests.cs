@@ -56,4 +56,27 @@ public class UpdateProbeTestConfigUseCaseTests
 
         Assert.Contains("does not support scheduled execution", ex.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WithUnregisteredPluginId_Throws()
+    {
+        var probes = new InMemoryProbeRepository();
+        var plugins = new InMemoryPluginRepository();
+        var configs = new InMemoryProbeTestConfigurationRepository();
+        var unitOfWork = new NoOpUnitOfWork();
+        var probe = new Probe(new ProbeId("probe-a"), "Probe A", "Building A", "10.0.0.1");
+        await probes.RegisterAsync(probe);
+
+        var useCase = new UpdateProbeTestConfigUseCase(probes, plugins, configs, unitOfWork);
+
+        var ex = await Assert.ThrowsAsync<DomainException>(() => useCase.ExecuteAsync(new()
+        {
+            ProbeId = "probe-a",
+            TestType = "PING",
+            IntervalSeconds = 30,
+            Enabled = true
+        }));
+
+        Assert.Contains("Plugin PING not found", ex.Message, StringComparison.Ordinal);
+    }
 }

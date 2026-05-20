@@ -35,7 +35,7 @@ public static partial class ApplicationDtoMappings
             IpAddress = probe.IpAddress,
             PolledAtUtc = DateTimeOffset.UtcNow,
             EnabledTests = enabledTests
-                .Select(test => test.TestType.Name.ToUpperInvariant())
+                .Select(test => test.PluginId.ToUpperInvariant())
                 .Distinct()
                 .OrderBy(name => name)
                 .ToList()

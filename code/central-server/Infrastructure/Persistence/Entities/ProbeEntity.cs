@@ -55,4 +55,6 @@ public class ProbeEntity
     public ICollection<ProbeTestConfigEntity> TestConfigurations { get; set; } = new List<ProbeTestConfigEntity>();
 
     public ICollection<ProbePluginAssignmentEntity> PluginAssignments { get; set; } = new List<ProbePluginAssignmentEntity>();
+
+    public ICollection<ProbeControlCommandEntity> ControlCommands { get; set; } = new List<ProbeControlCommandEntity>();
 }

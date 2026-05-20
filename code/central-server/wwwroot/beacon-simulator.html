@@ -93,7 +93,7 @@ nav{display:flex;height:var(--h);gap:2px}
 .inp{height:36px;padding:0 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-size:13px;transition:border-color .15s}
 .inp:hover{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
 select.inp{padding-right:28px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3AF' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
-.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius);font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap;cursor:pointer;border:1px solid transparent}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius);font-size:13px;font-weight:500;transition:background .15s,color .15s,border-color .15s,transform .15s;white-space:nowrap;cursor:pointer;border:1px solid transparent}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .btn-primary{background:var(--accent);color:#fff}
@@ -109,7 +109,7 @@ select.inp{padding-right:28px;appearance:none;background-image:url("data:image/s
 /* ── views ── */
 main{padding-top:var(--h);transition:padding-bottom .25s}
 main.drawer-open{padding-bottom:var(--drawer)}
-.view{display:none;max-width:1200px;margin:0 auto;padding:28px 20px}
+.view{display:none;max-width:1200px;margin:0 auto;padding:28px 20px;content-visibility:auto;contain-intrinsic-size:900px}
 .view.active{display:block}
 .view-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .view-title{font-size:18px;font-weight:600;color:var(--text)}
@@ -139,21 +139,6 @@ td{padding:12px 14px;vertical-align:middle}
 .probe-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:1px}
 .t-footer{padding:10px 14px;font-size:12px;color:var(--hint);border-top:1px solid var(--border);background:var(--surface-2)}
 
-.map-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.map-toolbar .inp{height:34px}
-.campus-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
-.site-band{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden}
-.site-band-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)}
-.site-band-title{font-size:13px;font-weight:700;color:var(--text)}
-.site-band-sub{font-size:11px;color:var(--muted)}
-.probe-tile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:12px}
-.probe-tile{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:10px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:border-color .15s,background .15s}
-.probe-tile:hover{border-color:var(--accent);background:var(--accent-bg)}
-.probe-tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.probe-tile-name{font-size:13px;font-weight:600;color:var(--text)}
-.probe-tile-id{font-size:10px;color:var(--hint);font-family:'JetBrains Mono',monospace;margin-top:1px}
-.probe-tile-meta{font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px}
-.coverage-line{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
 
 /* ── badges ── */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
@@ -163,11 +148,6 @@ td{padding:12px 14px;vertical-align:middle}
 .badge-sky{background:var(--sky-bg);color:var(--sky)}
 .badge-gray{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
 .badge-accent{background:var(--accent-bg);color:var(--accent)}
-.badge-coverage-excellent{background:var(--success-bg);color:var(--success)}
-.badge-coverage-good{background:var(--sky-bg);color:var(--sky)}
-.badge-coverage-weak{background:var(--warn-bg);color:color-mix(in srgb,var(--warn) 80%,#000)}
-.badge-coverage-unusable{background:var(--danger-bg);color:var(--danger)}
-.badge-coverage-no-data{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
 
 /* ── panel (slide-in) ── */
 #panel-overlay{position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.25);backdrop-filter:blur(2px);display:none;opacity:0;transition:opacity .2s}
@@ -178,7 +158,17 @@ td{padding:12px 14px;vertical-align:middle}
 #panel-name{font-size:16px;font-weight:600;color:var(--text)}
 #panel-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:2px}
 .panel-hdr-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.panel-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.panel-tab{height:32px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);background:transparent;transition:background .15s,color .15s}
+.panel-tab:hover{background:var(--surface-2);color:var(--text)}
+.panel-tab.active{background:var(--accent-bg);color:var(--accent)}
+.panel-body{flex:1;overflow-y:auto;padding:14px;display:block}
+.panel-page{display:none;flex-direction:column;gap:12px}
+.panel-page.active{display:flex}
+.panel-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mini-stat{border:1px solid var(--border);background:var(--surface-2);border-radius:var(--radius);padding:10px}
+.mini-stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);margin-bottom:4px}
+.mini-stat-value{font-size:12px;font-weight:600;color:var(--text);word-break:break-word}
 
 /* ── form sections ── */
 .form-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px}
@@ -251,7 +241,7 @@ textarea.inp{height:auto;padding:8px 10px;resize:vertical}
 /* ── modals ── */
 .modal-wrap{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-wrap.open{display:flex}
-.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px)}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.4)}
 .modal{position:relative;background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
 .modal-title{font-size:15px;font-weight:600}
@@ -308,6 +298,8 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
   .ntab{padding:0 10px;font-size:12px}
   .view{padding:16px 12px}
   #probe-panel{width:100vw}
+  .panel-tabs{grid-template-columns:repeat(2,1fr)}
+  .panel-summary{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -326,7 +318,6 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
   </div>
   <nav>
     <button class="ntab active" data-view="fleet">Fleet</button>
-    <button class="ntab" data-view="map">Map</button>
     <button class="ntab" data-view="plugins">Plugins</button>
     <button class="ntab" data-view="actions">Actions</button>
     <button class="ntab" data-view="monitoring">Monitoring</button>
@@ -369,6 +360,7 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
         <button class="btn btn-ghost" id="apply-preset-btn">Apply</button>
       </div>
     </div>
+    <button class="btn btn-primary" id="save-settings-btn" style="margin-top:22px">Save</button>
     <button class="icon-btn" onclick="toggleSettings()" style="margin-top:22px">
       <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
@@ -428,34 +420,6 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
   </div>
 
   <!-- ═══════════════════════════════ PLUGINS VIEW ═══════════════════════════════ -->
-  <div id="view-map" class="view">
-    <div class="view-header">
-      <div>
-        <div class="view-title">Campus Grid</div>
-        <div class="view-sub">Probe locations grouped by building with live coverage quality</div>
-      </div>
-      <div class="map-toolbar">
-        <select id="map-status-filter" class="inp">
-          <option value="all">All status</option>
-          <option value="online">Online</option>
-          <option value="stale">Stale</option>
-          <option value="inactive">Inactive</option>
-        </select>
-        <select id="map-coverage-filter" class="inp">
-          <option value="all">All coverage</option>
-          <option value="excellent">Excellent</option>
-          <option value="good">Good</option>
-          <option value="weak">Weak</option>
-          <option value="unusable">Unusable</option>
-          <option value="no_data">No data</option>
-        </select>
-      </div>
-    </div>
-    <div id="campus-grid" class="campus-grid">
-      <div class="empty"><p>No probes loaded</p></div>
-    </div>
-  </div>
-
   <div id="view-plugins" class="view">
     <div class="view-header">
       <div>
@@ -608,103 +572,170 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
       </div>
     </div>
   </div>
+  <div class="panel-tabs" role="tablist" aria-label="Probe configuration sections">
+    <button class="panel-tab active" type="button" data-panel-page="overview">Overview</button>
+    <button class="panel-tab" type="button" data-panel-page="plugins">Plugins</button>
+    <button class="panel-tab" type="button" data-panel-page="actions">Actions</button>
+    <button class="panel-tab" type="button" data-panel-page="history">History</button>
+  </div>
   <div class="panel-body">
 
-    <!-- Status -->
-    <div class="form-section primary-section">
-      <div class="section-eyebrow">Admin control</div>
-      <div class="section-title">Update Status</div>
-      <div class="section-desc">Status changes affect whether the runtime can emit metrics.</div>
-      <form id="status-form" class="form-row">
-        <input id="status-probe-id" type="hidden"/>
-        <div class="form-col">
-          <label>Status</label>
-          <select id="status-value" class="inp">
-            <option value="REGISTERED">REGISTERED</option>
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
-            <option value="DECOMMISSIONED">DECOMMISSIONED</option>
-          </select>
-        </div>
-        <div class="form-col" style="flex:0;align-self:flex-end">
-          <button type="submit" class="btn btn-primary">Update</button>
-        </div>
-      </form>
-    </div>
+    <div class="panel-page active" data-panel-page-view="overview">
+      <div class="panel-summary">
+        <div class="mini-stat"><div class="mini-stat-label">IP address</div><div class="mini-stat-value" id="panel-ip">—</div></div>
+        <div class="mini-stat"><div class="mini-stat-label">SSID</div><div class="mini-stat-value" id="panel-ssid">—</div></div>
+        <div class="mini-stat"><div class="mini-stat-label">Location</div><div class="mini-stat-value" id="panel-location">—</div></div>
+        <div class="mini-stat"><div class="mini-stat-label">Status</div><div class="mini-stat-value" id="panel-status-text">—</div></div>
+      </div>
 
-    <div class="form-section">
-      <div class="section-title">Configure Probe Plugins</div>
-      <div class="section-desc">Assign plugins and enable scheduled tests in one save.</div>
-      <form id="probe-plugins-form">
-        <input id="probe-plugins-probe-id" type="hidden"/>
-        <div class="thr-group-title">Scheduled plugins</div>
-        <div id="scheduled-plugin-config-list" class="plugin-config-list"></div>
-        <div class="thr-group-title">Action plugins</div>
-        <div id="action-plugin-config-list" class="plugin-config-list"></div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Save Plugin Configuration</button>
-      </form>
-    </div>
+      <div class="form-section">
+        <div class="section-title">Probe Profile</div>
+        <form id="probe-profile-form" class="field" style="gap:10px">
+          <input id="profile-probe-id" type="hidden"/>
+          <div class="form-col">
+            <label>Name</label>
+            <input id="profile-name" class="inp"/>
+          </div>
+          <div class="form-col">
+            <label>Location</label>
+            <input id="profile-location" class="inp"/>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Profile</button>
+        </form>
+      </div>
 
-    <div class="form-section">
-      <div class="section-title">Trigger Probe Action</div>
-      <div class="section-desc">Queue manual work for an action-mode plugin assigned to this probe.</div>
-      <form id="trigger-action-form" class="field" style="gap:10px">
-        <input id="trigger-action-probe-id" type="hidden"/>
-        <div class="form-col">
-          <label>Action Plugin</label>
-          <select id="trigger-action-plugin-id" class="inp">
-            <option value="">No action plugins for this probe</option>
-          </select>
+      <div class="form-section">
+        <div class="section-title">Wi-Fi Control</div>
+        <div class="form-row">
+          <button class="btn btn-ghost" id="wifi-scan-btn" type="button">Scan Networks</button>
+          <button class="btn btn-ghost" id="refresh-control-commands-btn" type="button">Refresh</button>
         </div>
-        <div class="form-col">
-          <label>Triggered By</label>
-          <input id="trigger-action-triggered-by" class="inp" value="admin-ui"/>
+        <form id="wifi-connect-form" class="field" style="gap:10px;margin-top:10px">
+          <input id="wifi-probe-id" type="hidden"/>
+          <div class="form-col">
+            <label>SSID</label>
+            <select id="wifi-ssid-select" class="inp">
+              <option value="">Run a scan or enter SSID below</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label>Manual SSID</label>
+            <input id="wifi-ssid-manual" class="inp" placeholder="Optional"/>
+          </div>
+          <div class="form-col">
+            <label>Password</label>
+            <input id="wifi-password" class="inp" type="password" autocomplete="new-password"/>
+          </div>
+          <button type="submit" class="btn btn-warn">Connect Wi-Fi</button>
+        </form>
+        <div class="thr-group-title">Networks</div>
+        <div id="wifi-network-list" class="stack-list">
+          <div class="empty"><p>No scan results loaded</p></div>
         </div>
-        <button type="submit" class="btn btn-warn">Queue Action</button>
-      </form>
-    </div>
+      </div>
 
-    <div class="form-section">
-      <div class="section-title">Pending Actions</div>
-      <div class="section-desc">Claim pending actions through the runtime endpoint.</div>
-      <button class="btn btn-ghost" id="load-pending-btn" type="button">Claim Pending Actions</button>
-      <div id="panel-pending-actions" class="stack-list" style="margin-top:10px">
-        <div class="empty"><p>No pending actions claimed</p></div>
+      <div class="form-section primary-section">
+        <div class="section-title">Lifecycle Status</div>
+        <form id="status-form" class="form-row">
+          <input id="status-probe-id" type="hidden"/>
+          <div class="form-col">
+            <label>Status</label>
+            <select id="status-value" class="inp">
+              <option value="REGISTERED">REGISTERED</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="INACTIVE">INACTIVE</option>
+              <option value="DECOMMISSIONED">DECOMMISSIONED</option>
+            </select>
+          </div>
+          <div class="form-col" style="flex:0;align-self:flex-end">
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <div class="form-section danger-zone">
-      <div class="section-eyebrow">Danger zone</div>
-      <div class="section-title">Update Execution Status</div>
-      <div class="section-desc">Only update execution state when you are reconciling a probe-side action result.</div>
-      <form id="update-action-status-form" class="field" style="gap:10px">
-        <input id="update-action-probe-id" type="hidden"/>
-        <div class="form-col">
-          <label>Execution ID</label>
-          <input id="update-action-execution-id" class="inp mono"/>
-        </div>
-        <div class="form-col">
-          <label>Status</label>
-          <select id="update-action-status" class="inp">
-            <option value="RUNNING">RUNNING</option>
-            <option value="SUCCEEDED">SUCCEEDED</option>
-            <option value="FAILED">FAILED</option>
-            <option value="TIMED_OUT">TIMED_OUT</option>
-          </select>
-        </div>
-        <div class="form-col">
-          <label>Error Message</label>
-          <input id="update-action-error" class="inp" placeholder="Optional for failed executions"/>
-        </div>
-        <button type="submit" class="btn btn-primary">Update Execution</button>
-      </form>
+    <div class="panel-page" data-panel-page-view="plugins">
+      <div class="form-section">
+        <div class="section-title">Probe Plugins</div>
+        <form id="probe-plugins-form">
+          <input id="probe-plugins-probe-id" type="hidden"/>
+          <div class="thr-group-title">Scheduled plugins</div>
+          <div id="scheduled-plugin-config-list" class="plugin-config-list"></div>
+          <div class="thr-group-title">Action plugins</div>
+          <div id="action-plugin-config-list" class="plugin-config-list"></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Save Plugin Configuration</button>
+        </form>
+      </div>
     </div>
 
-    <div class="form-section">
-      <div class="section-title">Execution History</div>
-      <button class="btn btn-ghost" id="refresh-history-btn" type="button">Refresh History</button>
-      <div id="panel-action-history" class="stack-list" style="margin-top:10px">
-        <div class="empty"><p>No executions loaded</p></div>
+    <div class="panel-page" data-panel-page-view="actions">
+      <div class="form-section">
+        <div class="section-title">Trigger Action</div>
+        <form id="trigger-action-form" class="field" style="gap:10px">
+          <input id="trigger-action-probe-id" type="hidden"/>
+          <div class="form-col">
+            <label>Action Plugin</label>
+            <select id="trigger-action-plugin-id" class="inp">
+              <option value="">No action plugins for this probe</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label>Triggered By</label>
+            <input id="trigger-action-triggered-by" class="inp" value="admin-ui"/>
+          </div>
+          <button type="submit" class="btn btn-warn">Queue Action</button>
+        </form>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Pending Actions</div>
+        <button class="btn btn-ghost" id="load-pending-btn" type="button">Claim Pending Actions</button>
+        <div id="panel-pending-actions" class="stack-list" style="margin-top:10px">
+          <div class="empty"><p>No pending actions claimed</p></div>
+        </div>
+      </div>
+
+      <div class="form-section danger-zone">
+        <div class="section-eyebrow">Manual reconciliation</div>
+        <div class="section-title">Update Execution Status</div>
+        <form id="update-action-status-form" class="field" style="gap:10px">
+          <input id="update-action-probe-id" type="hidden"/>
+          <div class="form-col">
+            <label>Execution ID</label>
+            <input id="update-action-execution-id" class="inp mono"/>
+          </div>
+          <div class="form-col">
+            <label>Status</label>
+            <select id="update-action-status" class="inp">
+              <option value="RUNNING">RUNNING</option>
+              <option value="SUCCEEDED">SUCCEEDED</option>
+              <option value="FAILED">FAILED</option>
+              <option value="TIMED_OUT">TIMED_OUT</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label>Error Message</label>
+            <input id="update-action-error" class="inp" placeholder="Optional for failed executions"/>
+          </div>
+          <button type="submit" class="btn btn-primary">Update Execution</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel-page" data-panel-page-view="history">
+      <div class="form-section">
+        <div class="section-title">Execution History</div>
+        <button class="btn btn-ghost" id="refresh-history-btn" type="button">Refresh History</button>
+        <div id="panel-action-history" class="stack-list" style="margin-top:10px">
+          <div class="empty"><p>No executions loaded</p></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Control Command History</div>
+        <div id="panel-control-command-history" class="stack-list">
+          <div class="empty"><p>No control commands loaded</p></div>
+        </div>
       </div>
     </div>
 
@@ -811,19 +842,24 @@ const S = {
   probes: [],
   plugins: [],
   assignments: [],
-  coverage: [],
   probeConfig: null,
   pendingActions: [],
   actionHistory: [],
+  controlCommands: [],
   dashboards: [],
   dashboardsLoaded: false,
   selectedId: null,
   drawerOpen: false,
   settingsOpen: false,
   refreshing: false,
+  pluginsSignature: '',
+  lastPanelAutoRefreshAt: 0,
 };
 const STALE_S = 45;
+const REFRESH_MS = 10000;
+const PANEL_REFRESH_MS = 30000;
 const KEY_PRESETS = { admin: '', probe: '' };
+const STORAGE = { endpoint: 'beacon.endpoint', apiKey: 'beacon.apiKey' };
 
 /* ════════════════════════════════════════
    UTILS
@@ -837,8 +873,27 @@ function authH(extra={}) {
 }
 
 function setLog(data) {
-  $('output').value = JSON.stringify(data, null, 2);
+  $('output').value = JSON.stringify(redactSensitive(data), null, 2);
   $('log-time').textContent = new Date().toLocaleTimeString();
+}
+
+function updateLog(data, enabled=false) {
+  if (enabled || S.drawerOpen) setLog(data);
+}
+
+function redactSensitive(value) {
+  if (Array.isArray(value)) return value.map(redactSensitive);
+  if (value && typeof value === 'object') {
+    const copy = {};
+    for (const [key, item] of Object.entries(value)) {
+      copy[key] = key.toLowerCase().includes('password') ? '***' : redactSensitive(item);
+    }
+    return copy;
+  }
+  if (typeof value === 'string' && value.includes('"password"')) {
+    try { return JSON.stringify(redactSensitive(JSON.parse(value))); } catch {}
+  }
+  return value;
 }
 
 function openModal(id) {
@@ -977,6 +1032,19 @@ document.querySelectorAll('.ntab').forEach(btn => {
   btn.addEventListener('click', ()=> switchView(btn.dataset.view));
 });
 
+function switchProbePanelPage(page) {
+  document.querySelectorAll('.panel-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.panelPage === page);
+  });
+  document.querySelectorAll('.panel-page').forEach(section => {
+    section.classList.toggle('active', section.dataset.panelPageView === page);
+  });
+}
+
+document.querySelectorAll('.panel-tab').forEach(btn => {
+  btn.addEventListener('click', () => switchProbePanelPage(btn.dataset.panelPage));
+});
+
 /* ════════════════════════════════════════
    GQL / API
 ════════════════════════════════════════ */
@@ -1032,29 +1100,6 @@ function statusCls(s) {
   return 'badge-sky';
 }
 
-function coverageForProbe(id) {
-  return S.coverage.find(c => c.probeId === id) || {grade:'NO_DATA',score:0};
-}
-
-function coverageBadge(coverage) {
-  const grade = String(coverage?.grade || 'NO_DATA').toLowerCase();
-  const label = grade === 'no_data' ? 'NO DATA' : grade.toUpperCase();
-  return `<span class="badge badge-coverage-${esc(grade.replace('_','-'))}">${esc(label)}</span>`;
-}
-
-function normalizeSite(location) {
-  const raw = String(location || 'Unknown site').trim() || 'Unknown site';
-  const parts = raw.split(/[/>-]/).map(p => p.trim()).filter(Boolean);
-  return parts[0] || raw;
-}
-
-function mapStatusBucket(probe) {
-  const hb = hbState(probe.lastHeartbeat, probe.status);
-  if (hb.label === 'ONLINE') return 'online';
-  if (String(probe.status || '').toUpperCase() === 'INACTIVE' || String(probe.status || '').toUpperCase() === 'DECOMMISSIONED') return 'inactive';
-  return 'stale';
-}
-
 /* ════════════════════════════════════════
    RENDER FLEET
 ════════════════════════════════════════ */
@@ -1074,7 +1119,6 @@ function renderFleet(probes) {
       <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
       <p>No probes found</p><small>Register your first probe to get started</small>
     </div></td></tr>`;
-    renderCampusGrid();
     return;
   }
 
@@ -1099,69 +1143,6 @@ function renderFleet(probes) {
       </td>
     </tr>`;
   }).join('');
-  renderCampusGrid();
-}
-
-function renderCampusGrid() {
-  const root = $('campus-grid');
-  if (!root) return;
-
-  const statusFilter = $('map-status-filter')?.value || 'all';
-  const coverageFilter = $('map-coverage-filter')?.value || 'all';
-  const visible = S.probes.filter(p => {
-    const statusOk = statusFilter === 'all' || mapStatusBucket(p) === statusFilter;
-    const grade = String(coverageForProbe(p.id).grade || 'NO_DATA').toLowerCase();
-    const coverageOk = coverageFilter === 'all' || grade === coverageFilter;
-    return statusOk && coverageOk;
-  });
-
-  if (!visible.length) {
-    root.innerHTML = '<div class="empty"><p>No probes match the selected filters</p></div>';
-    return;
-  }
-
-  const groups = new Map();
-  visible.forEach(p => {
-    const site = normalizeSite(p.location);
-    if (!groups.has(site)) groups.set(site, []);
-    groups.get(site).push(p);
-  });
-
-  root.innerHTML = Array.from(groups.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([site, probes]) => `<section class="site-band">
-      <div class="site-band-hdr">
-        <div>
-          <div class="site-band-title">${esc(site)}</div>
-          <div class="site-band-sub">${probes.length} probe(s)</div>
-        </div>
-      </div>
-      <div class="probe-tile-grid">
-        ${probes.map(p => {
-          const hb = hbState(p.lastHeartbeat, p.status);
-          const coverage = coverageForProbe(p.id);
-          return `<button type="button" class="probe-tile" data-id="${esc(p.id)}">
-            <div class="probe-tile-top">
-              <div>
-                <div class="probe-tile-name">${esc(p.name)}</div>
-                <div class="probe-tile-id">${esc(p.id)}</div>
-              </div>
-              <span class="badge ${statusCls(p.status)}">${esc(p.status)}</span>
-            </div>
-            <div class="probe-tile-meta">
-              <span>${esc(p.location)}</span>
-              ${p.ssid ? `<span>SSID ${esc(p.ssid)}</span>` : ''}
-              <span>${esc(hb.label)} ${esc(hb.detail)}</span>
-            </div>
-            <div class="coverage-line">
-              ${coverageBadge(coverage)}
-              <span>${coverage.grade === 'NO_DATA' ? '-' : `${coverage.score}/100`}</span>
-            </div>
-          </button>`;
-        }).join('')}
-      </div>
-    </section>`)
-    .join('');
 }
 
 /* ════════════════════════════════════════
@@ -1472,13 +1453,20 @@ function openProbePanel(id) {
   S.selectedId = id;
 
   // Populate hidden fields
-  ['status-probe-id','probe-plugins-probe-id','trigger-action-probe-id','update-action-probe-id'].forEach(f=>$(f).value=id);
+  ['status-probe-id','profile-probe-id','wifi-probe-id','probe-plugins-probe-id','trigger-action-probe-id','update-action-probe-id'].forEach(f=>$(f).value=id);
 
   $('panel-name').textContent = p.name;
   $('panel-id').textContent = p.id;
+  $('panel-ip').textContent = p.ipAddress || '-';
+  $('panel-ssid').textContent = p.ssid || '-';
+  $('panel-location').textContent = p.location || '-';
+  $('panel-status-text').textContent = p.status || '-';
+  $('profile-name').value = p.name || '';
+  $('profile-location').value = p.location || '';
   $('status-value').value = p.status;
   renderPluginConfigLists();
   renderPanelActionPluginSelect();
+  switchProbePanelPage('overview');
 
   $('probe-panel').classList.add('open');
   $('panel-overlay').classList.add('open');
@@ -1488,6 +1476,7 @@ function openProbePanel(id) {
   loadProbeConfig(id).catch(e=>setLog({error:String(e)}));
   loadAssignments(id);
   loadActionHistory(id).catch(e=>setLog({error:String(e)}));
+  loadControlCommands(id).catch(e=>setLog({error:String(e)}));
   renderFleet(S.probes); // highlight row
 }
 
@@ -1499,29 +1488,92 @@ function closeProbePanel() {
   renderFleet(S.probes);
 }
 
+function parseJsonMaybe(raw) {
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+function formatDate(v) {
+  if (!v) return '-';
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? String(v) : d.toLocaleString();
+}
+
+function renderControlCommand(c) {
+  const result = parseJsonMaybe(c.resultJson);
+  let detail = c.errorMessage || '';
+  if (!detail && result?.networks) detail = `${result.networks.length} network(s) found`;
+  if (!detail && result?.ssid) detail = `SSID ${result.ssid}`;
+  if (!detail && result?.location) detail = result.location;
+  return `<div class="stack-item">
+    <div class="stack-item-title">
+      <span>${esc(c.type)} <span class="badge ${statusCls(c.status)}">${esc(c.status)}</span></span>
+      <span class="mono">${esc(c.commandId)}</span>
+    </div>
+    <div class="stack-item-sub">Requested by ${esc(c.requestedBy || 'admin-ui')}</div>
+    <div class="stack-item-meta">${esc(formatDate(c.requestedAtUtc))}${detail ? ` · ${esc(detail)}` : ''}</div>
+  </div>`;
+}
+
+function renderWifiNetworks() {
+  const scan = S.controlCommands.find(c => String(c.type).toUpperCase().includes('SCAN'));
+  const result = parseJsonMaybe(scan?.resultJson);
+  const networks = Array.isArray(result?.networks) ? result.networks : [];
+  $('wifi-ssid-select').innerHTML = networks.length
+    ? networks.map(n => `<option value="${esc(n.ssid)}">${esc(n.ssid)} (${esc(n.signalDbm)} dBm, ${esc(n.security || 'unknown')})</option>`).join('')
+    : '<option value="">Run a scan or enter SSID below</option>';
+  $('wifi-network-list').innerHTML = networks.length
+    ? networks.map(n => `<div class="stack-item">
+        <div class="stack-item-title"><span>${esc(n.ssid)}</span>${n.connected ? '<span class="badge badge-ok">CONNECTED</span>' : ''}</div>
+        <div class="stack-item-sub">${esc(n.signalDbm)} dBm · ${esc(n.security || 'unknown')} · channel ${esc(n.channel || '-')}</div>
+      </div>`).join('')
+    : emptyList('No scan results loaded');
+}
+
+async function loadControlCommands(probeId = S.selectedId) {
+  if (!probeId) return;
+  const d = await gql(
+    'query C($pid:String!,$limit:Int){probeControlCommands(probeId:$pid,limit:$limit){commandId probeId type status requestedBy requestedAtUtc deliveredAtUtc startedAtUtc completedAtUtc payloadJson resultJson errorMessage}}',
+    {pid:probeId,limit:20}
+  );
+  S.controlCommands = d.probeControlCommands || [];
+  $('panel-control-command-history').innerHTML = S.controlCommands.length
+    ? S.controlCommands.map(renderControlCommand).join('')
+    : emptyList('No control commands found');
+  renderWifiNetworks();
+}
+
 /* ════════════════════════════════════════
    REFRESH
 ════════════════════════════════════════ */
-async function refreshAll() {
+async function refreshAll(options={}) {
+  const manual = options.manual === true;
+  if (!manual && document.hidden) return;
   if (S.refreshing) return;
   S.refreshing = true;
   const btn = $('refresh-btn');
   btn.querySelector('svg').classList.add('spinning');
 
   try {
-    const [fd, pd, cd] = await Promise.all([
+    const [fd, pd] = await Promise.all([
       gql('query{fleetStatus{probes{id name location ipAddress ssid status lastHeartbeat}}}'),
       gql('query{plugins{id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl hasDashboard dashboardUid}}'),
-      gql('query{fleetCoverage{probeId site score grade rssiDbm snrDb linkQualityPercent pingLatencyMs pingPacketLossPercent sampleCount receivedAtUtc}}'),
     ]);
-    S.coverage = cd.fleetCoverage || [];
     renderFleet(fd.fleetStatus.probes);
-    renderPlugins(pd.plugins);
-    if (S.selectedId && $('probe-panel').classList.contains('open')) {
-      await loadAssignments(S.selectedId);
-      await Promise.allSettled([loadActionHistory(S.selectedId)]);
+    const pluginsSignature = JSON.stringify(pd.plugins || []);
+    if (pluginsSignature !== S.pluginsSignature) {
+      S.pluginsSignature = pluginsSignature;
+      renderPlugins(pd.plugins);
     }
-    setLog({fleet:fd, plugins:pd, coverage:cd});
+    if (S.selectedId && $('probe-panel').classList.contains('open')) {
+      const shouldRefreshPanel = manual || Date.now() - S.lastPanelAutoRefreshAt > PANEL_REFRESH_MS;
+      if (shouldRefreshPanel) {
+        S.lastPanelAutoRefreshAt = Date.now();
+        await loadAssignments(S.selectedId);
+        await Promise.allSettled([loadActionHistory(S.selectedId), loadControlCommands(S.selectedId)]);
+      }
+    }
+    updateLog({fleet:fd, plugins:pd}, manual);
     setConn(true);
   } catch(e) {
     setConn(false);
@@ -1538,13 +1590,21 @@ async function refreshAll() {
 ════════════════════════════════════════ */
 
 // Header buttons
-$('refresh-btn').addEventListener('click', refreshAll);
+$('refresh-btn').addEventListener('click', ()=>refreshAll({manual:true}));
 $('clear-log-btn').addEventListener('click', ()=>{ $('output').value='{}'; $('log-time').textContent=''; });
 $('apply-preset-btn').addEventListener('click', ()=>{
   const v = KEY_PRESETS[$('apiKeyPreset').value];
   if (!v) { toast('No preset configured — enter API key manually', 'warn'); return; }
   $('apiKey').value = v;
   toast(`Applied ${$('apiKeyPreset').value} preset`, 'ok');
+});
+
+$('save-settings-btn').addEventListener('click', ()=>{
+  localStorage.setItem(STORAGE.endpoint, $('endpoint').value.trim() || '/graphql');
+  localStorage.setItem(STORAGE.apiKey, $('apiKey').value.trim());
+  setConn(true);
+  toast('Connection settings saved', 'ok');
+  if (S.settingsOpen) toggleSettings();
 });
 
 // Open modals
@@ -1591,12 +1651,60 @@ $('fleet-body').addEventListener('click', e=>{
   if (row) openProbePanel(row.dataset.id);
 });
 
-$('campus-grid').addEventListener('click', e=>{
-  const tile = e.target.closest('.probe-tile[data-id]');
-  if (tile) openProbePanel(tile.dataset.id);
+$('probe-profile-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('profile-probe-id').value;
+  if (!pid) return toast('No probe selected', 'warn');
+  try {
+    const d = await gql(
+      'mutation P($i:UpdateProbeProfileInputTypeInput!){updateProbeProfile(input:$i){success message probe{id name location} command{commandId type status payloadJson}}}',
+      {i:{probeId:pid,name:$('profile-name').value.trim(),location:$('profile-location').value.trim(),requestedBy:'admin-ui'}}
+    );
+    setLog(d);
+    if (d.updateProbeProfile?.success) {
+      toast('Probe profile saved', 'ok');
+      await Promise.allSettled([refreshAll(), loadControlCommands(pid)]);
+    } else toast(d.updateProbeProfile?.message || 'Profile update rejected', 'err');
+  } catch(e) { toast('Profile update failed', 'err'); setLog({error:String(e)}); }
 });
-$('map-status-filter').addEventListener('change', renderCampusGrid);
-$('map-coverage-filter').addEventListener('change', renderCampusGrid);
+
+$('wifi-scan-btn').addEventListener('click', async ()=>{
+  const pid = S.selectedId;
+  if (!pid) return toast('No probe selected', 'warn');
+  try {
+    const d = await gql(
+      'mutation W($i:RequestWifiScanInputTypeInput!){requestWifiScan(input:$i){success message command{commandId type status}}}',
+      {i:{probeId:pid,requestedBy:'admin-ui'}}
+    );
+    setLog(d);
+    if (d.requestWifiScan?.success) {
+      toast('Wi-Fi scan queued', 'ok');
+      await loadControlCommands(pid);
+    } else toast(d.requestWifiScan?.message || 'Scan rejected', 'err');
+  } catch(e) { toast('Wi-Fi scan failed', 'err'); setLog({error:String(e)}); }
+});
+
+$('refresh-control-commands-btn').addEventListener('click', ()=>loadControlCommands(S.selectedId).catch(e=>setLog({error:String(e)})));
+
+$('wifi-connect-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const pid = $('wifi-probe-id').value;
+  const ssid = $('wifi-ssid-manual').value.trim() || $('wifi-ssid-select').value;
+  if (!pid) return toast('No probe selected', 'warn');
+  if (!ssid) return toast('Choose or enter an SSID', 'warn');
+  try {
+    const d = await gql(
+      'mutation C($i:RequestWifiConnectInputTypeInput!){requestWifiConnect(input:$i){success message command{commandId type status payloadJson}}}',
+      {i:{probeId:pid,ssid,password:$('wifi-password').value,requestedBy:'admin-ui'}}
+    );
+    $('wifi-password').value = '';
+    setLog(d);
+    if (d.requestWifiConnect?.success) {
+      toast('Wi-Fi connect queued', 'ok');
+      await loadControlCommands(pid);
+    } else toast(d.requestWifiConnect?.message || 'Connect rejected', 'err');
+  } catch(e) { toast('Wi-Fi connect failed', 'err'); setLog({error:String(e)}); }
+});
 
 // Plugins actions
 $('plugins-grid').addEventListener('click', async e=>{
@@ -2014,11 +2122,13 @@ document.addEventListener('keydown', e=>{
 /* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
+$('endpoint').value = localStorage.getItem(STORAGE.endpoint) || $('endpoint').value || '/graphql';
+$('apiKey').value = localStorage.getItem(STORAGE.apiKey) || '';
 switchView('fleet');
 setConn(null);
 renderActionsView();
-refreshAll();
-setInterval(refreshAll, 10000);
+refreshAll({manual:true});
+setInterval(() => refreshAll({manual:false}), REFRESH_MS);
 </script>
 </body>
 </html>

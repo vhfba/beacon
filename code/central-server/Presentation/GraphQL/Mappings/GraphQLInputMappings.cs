@@ -124,4 +124,53 @@ public static class GraphQLInputMappings
             ErrorMessage = input.ErrorMessage
         };
     }
+
+    public static UpdateProbeProfileInput ToDTO(this UpdateProbeProfileInputType input)
+    {
+        return new UpdateProbeProfileInput
+        {
+            ProbeId = input.ProbeId,
+            Name = input.Name,
+            Location = input.Location,
+            RequestedBy = input.RequestedBy
+        };
+    }
+
+    public static RequestWifiScanInput ToDTO(this RequestWifiScanInputType input)
+    {
+        return new RequestWifiScanInput
+        {
+            ProbeId = input.ProbeId,
+            RequestedBy = input.RequestedBy
+        };
+    }
+
+    public static RequestWifiConnectInput ToDTO(this RequestWifiConnectInputType input)
+    {
+        return new RequestWifiConnectInput
+        {
+            ProbeId = input.ProbeId,
+            Ssid = input.Ssid,
+            Password = input.Password,
+            RequestedBy = input.RequestedBy
+        };
+    }
+
+    public static UpdateProbeControlCommandStatusInput ToDTO(this UpdateProbeControlCommandStatusInputType input)
+    {
+        var normalizedStatus = input.Status.Replace("_", string.Empty, StringComparison.Ordinal);
+        if (!Enum.TryParse<ProbeControlCommandStatus>(normalizedStatus, true, out var parsedStatus))
+        {
+            throw new DomainException($"Invalid probe control command status '{input.Status}'.");
+        }
+
+        return new UpdateProbeControlCommandStatusInput
+        {
+            ProbeId = input.ProbeId,
+            CommandId = input.CommandId,
+            Status = parsedStatus,
+            ResultJson = input.ResultJson,
+            ErrorMessage = input.ErrorMessage
+        };
+    }
 }

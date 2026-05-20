@@ -1,4 +1,4 @@
-namespace CentralServer.Presentation.Monitoring;
+namespace CentralServer.Infrastructure.Monitoring;
 
 public sealed class MonitoringOptions
 {

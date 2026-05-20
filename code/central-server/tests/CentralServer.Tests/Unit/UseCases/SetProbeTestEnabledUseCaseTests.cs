@@ -33,10 +33,8 @@ public class SetProbeTestEnabledUseCaseTests
         var configRepo = new InMemoryProbeTestConfigurationRepository();
         var unitOfWork = new NoOpUnitOfWork();
         var probe = new Probe(new ProbeId("probe-200"), "Probe 200", "HQ", "10.0.0.200");
-        var testType = new TestType("PING", "ICMP latency");
-
         await probeRepo.RegisterAsync(probe);
-        await configRepo.UpdateAsync(new ProbeTestConfiguration(probe.Id, testType, 30, enabled: true));
+        await configRepo.UpdateAsync(new ProbeTestConfiguration(probe.Id, "PING", 30, enabled: true));
 
         var useCase = new SetProbeTestEnabledUseCase(probeRepo, configRepo, unitOfWork);
         var input = new SetProbeTestEnabledInput

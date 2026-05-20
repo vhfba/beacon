@@ -2,6 +2,7 @@ namespace CentralServer.Presentation.Monitoring;
 
 using CentralServer.Application.Abstractions;
 using CentralServer.Application.UseCases;
+using CentralServer.Infrastructure.Monitoring;
 using CentralServer.Presentation.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

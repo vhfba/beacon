@@ -63,6 +63,30 @@ public sealed class PluginDashboardAutomationService
             Message: result.Message);
     }
 
+    public async Task<DashboardAutomationSummary> RemoveDashboardAsync(
+        string pluginId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _grafanaDashboardClient.DeletePluginDashboardAsync(
+            pluginId,
+            cancellationToken);
+
+        if (!result.Applied)
+        {
+            _logger.LogInformation(
+                "Plugin dashboard removal skipped or failed for plugin {PluginId}: {Message}",
+                pluginId,
+                result.Message);
+        }
+
+        return new DashboardAutomationSummary(
+            GrafanaApplied: result.Applied ? 1 : 0,
+            GrafanaSkippedOrFailed: result.Applied ? 0 : 1,
+            Mode: "plugin-dashboard-delete",
+            DashboardUid: result.DashboardUid,
+            Message: result.Message);
+    }
+
     private static JsonNode ParseDashboardJson(string dashboardJson)
     {
         if (string.IsNullOrWhiteSpace(dashboardJson))

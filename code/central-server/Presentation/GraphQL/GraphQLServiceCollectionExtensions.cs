@@ -34,6 +34,9 @@ public static class GraphQLServiceCollectionExtensions
             .AddType<ProbePluginAssignmentType>()
             .AddType<ProbeActionExecutionType>()
             .AddType<ProbeActionExecutionStatusType>()
+            .AddType<ProbeControlCommandType>()
+            .AddType<ProbeControlCommandStatusType>()
+            .AddType<ProbeControlCommandTypeType>()
             .AddType<FleetStatusResponse>()
             .AddType<ProbeHeartbeatResponse>()
             .AddType<RegisterPluginResponse>()
@@ -46,6 +49,8 @@ public static class GraphQLServiceCollectionExtensions
             .AddType<SetProbePluginsResponse>()
             .AddType<DeleteProbeResponse>()
             .AddType<DeletePluginResponse>()
-            .AddType<TriggerProbeActionResponse>();
+            .AddType<TriggerProbeActionResponse>()
+            .AddType<ProbeControlCommandResponse>()
+            .AddType<UpdateProbeProfileResponse>();
     }
 }

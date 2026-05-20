@@ -123,4 +123,68 @@ public class ProbeAdministrationMutations
                 Execution = null
             });
     }
+
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [GraphQLName("updateProbeProfile")]
+    public async Task<UpdateProbeProfileResponse> UpdateProbeProfileAsync(
+        UpdateProbeProfileInputType input,
+        [Service] UpdateProbeProfileUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        return await DomainMutationExecutor.ExecuteAsync(
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            result => new UpdateProbeProfileResponse
+            {
+                Success = true,
+                Probe = result.Probe.ToGraphQLType(),
+                Command = result.Command.ToGraphQLType()
+            },
+            message => new UpdateProbeProfileResponse
+            {
+                Success = false,
+                Message = message
+            });
+    }
+
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [GraphQLName("requestWifiScan")]
+    public async Task<ProbeControlCommandResponse> RequestWifiScanAsync(
+        RequestWifiScanInputType input,
+        [Service] RequestWifiScanUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        return await DomainMutationExecutor.ExecuteAsync(
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            command => new ProbeControlCommandResponse
+            {
+                Success = true,
+                Command = command.ToGraphQLType()
+            },
+            message => new ProbeControlCommandResponse
+            {
+                Success = false,
+                Message = message
+            });
+    }
+
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [GraphQLName("requestWifiConnect")]
+    public async Task<ProbeControlCommandResponse> RequestWifiConnectAsync(
+        RequestWifiConnectInputType input,
+        [Service] RequestWifiConnectUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        return await DomainMutationExecutor.ExecuteAsync(
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            command => new ProbeControlCommandResponse
+            {
+                Success = true,
+                Command = command.ToGraphQLType()
+            },
+            message => new ProbeControlCommandResponse
+            {
+                Success = false,
+                Message = message
+            });
+    }
 }

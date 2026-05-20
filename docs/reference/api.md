@@ -51,12 +51,16 @@ Authorization model:
   Mapping between a probe and its assigned plugins.
 - `ProbeActionExecution`
   Queued or completed on-demand action execution.
+- `ProbeControlCommand`
+  Queued or completed device-control command for profile and Wi-Fi administration.
 
 ### Enums
 
 - `ProbeStatusType`: `REGISTERED`, `ACTIVE`, `INACTIVE`, `DECOMMISSIONED`
 - `PluginExecutionModeType`: `SCHEDULED`, `ACTION`
 - `ProbeActionExecutionStatusType`: `QUEUED`, `DELIVERED`, `RUNNING`, `SUCCEEDED`, `FAILED`, `TIMED_OUT`
+- `ProbeControlCommandTypeType`: `SCAN_WIFI_NETWORKS`, `CONNECT_WIFI`, `UPDATE_PROFILE`
+- `ProbeControlCommandStatusType`: `QUEUED`, `DELIVERED`, `RUNNING`, `SUCCEEDED`, `FAILED`, `TIMED_OUT`
 
 ## Queries
 
@@ -68,12 +72,14 @@ Authorization model:
 - `plugin(id: String!)`
 - `probePluginAssignments(probeId: String!)`
 - `probeActionExecutions(probeId: String!, limit: Int = 50)`
+- `probeControlCommands(probeId: String!, limit: Int = 50)`
 
 ### Probe-facing queries
 
 - `probeConfig(probeId: String!)`
 - `probeRuntime(probeId: String!)`
 - `pendingProbeActions(probeId: String!, limit: Int = 10)`
+- `pendingProbeControlCommands(probeId: String!, limit: Int = 10)`
 
 ### Example: fleet view
 
@@ -160,6 +166,9 @@ query PendingActions($probeId: String!) {
 - `updateProbeTestConfig`
 - `setProbeTestEnabled`
 - `setProbePlugins`
+- `updateProbeProfile`
+- `requestWifiScan`
+- `requestWifiConnect`
 
 ### Plugin administration
 
@@ -173,11 +182,14 @@ query PendingActions($probeId: String!) {
 - `reportProbeMetrics`
 - `triggerProbeAction`
 - `updateProbeActionStatus`
+- `updateProbeControlCommandStatus`
 
 Probe lifecycle note:
 
 - probes self-register on their first successful `recordProbeHeartbeat`
 - admins no longer create probe records manually
+- probe IDs remain stable; admins edit the display name/location through `updateProbeProfile`
+- heartbeat updates observed runtime fields such as IP address, SSID, agent version, and last-seen timestamps, but does not overwrite admin-managed name/location
 
 ### Example: register plugin
 
@@ -278,6 +290,87 @@ mutation Trigger($input: TriggerProbeActionInputTypeInput!) {
       pluginId
       status
       requestedAtUtc
+    }
+  }
+}
+```
+
+### Example: update probe profile
+
+```graphql
+mutation UpdateProfile($input: UpdateProbeProfileInputTypeInput!) {
+  updateProbeProfile(input: $input) {
+    success
+    probe {
+      id
+      name
+      location
+    }
+    command {
+      commandId
+      type
+      status
+    }
+  }
+}
+```
+
+### Example: request Wi-Fi scan
+
+```graphql
+mutation ScanWifi($input: RequestWifiScanInputTypeInput!) {
+  requestWifiScan(input: $input) {
+    success
+    command {
+      commandId
+      status
+    }
+  }
+}
+```
+
+### Example: request Wi-Fi connection
+
+```graphql
+mutation ConnectWifi($input: RequestWifiConnectInputTypeInput!) {
+  requestWifiConnect(input: $input) {
+    success
+    command {
+      commandId
+      payloadJson
+    }
+  }
+}
+```
+
+Notes:
+
+- `requestWifiConnect` sends the password only in the pending command payload consumed by the probe.
+- Admin command history redacts Wi-Fi passwords in `payloadJson`.
+
+### Example: probe claims control commands
+
+```graphql
+query PendingControl($probeId: String!) {
+  pendingProbeControlCommands(probeId: $probeId, limit: 10) {
+    commandId
+    type
+    payloadJson
+  }
+}
+```
+
+### Example: probe reports control command result
+
+```graphql
+mutation UpdateControl($input: UpdateProbeControlCommandStatusInputTypeInput!) {
+  updateProbeControlCommandStatus(input: $input) {
+    success
+    command {
+      commandId
+      status
+      resultJson
+      errorMessage
     }
   }
 }
@@ -402,6 +495,14 @@ Coverage scoring note:
 6. Probe executes the action plugin.
 7. Probe posts status changes with `updateProbeActionStatus`.
 8. Admin reviews history with `probeActionExecutions`.
+
+### Probe control flow
+
+1. Admin edits profile or requests Wi-Fi scan/connect from the simulator UI.
+2. Central-server stores a `ProbeControlCommand`.
+3. Probe polls `pendingProbeControlCommands`.
+4. Probe applies the command locally and reports `RUNNING`, then `SUCCEEDED` or `FAILED`.
+5. Admin reviews history with `probeControlCommands`.
 
 ## Implementation Notes
 

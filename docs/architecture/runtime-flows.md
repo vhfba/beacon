@@ -18,3 +18,14 @@ Runtime flows are documented per use case using the same reading order:
 | Dashboard embed | [SSD](../diagrams/use-cases/uc-dashboard-embed/ssd.puml) | [C3 slice](../diagrams/use-cases/uc-dashboard-embed/c3-slice.puml) | [Sequence](../diagrams/use-cases/uc-dashboard-embed/sequence.puml) |
 | Heartbeat | [SSD](../diagrams/use-cases/uc-heartbeat/ssd.puml) | [C3 slice](../diagrams/use-cases/uc-heartbeat/c3-slice.puml) | [Sequence](../diagrams/use-cases/uc-heartbeat/sequence.puml) |
 | Fleet status | [SSD](../diagrams/use-cases/uc-fleet-status/ssd.puml) | [C3 slice](../diagrams/use-cases/uc-fleet-status/c3-slice.puml) | [Sequence](../diagrams/use-cases/uc-fleet-status/sequence.puml) |
+
+## Probe Control Commands
+
+Profile and Wi-Fi administration use central-server queued commands rather than direct inbound access to probes:
+
+1. Admin queues `UPDATE_PROFILE`, `SCAN_WIFI_NETWORKS`, or `CONNECT_WIFI`.
+2. Probe pulls pending control commands over GraphQL.
+3. Probe reports command status and result JSON back to central-server.
+4. Admin UI reads command history from central-server.
+
+Probe IDs stay stable. `UPDATE_PROFILE` changes display name/location only, while heartbeat continues to refresh observed IP, SSID, agent version, and liveness timestamps.

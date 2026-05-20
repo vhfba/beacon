@@ -69,4 +69,28 @@ public class ProbeQueries
         var actions = await useCase.ExecuteAsync(probeId, limit ?? 10, cancellationToken);
         return actions.Select(a => a.ToGraphQLType()).ToList();
     }
+
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [GraphQLName("probeControlCommands")]
+    public async Task<List<ProbeControlCommandType>> GetProbeControlCommandsAsync(
+        string probeId,
+        int? limit,
+        [Service] ListProbeControlCommandsUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var commands = await useCase.ExecuteAsync(probeId, limit.GetValueOrDefault(50), cancellationToken);
+        return commands.Select(c => c.ToGraphQLType()).ToList();
+    }
+
+    [Authorize(Policy = AuthorizationPolicies.ProbeOrAdmin)]
+    [GraphQLName("pendingProbeControlCommands")]
+    public async Task<List<ProbeControlCommandType>> GetPendingProbeControlCommandsAsync(
+        string probeId,
+        int? limit,
+        [Service] GetPendingProbeControlCommandsUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var commands = await useCase.ExecuteAsync(probeId, limit.GetValueOrDefault(10), cancellationToken);
+        return commands.Select(c => c.ToGraphQLType()).ToList();
+    }
 }

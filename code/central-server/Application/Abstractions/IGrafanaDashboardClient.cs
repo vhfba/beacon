@@ -12,5 +12,9 @@ public interface IGrafanaDashboardClient
         System.Text.Json.Nodes.JsonObject dashboard,
         CancellationToken cancellationToken);
 
+    Task<GrafanaSyncResult> DeletePluginDashboardAsync(
+        string pluginId,
+        CancellationToken cancellationToken);
+
     string BuildEmbedUrl(string dashboardUid, string site);
 }

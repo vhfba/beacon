@@ -75,6 +75,29 @@ public class Probe
         Version++;
     }
 
+    public void UpdateObservedDetails(string ipAddress, string? ssid, string? agentVersion)
+    {
+        if (string.IsNullOrWhiteSpace(ipAddress))
+            throw new DomainException("IP address cannot be empty");
+
+        IpAddress = ipAddress.Trim();
+        Ssid = NormalizeOptional(ssid);
+        AgentVersion = NormalizeOptional(agentVersion);
+        Version++;
+    }
+
+    public void UpdateProfile(string name, string location)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Probe name cannot be empty");
+        if (string.IsNullOrWhiteSpace(location))
+            throw new DomainException("Probe location cannot be empty");
+
+        Name = name.Trim();
+        Location = location.Trim();
+        Version++;
+    }
+
     public void UpdateStatus(ProbeStatus newStatus)
     {
         Status = newStatus;

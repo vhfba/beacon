@@ -102,4 +102,25 @@ public class ProbeMutations
                 Message = message
             });
     }
+
+    [Authorize(Policy = AuthorizationPolicies.ProbeOrAdmin)]
+    [GraphQLName("updateProbeControlCommandStatus")]
+    public async Task<ProbeControlCommandResponse> UpdateProbeControlCommandStatusAsync(
+        UpdateProbeControlCommandStatusInputType input,
+        [Service] UpdateProbeControlCommandStatusUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        return await DomainMutationExecutor.ExecuteAsync(
+            () => useCase.ExecuteAsync(input.ToDTO(), cancellationToken),
+            command => new ProbeControlCommandResponse
+            {
+                Success = true,
+                Command = command.ToGraphQLType()
+            },
+            message => new ProbeControlCommandResponse
+            {
+                Success = false,
+                Message = message
+            });
+    }
 }

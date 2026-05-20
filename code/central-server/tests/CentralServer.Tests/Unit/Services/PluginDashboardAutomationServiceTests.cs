@@ -81,9 +81,37 @@ public class PluginDashboardAutomationServiceTests
         Assert.Equal(1, summary.GrafanaSkippedOrFailed);
     }
 
+    [Fact]
+    public async Task RemoveDashboardAsync_DeletesPluginDashboard()
+    {
+        var deletedPluginId = string.Empty;
+        var grafanaClient = new FakeGrafanaDashboardClient
+        {
+            DeleteResultFactory = pluginId =>
+            {
+                deletedPluginId = pluginId;
+                return new GrafanaSyncResult(true, $"beacon-plugin-{pluginId}", "deleted");
+            }
+        };
+
+        var service = new PluginDashboardAutomationService(
+            grafanaClient,
+            NullLogger<PluginDashboardAutomationService>.Instance);
+
+        var summary = await service.RemoveDashboardAsync(
+            "plugin-a",
+            CancellationToken.None);
+
+        Assert.Equal("plugin-dashboard-delete", summary.Mode);
+        Assert.Equal("plugin-a", deletedPluginId);
+        Assert.Equal(1, summary.GrafanaApplied);
+        Assert.Equal("beacon-plugin-plugin-a", summary.DashboardUid);
+    }
+
     private sealed class FakeGrafanaDashboardClient : IGrafanaDashboardClient
     {
         public Func<string, GrafanaSyncResult>? PluginResultFactory { get; init; }
+        public Func<string, GrafanaSyncResult>? DeleteResultFactory { get; init; }
 
         public Task<IReadOnlyList<GrafanaDashboardSummary>> ListDashboardsAsync(CancellationToken cancellationToken)
         {
@@ -97,6 +125,13 @@ public class PluginDashboardAutomationServiceTests
             CancellationToken cancellationToken)
         {
             return Task.FromResult(PluginResultFactory?.Invoke(pluginId) ?? new GrafanaSyncResult(true, $"beacon-plugin-{pluginId}", title ?? "ok"));
+        }
+
+        public Task<GrafanaSyncResult> DeletePluginDashboardAsync(
+            string pluginId,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(DeleteResultFactory?.Invoke(pluginId) ?? new GrafanaSyncResult(true, $"beacon-plugin-{pluginId}", "deleted"));
         }
 
         public string BuildEmbedUrl(string dashboardUid, string site) => $"/d/{dashboardUid}?site={site}";

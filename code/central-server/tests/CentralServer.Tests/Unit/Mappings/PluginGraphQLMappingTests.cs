@@ -1,6 +1,7 @@
 namespace CentralServer.Tests.Unit.Mappings;
 
 using CentralServer.Application.DTOs;
+using CentralServer.Application.Monitoring;
 using CentralServer.Domain.Models;
 using CentralServer.Presentation.GraphQL.Mappings;
 
@@ -22,7 +23,7 @@ public class PluginGraphQLMappingTests
         var result = plugin.ToGraphQLType();
 
         Assert.True(result.HasDashboard);
-        Assert.Equal("beacon-plugin-ping", result.DashboardUid);
+        Assert.Equal(GrafanaDashboardConventions.BuildPluginDashboardUid(plugin.Id), result.DashboardUid);
     }
 
     [Fact]

@@ -36,7 +36,7 @@ public class ProbeRuntimeCoordinator
             throw new DomainException("Decommissioned probes cannot send heartbeat.");
         }
 
-        probe.UpdateReportedDetails(input.Name, input.Location, input.IpAddress, input.Ssid, input.AgentVersion);
+        probe.UpdateObservedDetails(input.IpAddress, input.Ssid, input.AgentVersion);
         probe.RecordPassiveHeartbeat();
         await _probeRepository.UpdateAsync(probe, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

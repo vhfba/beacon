@@ -7,10 +7,9 @@ public static class ProbeTestConfigurationEntityMappings
 {
     public static ProbeTestConfiguration ToDomain(this ProbeTestConfigEntity entity)
     {
-        var testType = new TestType(entity.TestType, $"Scheduled probe check {entity.TestType}");
         return new ProbeTestConfiguration(
             new ProbeId(entity.ProbeId),
-            testType,
+            entity.TestType,
             entity.IntervalSeconds,
             entity.Enabled);
     }

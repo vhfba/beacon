@@ -10,7 +10,7 @@ public static partial class ApplicationDtoMappings
         return new ProbeTestConfigurationDTO
         {
             ProbeId = config.ProbeId.Value,
-            TestType = config.TestType.Name,
+            TestType = config.PluginId,
             IntervalSeconds = config.IntervalSeconds,
             Enabled = config.Enabled
         };

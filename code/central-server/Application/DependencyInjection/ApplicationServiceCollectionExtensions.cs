@@ -34,6 +34,12 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<ListProbeActionExecutionsUseCase>();
         services.AddScoped<GetPendingProbeActionsUseCase>();
         services.AddScoped<UpdateProbeActionStatusUseCase>();
+        services.AddScoped<ListProbeControlCommandsUseCase>();
+        services.AddScoped<GetPendingProbeControlCommandsUseCase>();
+        services.AddScoped<RequestWifiScanUseCase>();
+        services.AddScoped<RequestWifiConnectUseCase>();
+        services.AddScoped<UpdateProbeProfileUseCase>();
+        services.AddScoped<UpdateProbeControlCommandStatusUseCase>();
 
         return services;
     }

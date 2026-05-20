@@ -18,6 +18,19 @@ metrics_interval: 60
 
 action_poll_interval: 10
 
+control_poll_interval: 10
+
+# Connectivity checks can stay disabled for local development; Wi-Fi scan/connect
+# still uses the real OS backend below.
+skip_network_checks: true
+
+# auto: Windows uses netsh; Linux/Raspberry Pi uses nmcli when available,
+# otherwise iwlist/wpa_supplicant.
+network_backend: auto
+
+# Set to true only when demonstrating without Wi-Fi hardware/backend tools.
+allow_mock_network: false
+
 wifi_interface: wlan0
 
 ethernet_interface: eth0

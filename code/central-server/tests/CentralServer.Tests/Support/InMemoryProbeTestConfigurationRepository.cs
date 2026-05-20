@@ -36,7 +36,7 @@ internal sealed class InMemoryProbeTestConfigurationRepository : IProbeTestConfi
 
     public Task UpdateAsync(ProbeTestConfiguration config, CancellationToken cancellationToken = default)
     {
-        _configs[(config.ProbeId.Value, config.TestType.Name)] = config;
+        _configs[(config.ProbeId.Value, config.PluginId)] = config;
         return Task.CompletedTask;
     }
 

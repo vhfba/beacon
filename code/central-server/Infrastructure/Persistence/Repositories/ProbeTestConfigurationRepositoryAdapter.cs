@@ -51,11 +51,11 @@ public class ProbeTestConfigurationRepositoryAdapter : IProbeTestConfigurationRe
 
     public async Task UpdateAsync(ProbeTestConfiguration config, CancellationToken cancellationToken = default)
     {
-        var entity = await FindEntityAsync(config.ProbeId, config.TestType.Name, cancellationToken);
+        var entity = await FindEntityAsync(config.ProbeId, config.PluginId, cancellationToken);
 
         if (entity == null)
         {
-            entity = CreateEntity(config.ProbeId, config.TestType.Name);
+            entity = CreateEntity(config.ProbeId, config.PluginId);
             _context.ProbeTestConfigurations.Add(entity);
         }
 
