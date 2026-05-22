@@ -1,9 +1,0 @@
-{
-  "id": "WIFI_CONNECTIVITY_C",
-  "name": "Wi-Fi Connectivity C",
-  "version": "1.0.0",
-  "entrypoint": "./beacon_wifi_connectivity",
-  "timeout_seconds": 20,
-  "executionMode": "SCHEDULED",
-  "description": "Checks gateway reachability, packet loss, DNS latency, and TCP connectivity."
-}

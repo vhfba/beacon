@@ -51,6 +51,17 @@ internal sealed class InMemoryPluginRepository : IPluginRepository
         return Task.CompletedTask;
     }
 
+    public Task UpdateAsync(string currentId, Plugin plugin, CancellationToken cancellationToken = default)
+    {
+        if (!string.Equals(currentId, plugin.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            _plugins.Remove(currentId);
+        }
+
+        _plugins[plugin.Id] = plugin;
+        return Task.CompletedTask;
+    }
+
     public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         _plugins.Remove(id);

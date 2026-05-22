@@ -68,6 +68,43 @@ public class PluginRepositoryAdapter : IPluginRepository
         _context.Plugins.Update(entity);
     }
 
+    public async Task UpdateAsync(string currentId, Plugin plugin, CancellationToken cancellationToken = default)
+    {
+        if (string.Equals(currentId, plugin.Id, StringComparison.Ordinal))
+        {
+            await UpdateAsync(plugin, cancellationToken);
+            return;
+        }
+
+        var existingEntity = await GetRequiredEntityAsync(currentId, cancellationToken);
+        var replacementEntity = plugin.ToEntity();
+
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+        existingEntity.Name = $"__renaming__{Guid.NewGuid():N}";
+        existingEntity.Version = Guid.NewGuid().ToString("N");
+        await _context.SaveChangesAsync(cancellationToken);
+
+        _context.Plugins.Add(replacementEntity);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        await _context.ProbePluginAssignments
+            .Where(a => a.PluginId == currentId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(a => a.PluginId, plugin.Id), cancellationToken);
+
+        await _context.ProbeActionExecutions
+            .Where(a => a.PluginId == currentId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(a => a.PluginId, plugin.Id), cancellationToken);
+
+        await _context.ProbeTestConfigurations
+            .Where(c => c.TestType == currentId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TestType, plugin.Id), cancellationToken);
+
+        _context.Plugins.Remove(existingEntity);
+        await _context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         var entity = await GetRequiredEntityAsync(id, cancellationToken);

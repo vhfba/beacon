@@ -66,6 +66,24 @@ public static class GraphQLInputMappings
         };
     }
 
+    public static UpdatePluginInput ToDTO(this UpdatePluginInputType input)
+    {
+        return new UpdatePluginInput
+        {
+            CurrentId = input.CurrentId,
+            Id = input.Id,
+            Name = input.Name,
+            Version = input.Version,
+            Checksum = input.Checksum,
+            Description = input.Description,
+            BundleDownloadUrl = input.BundleDownloadUrl,
+            DashboardJson = input.DashboardJson,
+            ExecutionMode = input.ExecutionMode == PluginExecutionModeType.Action
+                ? PluginExecutionMode.Action
+                : PluginExecutionMode.Scheduled
+        };
+    }
+
     public static SetPluginAvailabilityInput ToDTO(this SetPluginAvailabilityInputType input)
     {
         return new SetPluginAvailabilityInput

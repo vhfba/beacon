@@ -77,6 +77,29 @@ public class Plugin
         Available = true;
     }
 
+    public Plugin WithCatalogDetails(
+        string id,
+        string name,
+        string version,
+        string checksum,
+        string? description,
+        string? bundleDownloadUrl,
+        string? dashboardJson,
+        PluginExecutionMode executionMode)
+    {
+        return Rehydrate(
+            id,
+            name,
+            version,
+            checksum,
+            description,
+            bundleDownloadUrl,
+            dashboardJson,
+            ReleasedAt,
+            Available,
+            executionMode);
+    }
+
     private static void EnsureRequiredText(string value, string message)
     {
         if (string.IsNullOrWhiteSpace(value))

@@ -38,6 +38,30 @@ public class PluginMutations
     }
 
     [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [GraphQLName("updatePlugin")]
+    public async Task<UpdatePluginResponse> UpdatePluginAsync(
+        UpdatePluginInputType input,
+        [Service] UpdatePluginUseCase useCase,
+        [Service] PluginDashboardAutomationService dashboardAutomationService,
+        CancellationToken cancellationToken)
+    {
+        return await DomainMutationExecutor.ExecuteAsync(
+            () => UpdatePluginWithDashboardAsync(input, useCase, dashboardAutomationService, cancellationToken),
+            result => new UpdatePluginResponse
+            {
+                Success = true,
+                Message = result.Message,
+                Plugin = result.Plugin.ToGraphQLType()
+            },
+            message => new UpdatePluginResponse
+            {
+                Success = false,
+                Message = message,
+                Plugin = null
+            });
+    }
+
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [GraphQLName("setPluginAvailability")]
     public async Task<SetPluginAvailabilityResponse> SetPluginAvailabilityAsync(
         SetPluginAvailabilityInputType input,
@@ -151,7 +175,47 @@ public class PluginMutations
         return new RegisterPluginResult(plugin, message);
     }
 
+    private static async Task<UpdatePluginResult> UpdatePluginWithDashboardAsync(
+        UpdatePluginInputType input,
+        UpdatePluginUseCase useCase,
+        PluginDashboardAutomationService dashboardAutomationService,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(input.DashboardJson))
+        {
+            dashboardAutomationService.ValidateDashboardJson(input.DashboardJson);
+        }
+
+        var plugin = await useCase.ExecuteAsync(input.ToDTO(), cancellationToken);
+        string? message = "Plugin updated.";
+
+        if (!string.Equals(input.CurrentId, plugin.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            var oldSummary = await dashboardAutomationService.RemoveDashboardAsync(input.CurrentId, cancellationToken);
+            message += $" Old Grafana dashboard removal {(oldSummary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{oldSummary.DashboardUid}'.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.DashboardJson) && plugin.Available)
+        {
+            var summary = await dashboardAutomationService.ApplyDashboardJsonAsync(
+                plugin.Id,
+                input.DashboardJson,
+                cancellationToken);
+
+            message += $" Grafana dashboard sync {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
+        }
+        else if (string.IsNullOrWhiteSpace(input.DashboardJson))
+        {
+            var summary = await dashboardAutomationService.RemoveDashboardAsync(plugin.Id, cancellationToken);
+            message += $" Grafana dashboard removal {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
+        }
+
+        return new UpdatePluginResult(plugin, message);
+    }
+
     private sealed record SetPluginAvailabilityResult(PluginDTO Plugin, string? Message);
 
     private sealed record RegisterPluginResult(PluginDTO Plugin, string? Message);
+
+    private sealed record UpdatePluginResult(PluginDTO Plugin, string? Message);
 }

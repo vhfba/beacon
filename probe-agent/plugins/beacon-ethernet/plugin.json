@@ -1,0 +1,21 @@
+{
+  "id": "beacon-ethernet",
+  "version": "1.0.0",
+  "type": "binary",
+  "entrypoint": "./beacon-ethernet.exe",
+  "executionMode": "SCHEDULED",
+  "timeout_seconds": 20,
+  "description": "BEACON wired interface monitor",
+  "platforms": [
+    "windows-amd64",
+    "linux-amd64",
+    "linux-arm64"
+  ],
+  "dashboards": [
+    {
+      "uid": "beacon-ethernet",
+      "title": "BEACON Ethernet Monitor",
+      "path": "dashboards/beacon-ethernet.json"
+    }
+  ]
+}

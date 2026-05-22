@@ -11,17 +11,20 @@ public class SetProbePluginsUseCase
     private readonly IProbeRepository _probeRepository;
     private readonly IPluginRepository _pluginRepository;
     private readonly IProbePluginAssignmentRepository _assignmentRepository;
+    private readonly IProbeTestConfigurationRepository _configRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public SetProbePluginsUseCase(
         IProbeRepository probeRepository,
         IPluginRepository pluginRepository,
         IProbePluginAssignmentRepository assignmentRepository,
+        IProbeTestConfigurationRepository configRepository,
         IUnitOfWork unitOfWork)
     {
         _probeRepository = probeRepository;
         _pluginRepository = pluginRepository;
         _assignmentRepository = assignmentRepository;
+        _configRepository = configRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -37,6 +40,12 @@ public class SetProbePluginsUseCase
             var plugin = await _pluginRepository.GetByIdAsync(pluginId, cancellationToken);
             if (plugin == null)
                 throw new DomainException($"Plugin {pluginId} not found");
+        }
+
+        var existingConfigs = await _configRepository.GetByProbeIdAsync(probe.Id, cancellationToken);
+        foreach (var config in existingConfigs.Where(c => c.Enabled && !normalizedIds.Contains(c.PluginId)))
+        {
+            await _configRepository.UpdateAsync(config.WithEnabled(false), cancellationToken);
         }
 
         await _assignmentRepository.SetForProbeAsync(probe.Id, normalizedIds, cancellationToken);

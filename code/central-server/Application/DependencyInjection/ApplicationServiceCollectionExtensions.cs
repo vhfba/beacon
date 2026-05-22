@@ -24,6 +24,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<UpdateProbeStatusUseCase>();
         services.AddScoped<ListPluginsUseCase>();
         services.AddScoped<RegisterPluginUseCase>();
+        services.AddScoped<UpdatePluginUseCase>();
         services.AddScoped<GetPluginByIdUseCase>();
         services.AddScoped<SetProbeTestEnabledUseCase>();
         services.AddScoped<SetPluginAvailabilityUseCase>();

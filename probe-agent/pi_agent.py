@@ -212,6 +212,8 @@ class PluginManager:
         env["BEACON_PLUGIN_CONTEXT"] = json.dumps(
             context or {}
         )
+        if isinstance(context, dict) and context.get("probeId"):
+            env["BEACON_PROBE_ID"] = str(context["probeId"])
 
         result = subprocess.run(
 
@@ -383,6 +385,25 @@ def metric_labels(config, plugin_id):
         {"key": "probe_id", "value": str(config["device_id"])},
         {"key": "site", "value": str(config.get("probe_location", "unknown"))},
         {"key": "test_type", "value": str(plugin_id).upper()},
+    ]
+
+
+def merge_metric_labels(default_labels, plugin_labels):
+    merged = {
+        str(label["key"]): str(label["value"])
+        for label in default_labels
+    }
+
+    if isinstance(plugin_labels, dict):
+        for key, value in plugin_labels.items():
+            if str(key) in ("probe_id", "site", "test_type"):
+                continue
+
+            merged[str(key)] = str(value)
+
+    return [
+        {"key": key, "value": value}
+        for key, value in merged.items()
     ]
 
 
@@ -1320,14 +1341,10 @@ class PiAgent:
                         "kind": sample.get("kind", "gauge"),
                         "value": float(sample.get("value", 0)),
                         "timestampUtc": utc_now_iso(),
-                        "labels": [
-                            {
-                                "key": str(key),
-                                "value": str(value)
-                            }
-                            for key, value
-                            in sample.get("labels", {}).items()
-                        ] or labels
+                        "labels": merge_metric_labels(
+                            labels,
+                            sample.get("labels", {})
+                        )
                     })
 
                 continue

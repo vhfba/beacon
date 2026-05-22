@@ -187,33 +187,40 @@ td{padding:12px 14px;vertical-align:middle}
 textarea.inp{height:auto;padding:8px 10px;resize:vertical}
 
 /* ── plugin cards ── */
-.plugin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.plugin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.plugin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.plugin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0}
 .plugin-card:hover{border-color:var(--border-md)}
-.plugin-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.plugin-card-name{font-size:13px;font-weight:500;color:var(--text)}
-.plugin-card-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:2px}
+.plugin-card-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:flex-start;gap:8px}
+.plugin-card-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.plugin-card-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--hint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .plugin-card-desc{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.plugin-card-actions{display:flex;gap:6px;margin-top:auto}
-.plugin-card-actions .btn{flex:1;justify-content:center;height:30px;font-size:12px}
+.plugin-card-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:auto}
+.plugin-card-actions .btn{justify-content:center;height:34px;font-size:12px;min-width:0;width:100%;padding:0 8px;overflow:hidden;text-overflow:ellipsis;border-radius:8px}
+.plugin-card-actions .plugin-delete{width:100%;padding:0 8px;justify-self:stretch}
+.plugin-card-actions.compact{grid-template-columns:repeat(4,minmax(0,1fr))}
 .plugin-config-list{display:grid;gap:8px}
-.plugin-config-row{border:1px solid var(--border);border-radius:var(--radius);padding:10px;background:var(--surface-2);display:grid;gap:8px}
-.plugin-config-main{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.plugin-config-title{font-size:13px;font-weight:600;color:var(--text)}
-.plugin-config-meta{font-size:11px;color:var(--muted)}
-.plugin-config-controls{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:end}
-.checkline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.plugin-config-row{border:1px solid var(--border);border-radius:var(--radius);padding:10px;background:var(--surface-2);display:grid;gap:8px;min-width:0}
+.plugin-config-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px}
+.plugin-config-title{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plugin-config-meta{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plugin-config-controls{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:8px;align-items:end}
+.checkline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);min-width:0}
+.checkline span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .checkline input{width:15px;height:15px}
-.assigned-dashboard-btn{height:24px;font-size:11px;padding:0 8px}
+.assigned-dashboard-btn{height:26px;font-size:11px;padding:0 8px;max-width:96px;overflow:hidden;text-overflow:ellipsis}
 
 /* ── tool cards (plugin tools) ── */
-.tool-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:20px}
-.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow)}
+.tool-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:20px}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow);min-width:0;overflow:hidden}
 .tool-card-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px}
 .tool-inline{display:flex;gap:6px;align-items:center}
+.tool-card .tool-inline{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;gap:8px}
+.tool-card .tool-inline.bundle-inline{grid-template-columns:minmax(0,1fr) 76px 42px}
 .tool-inline select.inp{flex:1}
 .tool-inline .inp{flex:1}
+.tool-card .tool-inline .inp,.tool-card .tool-inline select.inp{min-width:0;width:100%}
 .tool-inline .btn{flex-shrink:0}
+.tool-card .tool-inline .btn{width:100%;justify-content:center;padding:0 12px}
 .tool-summary{font-size:12px;color:var(--muted)}
 .actions-layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:20px}
 .stack-list{display:grid;gap:8px}
@@ -242,7 +249,8 @@ textarea.inp{height:auto;padding:8px 10px;resize:vertical}
 .modal-wrap{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-wrap.open{display:flex}
 .modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.4)}
-.modal{position:relative;background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
+.modal{position:relative;background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
+.modal.modal-wide{max-width:760px}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
 .modal-title{font-size:15px;font-weight:600}
 .modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
@@ -300,6 +308,12 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
   #probe-panel{width:100vw}
   .panel-tabs{grid-template-columns:repeat(2,1fr)}
   .panel-summary{grid-template-columns:1fr}
+  .plugin-grid{grid-template-columns:1fr}
+  .plugin-card-actions{grid-template-columns:1fr 1fr}
+  .plugin-card-actions.compact{grid-template-columns:1fr 1fr}
+  .plugin-card-actions .plugin-delete{justify-self:stretch;width:100%}
+  .plugin-config-controls{grid-template-columns:1fr}
+  .tool-card .tool-inline,.tool-card .tool-inline.bundle-inline{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -442,7 +456,7 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
       </div>
       <div class="tool-card">
         <div class="tool-card-title">Download Plugin Bundle</div>
-        <form id="bundle-form" class="tool-inline">
+        <form id="bundle-form" class="tool-inline bundle-inline">
           <select id="bundle-plugin-select" class="inp" style="flex:1"><option value="">No plugins loaded</option></select>
           <input id="bundle-version" class="inp" value="2.1.0" style="width:70px" placeholder="ver"/>
           <button class="btn btn-primary" type="submit">
@@ -746,14 +760,15 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
 <!-- ═══════════════════════ REGISTER PLUGIN MODAL ═══════════════════════ -->
 <div class="modal-wrap" id="modal-plugin">
   <div class="modal-bg" onclick="closeModal('modal-plugin')"></div>
-  <div class="modal">
+  <div class="modal modal-wide">
     <div class="modal-hdr">
-      <span class="modal-title">Register Plugin</span>
+      <span class="modal-title" id="plugin-modal-title">Register Plugin</span>
       <button class="icon-btn" onclick="closeModal('modal-plugin')">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <form id="register-plugin-form" class="modal-body">
+      <input id="plugin-reg-current-id" type="hidden"/>
       <div class="form-row">
         <div class="form-col"><label>Plugin ID</label><input id="plugin-reg-id" class="inp" required value="plugin-http-v2"/></div>
         <div class="form-col"><label>Name</label><input id="plugin-reg-name" class="inp" required value="HTTP Probe"/></div>
@@ -778,6 +793,10 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
         <input id="plugin-reg-url" class="inp" placeholder="https://cdn.example.com/plugins/…"/>
       </div>
       <div class="form-col full">
+        <label>Upload Bundle ZIP <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--hint)">(optional, saved to plugin-bundles)</span></label>
+        <input id="plugin-reg-bundle-file" class="inp" type="file" accept="application/zip,.zip"/>
+      </div>
+      <div class="form-col full">
         <label>Dashboard JSON <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--hint)">(optional)</span></label>
         <textarea id="plugin-reg-json" class="inp" rows="4" placeholder="Paste Grafana dashboard JSON…"></textarea>
       </div>
@@ -787,7 +806,7 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-ghost" onclick="closeModal('modal-plugin')">Cancel</button>
-        <button type="submit" class="btn btn-primary">Register Plugin</button>
+        <button type="submit" class="btn btn-primary" id="plugin-reg-submit">Register Plugin</button>
       </div>
     </form>
   </div>
@@ -796,7 +815,7 @@ select[multiple] option{padding:4px 6px;border-radius:4px}
 <!-- ═══════════════════════ OUTPUT DRAWER ═══════════════════════ -->
 <div class="modal-wrap" id="modal-risk">
   <div class="modal-bg" id="risk-confirm-bg"></div>
-  <div class="modal">
+  <div class="modal modal-wide">
     <div class="modal-hdr">
       <span class="modal-title" id="risk-title">Confirm action</span>
       <button class="icon-btn" id="risk-confirm-x" type="button">
@@ -1077,6 +1096,44 @@ async function api(url, opts={}) {
   return p;
 }
 
+function findPlugin(id) {
+  return S.plugins.find(p => p.id === id) || null;
+}
+
+function setPluginModalMode(plugin=null) {
+  const editing = !!plugin;
+  $('plugin-modal-title').textContent = editing ? 'Edit Plugin' : 'Register Plugin';
+  $('plugin-reg-submit').textContent = editing ? 'Save Plugin' : 'Register Plugin';
+  $('plugin-reg-current-id').value = editing ? plugin.id : '';
+  $('plugin-reg-id').value = editing ? plugin.id : '';
+  $('plugin-reg-name').value = editing ? plugin.name : 'plugin-http-v2';
+  $('plugin-reg-version').value = editing ? plugin.version : '2.1.0';
+  $('plugin-reg-checksum').value = editing ? plugin.checksum : 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+  $('plugin-reg-desc').value = editing ? (plugin.description || '') : 'HTTP endpoint reachability checks';
+  $('plugin-reg-url').value = editing ? (plugin.bundleDownloadUrl || '') : '';
+  $('plugin-reg-json').value = editing ? (plugin.dashboardJson || '') : '';
+  $('plugin-reg-mode').value = editing ? plugin.executionMode : 'SCHEDULED';
+  $('plugin-reg-file').value = '';
+  $('plugin-reg-bundle-file').value = '';
+  openModal('modal-plugin');
+  setTimeout(() => $('plugin-reg-id').focus(), 0);
+}
+
+async function uploadPluginBundleIfSelected(pluginId, version) {
+  const file = $('plugin-reg-bundle-file').files?.[0];
+  if (!file) return null;
+
+  const form = new FormData();
+  form.append('bundle', file);
+  const result = await api(`/plugins/${encodeURIComponent(pluginId)}/${encodeURIComponent(version)}/bundle`, {
+    method: 'POST',
+    body: form,
+  });
+  $('plugin-reg-checksum').value = result.checksum || $('plugin-reg-checksum').value;
+  $('plugin-reg-url').value = '';
+  return result;
+}
+
 /* ════════════════════════════════════════
    HEARTBEAT
 ════════════════════════════════════════ */
@@ -1181,11 +1238,13 @@ function renderPlugins(plugins) {
         <span class="badge ${av?'badge-ok':'badge-gray'}" style="flex-shrink:0">${av?'Active':'Disabled'}</span>
       </div>
       ${p.description?`<div class="plugin-card-desc">${esc(p.description)}</div>`:''}
-      <div class="plugin-card-actions">
+      <div class="plugin-card-actions compact">
         ${p.hasDashboard && p.dashboardUid ? `<button class="btn btn-ghost plugin-dashboard" data-uid="${esc(p.dashboardUid)}" data-title="${esc(p.name)}">Dashboard</button>` : ''}
+        <button class="btn btn-ghost plugin-edit" data-id="${esc(p.id)}">Edit</button>
         <button class="btn ${av?'btn-warn':'btn-ghost'} plugin-toggle" data-id="${esc(p.id)}" data-next="${!av}" style="font-size:12px">${av?'Disable':'Enable'}</button>
-        <button class="btn btn-danger plugin-delete" data-id="${esc(p.id)}" style="width:32px;padding:0;justify-content:center;flex:0">
+        <button class="btn btn-danger plugin-delete" data-id="${esc(p.id)}">
           <svg viewBox="0 0 24 24" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Delete
         </button>
       </div>
     </div>`;
@@ -1334,7 +1393,7 @@ function pluginConfigRow(plugin, mode) {
         </div>
         ${dashboard}
       </div>
-      <label class="checkline"><input type="checkbox" class="plugin-assign-check" data-plugin-id="${esc(plugin.id)}" ${checkedAttr}/> Assigned action plugin</label>
+      <label class="checkline"><input type="checkbox" class="plugin-assign-check" data-plugin-id="${esc(plugin.id)}" ${checkedAttr}/><span>Assigned action plugin</span></label>
     </div>`;
   }
 
@@ -1346,9 +1405,9 @@ function pluginConfigRow(plugin, mode) {
       </div>
       ${dashboard}
     </div>
-    <label class="checkline"><input type="checkbox" class="plugin-assign-check" data-plugin-id="${esc(plugin.id)}" ${checkedAttr}/> Assigned</label>
+    <label class="checkline"><input type="checkbox" class="plugin-assign-check" data-plugin-id="${esc(plugin.id)}" ${checkedAttr}/><span>Assigned</span></label>
     <div class="plugin-config-controls">
-      <label class="checkline"><input type="checkbox" class="plugin-test-enable-check" data-plugin-id="${esc(plugin.id)}" ${testEnabled ? 'checked' : ''} ${disabledAttr}/> Enable scheduled test</label>
+      <label class="checkline"><input type="checkbox" class="plugin-test-enable-check" data-plugin-id="${esc(plugin.id)}" ${testEnabled ? 'checked' : ''} ${disabledAttr}/><span>Enable scheduled test</span></label>
       <div class="form-col">
         <label>Interval</label>
         <input class="inp plugin-test-interval" data-plugin-id="${esc(plugin.id)}" type="number" min="5" max="3600" value="${esc(interval)}" ${disabledAttr}/>
@@ -1384,14 +1443,25 @@ function collectAssignedPluginIds() {
 }
 
 function collectScheduledTestUpdates() {
-  return S.plugins
+  const assignedIds = new Set(collectAssignedPluginIds());
+  const assignedUpdates = S.plugins
     .filter(p => p.executionMode !== 'ACTION')
-    .filter(p => document.querySelector(`.plugin-assign-check[data-plugin-id="${CSS.escape(p.id)}"]`)?.checked)
+    .filter(p => assignedIds.has(p.id))
     .map(p => ({
       testType: p.id,
       enabled: !!document.querySelector(`.plugin-test-enable-check[data-plugin-id="${CSS.escape(p.id)}"]`)?.checked,
       intervalSeconds: Math.max(5, Math.min(3600, Number(document.querySelector(`.plugin-test-interval[data-plugin-id="${CSS.escape(p.id)}"]`)?.value || 30)))
     }));
+
+  const removedEnabledUpdates = (S.probeConfig?.enabledTests || [])
+    .filter(config => config?.enabled && config?.testType && !assignedIds.has(config.testType))
+    .map(config => ({
+      testType: config.testType,
+      enabled: false,
+      intervalSeconds: Math.max(5, Math.min(3600, Number(config.intervalSeconds || 30)))
+    }));
+
+  return [...assignedUpdates, ...removedEnabledUpdates];
 }
 
 function collectTestTypeOptions() {
@@ -1557,7 +1627,7 @@ async function refreshAll(options={}) {
   try {
     const [fd, pd] = await Promise.all([
       gql('query{fleetStatus{probes{id name location ipAddress ssid status lastHeartbeat}}}'),
-      gql('query{plugins{id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl hasDashboard dashboardUid}}'),
+      gql('query{plugins{id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl dashboardJson hasDashboard dashboardUid}}'),
     ]);
     renderFleet(fd.fleetStatus.probes);
     const pluginsSignature = JSON.stringify(pd.plugins || []);
@@ -1608,7 +1678,7 @@ $('save-settings-btn').addEventListener('click', ()=>{
 });
 
 // Open modals
-$('open-register-plugin').addEventListener('click', ()=>openModal('modal-plugin'));
+$('open-register-plugin').addEventListener('click', ()=>setPluginModalMode(null));
 $('refresh-actions-view-btn').addEventListener('click', ()=>refreshActionsView());
 $('quick-action-form').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -1709,11 +1779,19 @@ $('wifi-connect-form').addEventListener('submit', async e=>{
 // Plugins actions
 $('plugins-grid').addEventListener('click', async e=>{
   const dashboardBtn = e.target.closest('.plugin-dashboard');
+  const editBtn = e.target.closest('.plugin-edit');
   const toggleBtn = e.target.closest('.plugin-toggle');
   const deleteBtn = e.target.closest('.plugin-delete');
 
   if (dashboardBtn) {
     await openDashboardByUid(dashboardBtn.dataset.uid, dashboardBtn.dataset.title);
+    return;
+  }
+
+  if (editBtn) {
+    const plugin = findPlugin(editBtn.dataset.id);
+    if (!plugin) return toast('Plugin not found in current list', 'err');
+    setPluginModalMode(plugin);
     return;
   }
 
@@ -1766,25 +1844,33 @@ $('plugins-grid').addEventListener('click', async e=>{
 // Register plugin
 $('register-plugin-form').addEventListener('submit', async e=>{
   e.preventDefault();
+  const currentId = $('plugin-reg-current-id').value.trim();
+  const pluginId = $('plugin-reg-id').value.trim();
+  const version = $('plugin-reg-version').value.trim();
   const vars = {i:{
-    id:$('plugin-reg-id').value.trim(), name:$('plugin-reg-name').value.trim(),
-    version:$('plugin-reg-version').value.trim(), checksum:$('plugin-reg-checksum').value.trim(),
+    id:pluginId, name:$('plugin-reg-name').value.trim(),
+    version, checksum:$('plugin-reg-checksum').value.trim(),
     description:$('plugin-reg-desc').value.trim()||null,
     bundleDownloadUrl:$('plugin-reg-url').value.trim()||null,
     dashboardJson:$('plugin-reg-json').value.trim()||null,
     executionMode:$('plugin-reg-mode').value,
   }};
   try {
-    const d = await gql(
-      'mutation R($i:RegisterPluginInputTypeInput!){registerPlugin(input:$i){success message plugin{id name version available executionMode bundleUrl bundleDownloadUrl hasDashboard dashboardUid}}}',
-      vars
-    );
+    const uploaded = await uploadPluginBundleIfSelected(pluginId, version);
+    if (uploaded?.checksum) vars.i.checksum = uploaded.checksum;
+
+    const query = currentId
+      ? 'mutation U($i:UpdatePluginInputTypeInput!){updatePlugin(input:$i){success message plugin{id name version checksum description available executionMode bundleUrl bundleDownloadUrl dashboardJson hasDashboard dashboardUid}}}'
+      : 'mutation R($i:RegisterPluginInputTypeInput!){registerPlugin(input:$i){success message plugin{id name version checksum description available executionMode bundleUrl bundleDownloadUrl dashboardJson hasDashboard dashboardUid}}}';
+    if (currentId) vars.i.currentId = currentId;
+    const d = await gql(query, vars);
     setLog(d);
-    if (d.registerPlugin?.success) {
-      toast(d.registerPlugin?.message||'Plugin registered','ok');
+    const result = currentId ? d.updatePlugin : d.registerPlugin;
+    if (result?.success) {
+      toast(result?.message || (currentId ? 'Plugin updated' : 'Plugin registered'),'ok');
       closeModal('modal-plugin'); await refreshAll();
-    } else toast(d.registerPlugin?.message||'Rejected','err');
-  } catch(e) { toast('Plugin registration failed','err'); setLog({error:String(e)}); }
+    } else toast(result?.message||'Rejected','err');
+  } catch(e) { toast(currentId ? 'Plugin update failed' : 'Plugin registration failed','err'); setLog({error:String(e)}); }
 });
 
 // Plugin file upload
@@ -1800,7 +1886,7 @@ $('plugin-fetch-form').addEventListener('submit', async e=>{
   const id = $('plugin-fetch-select').value;
   if (!id) { toast('Select a plugin','warn'); return; }
   try {
-    const d = await gql('query P($id:String!){plugin(id:$id){id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl hasDashboard dashboardUid}}',{id});
+    const d = await gql('query P($id:String!){plugin(id:$id){id name version checksum description releasedAt available executionMode bundleUrl bundleDownloadUrl dashboardJson hasDashboard dashboardUid}}',{id});
     setLog(d); if (!S.drawerOpen) toggleDrawer();
     toast('Plugin details — see log','info');
   } catch(e) { toast('Fetch failed','err'); setLog({error:String(e)}); }

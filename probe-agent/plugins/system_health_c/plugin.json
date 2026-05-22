@@ -1,9 +1,0 @@
-{
-  "id": "SYSTEM_HEALTH_C",
-  "name": "System Health C",
-  "version": "1.0.0",
-  "entrypoint": "./beacon_system_health",
-  "timeout_seconds": 10,
-  "executionMode": "SCHEDULED",
-  "description": "Reports probe CPU, memory, disk, temperature, and uptime metrics."
-}

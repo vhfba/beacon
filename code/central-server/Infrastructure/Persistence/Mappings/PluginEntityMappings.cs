@@ -24,10 +24,15 @@ public static class PluginEntityMappings
 
     public static void ApplyToEntity(this Plugin plugin, PluginEntity entity)
     {
+        entity.Name = plugin.Name;
+        entity.Version = plugin.Version;
+        entity.Checksum = plugin.Checksum;
+        entity.Description = plugin.Description;
         entity.Available = plugin.Available;
         entity.BundleDownloadUrl = plugin.BundleDownloadUrl;
         entity.DashboardJson = plugin.DashboardJson;
         entity.ExecutionMode = plugin.ExecutionMode;
+        entity.ReleasedAt = plugin.ReleasedAt;
     }
 
     public static Plugin ToDomain(this PluginEntity entity)

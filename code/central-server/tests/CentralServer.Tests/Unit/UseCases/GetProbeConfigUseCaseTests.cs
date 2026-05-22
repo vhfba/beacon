@@ -16,11 +16,8 @@ public class GetProbeConfigUseCaseTests
 
         var probe = new Probe(new ProbeId("probe-config"), "Probe Config", "Lab", "10.0.0.7");
         await probeRepo.RegisterAsync(probe);
-        await configRepo.UpdateAsync(new ProbeTestConfiguration(
-            probe.Id,
-            "PING",
-            30,
-            true));
+        await configRepo.UpdateAsync(new ProbeTestConfiguration(probe.Id, "plugin-a", 30, true));
+        await configRepo.UpdateAsync(new ProbeTestConfiguration(probe.Id, "orphan-plugin", 30, true));
         await pluginRepo.CreateAsync(new Plugin("plugin-a", "Plugin A", "1.0.0", "sha-a"));
         await assignmentRepo.SetForProbeAsync(probe.Id, ["plugin-a"]);
 
@@ -30,6 +27,7 @@ public class GetProbeConfigUseCaseTests
 
         Assert.Equal("probe-config", result.ProbeId);
         Assert.Single(result.EnabledTests);
+        Assert.Equal("plugin-a", result.EnabledTests[0].TestType);
         Assert.Single(result.AvailablePlugins);
 
         var persisted = await probeRepo.GetByIdAsync(probe.Id);

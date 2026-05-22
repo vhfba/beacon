@@ -29,7 +29,10 @@ public static partial class ApplicationDtoMappings
         return new ProbeConfigDTO
         {
             ProbeId = probeId,
-            EnabledTests = configs.Select(ToDto).ToList(),
+            EnabledTests = configs
+                .Where(c => assignedPluginIds.Contains(c.PluginId))
+                .Select(ToDto)
+                .ToList(),
             AvailablePlugins = availablePlugins
                 .Where(p => assignedPluginIds.Contains(p.Id))
                 .OrderBy(p => p.Name)

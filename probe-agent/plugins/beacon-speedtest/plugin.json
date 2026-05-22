@@ -1,0 +1,21 @@
+{
+  "id": "beacon-speedtest",
+  "version": "1.0.0",
+  "type": "binary",
+  "entrypoint": "./beacon-speedtest.exe",
+  "executionMode": "SCHEDULED",
+  "timeout_seconds": 90,
+  "description": "BEACON periodic HTTP throughput test",
+  "platforms": [
+    "windows-amd64",
+    "linux-amd64",
+    "linux-arm64"
+  ],
+  "dashboards": [
+    {
+      "uid": "beacon-speedtest",
+      "title": "BEACON Speed Monitor",
+      "path": "dashboards/beacon-speedtest.json"
+    }
+  ]
+}

@@ -58,6 +58,11 @@ public class ProbeRuntimeFlowTests : IClassFixture<CentralServerWebAppFactory>
             }
             """, new { input = new { probeId, testType = "HTTP", intervalSeconds = 45, enabled = true } });
         await IntegrationTestClient.PostGraphQLAsync(admin, """
+            mutation($input: SetProbePluginsInputTypeInput!) {
+              setProbePlugins(input: $input) { success assignments { pluginId } }
+            }
+            """, new { input = new { probeId, pluginIds = new[] { "HTTP" } } });
+        await IntegrationTestClient.PostGraphQLAsync(admin, """
             mutation($probeId: String!, $status: String!) {
               updateProbeStatus(probeId: $probeId, status: $status) { success probe { status } }
             }

@@ -26,6 +26,7 @@ type Mutation {
   updateProbeActionStatus(input: UpdateProbeActionStatusInputTypeInput!): UpdateProbeActionStatusResponse! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
   updateProbeControlCommandStatus(input: UpdateProbeControlCommandStatusInputTypeInput!): ProbeControlCommandResponse! @authorize(policy: "ProbeOrAdmin") @cost(weight: "10")
   registerPlugin(input: RegisterPluginInputTypeInput!): RegisterPluginResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
+  updatePlugin(input: UpdatePluginInputTypeInput!): UpdatePluginResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
   setPluginAvailability(input: SetPluginAvailabilityInputTypeInput!): SetPluginAvailabilityResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
   deletePlugin(pluginId: String!): DeletePluginResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
   updateProbeTestConfig(input: UpdateProbeTestConfigInputTypeInput!): UpdateProbeTestConfigResponse! @authorize(policy: "AdminOnly") @cost(weight: "10")
@@ -50,6 +51,8 @@ type PluginType {
   bundleUrl: String!
   bundleDownloadUrl: String
   dashboardJson: String
+  hasDashboard: Boolean!
+  dashboardUid: String
 }
 
 type ProbeActionExecutionType {
@@ -155,6 +158,12 @@ type Query {
 }
 
 type RegisterPluginResponse {
+  success: Boolean!
+  message: String
+  plugin: PluginType
+}
+
+type UpdatePluginResponse {
   success: Boolean!
   message: String
   plugin: PluginType
@@ -287,6 +296,18 @@ input TriggerProbeActionInputTypeInput {
   probeId: String!
   pluginId: String!
   triggeredBy: String!
+}
+
+input UpdatePluginInputTypeInput {
+  currentId: String!
+  id: String!
+  name: String!
+  version: String!
+  checksum: String!
+  description: String
+  bundleDownloadUrl: String
+  dashboardJson: String
+  executionMode: PluginExecutionModeType!
 }
 
 input UpdateProbeActionStatusInputTypeInput {

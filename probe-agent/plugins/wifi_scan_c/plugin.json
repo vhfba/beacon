@@ -1,9 +1,0 @@
-{
-  "id": "WIFI_SCAN_C",
-  "name": "Wi-Fi Scan C",
-  "version": "1.0.0",
-  "entrypoint": "./beacon_wifi_scan",
-  "timeout_seconds": 25,
-  "executionMode": "SCHEDULED",
-  "description": "Scans nearby Wi-Fi networks and reports coverage/interference aggregates."
-}
