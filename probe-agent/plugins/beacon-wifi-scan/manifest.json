@@ -1,0 +1,16 @@
+{
+  "id": "beacon-wifi-scan",
+  "version": "1.0.0",
+  "type": "script",
+  "entrypoint": "./wifi_test",
+  "executionMode": "SCHEDULED",
+  "timeout_seconds": 30,
+  "description": "BEACON nl80211 Wi-Fi scan",
+  "dashboards": [
+    {
+      "uid": "beacon-wifi-scan",
+      "title": "BEACON Wi-Fi Scan",
+      "path": "dashboards/beacon-wifi-scan.json"
+    }
+  ]
+}

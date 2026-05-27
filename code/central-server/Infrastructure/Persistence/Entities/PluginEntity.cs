@@ -43,5 +43,8 @@ public class PluginEntity
     [Column("execution_mode")]
     public PluginExecutionMode ExecutionMode { get; set; } = PluginExecutionMode.Scheduled;
 
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; }
+
     public ICollection<ProbePluginAssignmentEntity> ProbeAssignments { get; set; } = new List<ProbePluginAssignmentEntity>();
 }

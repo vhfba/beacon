@@ -8,6 +8,8 @@ public sealed class PluginEntityConfiguration : IEntityTypeConfiguration<PluginE
 {
     public void Configure(EntityTypeBuilder<PluginEntity> builder)
     {
+        builder.HasQueryFilter(p => !p.IsDeleted);
+
         builder
             .HasIndex(p => p.Name)
             .HasDatabaseName("idx_plugins_name");
@@ -15,7 +17,8 @@ public sealed class PluginEntityConfiguration : IEntityTypeConfiguration<PluginE
         builder
             .HasIndex(p => new { p.Name, p.Version })
             .HasDatabaseName("idx_plugins_name_version")
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("is_deleted = FALSE");
 
         builder
             .HasIndex(p => p.Available)

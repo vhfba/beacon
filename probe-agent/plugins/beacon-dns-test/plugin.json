@@ -1,0 +1,16 @@
+{
+  "id": "beacon-dns-test",
+  "version": "1.0.0",
+  "type": "script",
+  "entrypoint": "./dns_test.py",
+  "executionMode": "SCHEDULED",
+  "timeout_seconds": 20,
+  "description": "BEACON DNS resolver comparison test",
+  "dashboards": [
+    {
+      "uid": "beacon-dns-test",
+      "title": "BEACON DNS Test",
+      "path": "dashboards/beacon-dns-test.json"
+    }
+  ]
+}

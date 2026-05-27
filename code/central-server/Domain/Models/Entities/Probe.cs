@@ -104,24 +104,32 @@ public class Probe
         Version++;
     }
 
+    public void RecordActivity(DateTime timestamp)
+    {
+        LastSeenAt = timestamp;
+    }
+
     public void RecordHeartbeatAndActivate()
     {
-        LastHeartbeat = DateTime.UtcNow;
-        LastSeenAt = LastHeartbeat;
+        var now = DateTime.UtcNow;
+        LastHeartbeat = now;
+        RecordActivity(now);
         if (Status != ProbeStatus.Active && Status != ProbeStatus.Decommissioned)
             UpdateStatus(ProbeStatus.Active);
     }
 
     public void RecordPassiveHeartbeat()
     {
-        LastHeartbeat = DateTime.UtcNow;
-        LastSeenAt = LastHeartbeat;
+        var now = DateTime.UtcNow;
+        LastHeartbeat = now;
+        RecordActivity(now);
     }
 
     public void RecordMetricsPush()
     {
-        LastMetricsPush = DateTime.UtcNow;
-        LastSeenAt = LastMetricsPush;
+        var now = DateTime.UtcNow;
+        LastMetricsPush = now;
+        RecordActivity(now);
         if (Status != ProbeStatus.Active && Status != ProbeStatus.Decommissioned)
             UpdateStatus(ProbeStatus.Active);
     }

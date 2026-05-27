@@ -1,0 +1,16 @@
+{
+  "id": "beacon-wired-ethernet",
+  "version": "1.0.0",
+  "type": "script",
+  "entrypoint": "./ethernet_test.py",
+  "executionMode": "SCHEDULED",
+  "timeout_seconds": 30,
+  "description": "BEACON wired ethernet link and gateway monitor",
+  "dashboards": [
+    {
+      "uid": "beacon-wired-ethernet",
+      "title": "BEACON Wired Ethernet",
+      "path": "dashboards/beacon-wired-ethernet.json"
+    }
+  ]
+}

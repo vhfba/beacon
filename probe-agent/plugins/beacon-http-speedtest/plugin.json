@@ -1,0 +1,16 @@
+{
+  "id": "beacon-http-speedtest",
+  "version": "1.0.0",
+  "type": "script",
+  "entrypoint": "./speedtest_http.py",
+  "executionMode": "SCHEDULED",
+  "timeout_seconds": 90,
+  "description": "BEACON HTTP-based download, upload, and latency test",
+  "dashboards": [
+    {
+      "uid": "beacon-http-speedtest",
+      "title": "BEACON HTTP Speedtest",
+      "path": "dashboards/beacon-http-speedtest.json"
+    }
+  ]
+}

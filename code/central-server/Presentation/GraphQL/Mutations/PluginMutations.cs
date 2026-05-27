@@ -97,12 +97,8 @@ public class PluginMutations
             async () =>
             {
                 var plugin = await useCase.ExecuteAsync(pluginId, cancellationToken);
-                string? message = null;
-                if (!string.IsNullOrWhiteSpace(plugin.DashboardJson))
-                {
-                    var summary = await dashboardAutomationService.RemoveDashboardAsync(plugin.Id, cancellationToken);
-                    message = $"Plugin deleted. Grafana dashboard removal {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
-                }
+                var summary = await dashboardAutomationService.RemoveDashboardAsync(plugin.Id, cancellationToken);
+                var message = $"Plugin deleted. Grafana dashboard removal {(summary.GrafanaApplied > 0 ? "applied" : "failed/skipped")} for UID '{summary.DashboardUid}'. {summary.Message}";
 
                 return new DeletePluginResponse
                 {

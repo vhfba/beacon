@@ -19,20 +19,20 @@ public class ExportPrometheusMetricsUseCase
         var snapshots = await _probeMetricsStore.GetAllAsync(cancellationToken);
         var allSamples = snapshots
             .OrderBy(snapshot => snapshot.ProbeId, StringComparer.OrdinalIgnoreCase)
-            .SelectMany(snapshot => snapshot.Samples)
-            .GroupBy(sample => sample.Name, StringComparer.Ordinal)
+            .SelectMany(snapshot => snapshot.Samples.Select(sample => new ProbeSample(snapshot.ProbeId, sample)))
+            .GroupBy(item => item.Sample.Name, StringComparer.Ordinal)
             .OrderBy(group => group.Key, StringComparer.Ordinal);
 
         var sb = new StringBuilder();
         foreach (var group in allSamples)
         {
-            sb.Append("# TYPE ").Append(group.Key).Append(' ').Append(group.First().Kind).AppendLine();
-            foreach (var sample in group.OrderBy(SerializeLabels, StringComparer.Ordinal))
+            sb.Append("# TYPE ").Append(group.Key).Append(' ').Append(group.First().Sample.Kind).AppendLine();
+            foreach (var sample in group.OrderBy(item => SerializeLabels(item.ProbeId, item.Sample), StringComparer.Ordinal))
             {
-                sb.Append(sample.Name);
-                sb.Append(SerializeLabels(sample));
+                sb.Append(sample.Sample.Name);
+                sb.Append(SerializeLabels(sample.ProbeId, sample.Sample));
                 sb.Append(' ');
-                sb.Append(sample.Value.ToString("R", CultureInfo.InvariantCulture));
+                sb.Append(sample.Sample.Value.ToString("R", CultureInfo.InvariantCulture));
                 sb.AppendLine();
             }
         }
@@ -40,14 +40,20 @@ public class ExportPrometheusMetricsUseCase
         return sb.ToString();
     }
 
-    private static string SerializeLabels(MetricSampleInput sample)
+    private static string SerializeLabels(string probeId, MetricSampleInput sample)
     {
-        if (sample.Labels.Count == 0)
+        var labels = new Dictionary<string, string>(sample.Labels, StringComparer.Ordinal);
+        if (!string.IsNullOrWhiteSpace(probeId) && !labels.ContainsKey("probe_id"))
+        {
+            labels["probe_id"] = probeId;
+        }
+
+        if (labels.Count == 0)
         {
             return string.Empty;
         }
 
-        var parts = sample.Labels
+        var parts = labels
             .OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .Select(pair => $"{pair.Key}=\"{EscapeLabelValue(pair.Value)}\"");
         return "{" + string.Join(",", parts) + "}";
@@ -60,4 +66,6 @@ public class ExportPrometheusMetricsUseCase
             .Replace("\"", "\\\"", StringComparison.Ordinal)
             .Replace("\n", "\\n", StringComparison.Ordinal);
     }
+
+    private readonly record struct ProbeSample(string ProbeId, MetricSampleInput Sample);
 }

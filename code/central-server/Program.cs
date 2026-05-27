@@ -8,10 +8,24 @@ using CentralServer.Presentation.Monitoring;
 using CentralServer.Presentation.Plugins;
 using CentralServer.Presentation.Security;
 
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
 var builder = WebApplication.CreateBuilder(args);
 var bundleDirectory = PluginBundleDirectoryResolver.Resolve(
     builder.Configuration["Plugins:BundleDirectory"],
     builder.Environment.ContentRootPath);
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Beacon.CentralServer"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddConsoleExporter();
+    });
 
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddMetricsServices(builder.Configuration);
@@ -36,7 +50,16 @@ builder.Services.AddCors(options =>
 builder.Services.AddLogging(config =>
 {
     config.ClearProviders();
-    config.AddConsole();
+    config.AddJsonConsole(options => 
+    {
+        options.IncludeScopes = true;
+        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
+        options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions
+        {
+            Indented = false
+        };
+    });
+
     if (builder.Environment.IsDevelopment())
     {
         config.AddDebug();

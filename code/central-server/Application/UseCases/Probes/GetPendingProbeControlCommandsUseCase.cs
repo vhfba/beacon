@@ -26,8 +26,15 @@ public class GetPendingProbeControlCommandsUseCase
         int limit,
         CancellationToken cancellationToken = default)
     {
+        using var activity = Diagnostics.ActivitySource.StartActivity("GetPendingProbeControlCommands");
+        activity?.SetTag("probe.id", probeId);
+        activity?.SetTag("command.limit", limit);
+
         var probe = await UseCaseGuards.GetRequiredProbeAsync(_probeRepository, probeId, cancellationToken, trim: true);
         var commands = await _commandRepository.ClaimPendingForProbeAsync(probe.Id, limit, cancellationToken);
+        
+        activity?.SetTag("command.claimed_count", commands.Count);
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return commands.Select(command => command.ToDto(redactSensitivePayload: false)).ToList();
     }

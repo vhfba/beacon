@@ -12,9 +12,11 @@ using Microsoft.Extensions.DependencyInjection;
 public sealed class CentralServerWebAppFactory : WebApplicationFactory<Program>
 {
     private readonly string _databaseName = $"beacon_test_{Guid.NewGuid():N}";
+    private readonly string _bundleDirectory = Path.Combine(Path.GetTempPath(), $"beacon_test_bundles_{Guid.NewGuid():N}");
 
     public string AdminApiKey => "test-admin-key";
     public string ProbeApiKey => "test-probe-key";
+    public string BundleDirectory => _bundleDirectory;
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
@@ -28,11 +30,22 @@ public sealed class CentralServerWebAppFactory : WebApplicationFactory<Program>
                 ["Metrics:Provider"] = "InMemory",
                 ["Auth:AdminApiKey"] = AdminApiKey,
                 ["Auth:ProbeApiKey"] = ProbeApiKey,
+                ["Plugins:BundleDirectory"] = _bundleDirectory,
                 ["GraphQL:EnableIntrospection"] = "false",
                 ["GraphQL:MaxQueryDepth"] = "8",
                 ["GraphQL:MaxQueryComplexity"] = "50"
             });
         });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (disposing && Directory.Exists(_bundleDirectory))
+        {
+            Directory.Delete(_bundleDirectory, recursive: true);
+        }
     }
 
     public async Task SeedProbeAsync(string id, string ipAddress, ProbeStatus status)

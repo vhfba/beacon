@@ -33,6 +33,30 @@ public class ExportPrometheusMetricsUseCaseTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_AddsProbeIdWhenMissingFromLabels()
+    {
+        var useCase = new ExportPrometheusMetricsUseCase(new FakeMetricsStore([
+            new ProbeMetricsSnapshot("probe-c", DateTimeOffset.UtcNow, [
+                new MetricSampleInput
+                {
+                    Name = "beacon_dns_latency_ms",
+                    Kind = "gauge",
+                    Value = 5.62,
+                    Labels = new Dictionary<string, string>
+                    {
+                        ["domain"] = "google.com",
+                        ["resolver"] = "cloudflare"
+                    }
+                }
+            ])
+        ]));
+
+        var result = await useCase.ExecuteAsync();
+
+        Assert.Contains("beacon_dns_latency_ms{domain=\"google.com\",probe_id=\"probe-c\",resolver=\"cloudflare\"} 5.62", result, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_OrdersMetricFamiliesAndSamplesDeterministically()
     {
         var useCase = new ExportPrometheusMetricsUseCase(new FakeMetricsStore([

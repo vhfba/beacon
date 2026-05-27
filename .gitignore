@@ -32,6 +32,8 @@ code/*/*.db
 .DS_Store
 Thumbs.db
 
+relatorio/
+
 AGENTS.md
 docs/examples/*
 code/central-server/tests/CentralServer.Tests/CentralServer.Tests.csproj.lscache

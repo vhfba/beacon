@@ -29,6 +29,13 @@ public sealed class RedisProbeMetricsStore : IProbeMetricsStore
         await db.SetAddAsync(ProbesKey(), probeId).ConfigureAwait(false);
     }
 
+    private const string RemoveFromSetIfStringMissingScript = @"
+        if redis.call('EXISTS', KEYS[1]) == 0 then
+            return redis.call('SREM', KEYS[2], ARGV[1])
+        else
+            return 0
+        end";
+
     public async Task<IReadOnlyList<ProbeMetricsSnapshot>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var db = _redis.GetDatabase();
@@ -47,10 +54,15 @@ public sealed class RedisProbeMetricsStore : IProbeMetricsStore
                 continue;
             }
 
-            var raw = await db.StringGetAsync(ProbeKey(probeId)).ConfigureAwait(false);
+            var key = ProbeKey(probeId);
+            var raw = await db.StringGetAsync(key).ConfigureAwait(false);
             if (raw.IsNullOrEmpty)
             {
-                await db.SetRemoveAsync(ProbesKey(), probeId).ConfigureAwait(false);
+                await db.ScriptEvaluateAsync(
+                    RemoveFromSetIfStringMissingScript,
+                    new RedisKey[] { key, ProbesKey() },
+                    new RedisValue[] { probeId }
+                ).ConfigureAwait(false);
                 continue;
             }
 

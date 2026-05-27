@@ -2,7 +2,11 @@ name: beacon-monitoring
 
 services:
   prometheus:
-    image: prom/prometheus:v2.54.1
+    build:
+      context: .
+      dockerfile: Dockerfile.prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     container_name: beacon-prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -12,8 +16,8 @@ services:
     ports:
       - ${PROMETHEUS_PORT:-9090}:9090
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+      - ./prometheus/rules:/etc/prometheus/rules:ro,Z
       - prometheus_data:/prometheus
     restart: unless-stopped
     networks:
@@ -35,8 +39,8 @@ services:
     ports:
       - ${GRAFANA_PORT:-3000}:3000
     volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro,Z
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro,Z
       - grafana_data:/var/lib/grafana
     restart: unless-stopped
     networks:

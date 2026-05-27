@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+set -eu
+
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+BIN="$DIR/.wifi_test.bin"
+SRC="$DIR/wifi_test.c"
+
+if [ ! -x "$BIN" ] || [ "$SRC" -nt "$BIN" ]; then
+  gcc "$SRC" -o "$BIN" -I/usr/include/libnl3 -lnl-3 -lnl-genl-3
+fi
+
+exec "$BIN" "$@"

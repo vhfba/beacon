@@ -81,8 +81,7 @@ public class PluginRepositoryAdapter : IPluginRepository
 
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-        existingEntity.Name = $"__renaming__{Guid.NewGuid():N}";
-        existingEntity.Version = Guid.NewGuid().ToString("N");
+        existingEntity.IsDeleted = true;
         await _context.SaveChangesAsync(cancellationToken);
 
         _context.Plugins.Add(replacementEntity);
@@ -100,8 +99,6 @@ public class PluginRepositoryAdapter : IPluginRepository
             .Where(c => c.TestType == currentId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TestType, plugin.Id), cancellationToken);
 
-        _context.Plugins.Remove(existingEntity);
-        await _context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 

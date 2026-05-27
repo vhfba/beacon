@@ -1,0 +1,16 @@
+{
+  "id": "beacon-system",
+  "version": "1.0.0",
+  "type": "script",
+  "entrypoint": "./system_metrics.py",
+  "executionMode": "SCHEDULED",
+  "timeout_seconds": 10,
+  "description": "BEACON host CPU, temperature, and memory monitor",
+  "dashboards": [
+    {
+      "uid": "beacon-system",
+      "title": "BEACON System Monitor",
+      "path": "dashboards/beacon-system.json"
+    }
+  ]
+}

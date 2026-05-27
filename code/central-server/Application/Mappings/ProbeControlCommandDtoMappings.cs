@@ -25,25 +25,14 @@ public static partial class ApplicationDtoMappings
         };
     }
 
+    [System.Text.RegularExpressions.GeneratedRegex(@"""password""\s*:\s*""[^""]*""", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex PasswordPropertyRegex();
+
     public static string? RedactSensitivePayload(string? payloadJson)
     {
         if (string.IsNullOrWhiteSpace(payloadJson))
             return payloadJson;
 
-        try
-        {
-            var node = JsonNode.Parse(payloadJson);
-            if (node is JsonObject obj && obj.ContainsKey("password"))
-            {
-                obj["password"] = "***";
-                return obj.ToJsonString();
-            }
-        }
-        catch
-        {
-            return payloadJson;
-        }
-
-        return payloadJson;
+        return PasswordPropertyRegex().Replace(payloadJson, "\"password\":\"***\"");
     }
 }

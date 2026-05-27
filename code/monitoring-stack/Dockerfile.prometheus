@@ -1,0 +1,7 @@
+FROM prom/prometheus:v2.54.1
+
+USER root
+COPY prometheus/prometheus.yml /etc/prometheus/prometheus.yml
+COPY prometheus/rules /etc/prometheus/rules
+RUN chmod -R a+rX /etc/prometheus
+USER nobody
