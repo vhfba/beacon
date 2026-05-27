@@ -46,6 +46,8 @@ services:
       Monitoring__Grafana__ApiPassword: ${GRAFANA_API_PASSWORD:-}
     ports:
       - "${CENTRAL_SERVER_PORT:-5000}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./plugin-bundles:/app/plugin-bundles:ro
     depends_on:
