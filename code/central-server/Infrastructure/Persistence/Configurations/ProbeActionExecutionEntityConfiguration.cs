@@ -8,6 +8,8 @@ public sealed class ProbeActionExecutionEntityConfiguration : IEntityTypeConfigu
 {
     public void Configure(EntityTypeBuilder<ProbeActionExecutionEntity> builder)
     {
+        builder.HasQueryFilter(e => !e.Plugin!.IsDeleted);
+
         builder
             .HasIndex(e => e.ProbeId)
             .HasDatabaseName("idx_probe_action_probe_id");

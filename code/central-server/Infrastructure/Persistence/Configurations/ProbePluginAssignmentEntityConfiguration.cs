@@ -8,6 +8,8 @@ public sealed class ProbePluginAssignmentEntityConfiguration : IEntityTypeConfig
 {
     public void Configure(EntityTypeBuilder<ProbePluginAssignmentEntity> builder)
     {
+        builder.HasQueryFilter(pa => !pa.Plugin!.IsDeleted);
+
         builder.HasKey(pa => new { pa.ProbeId, pa.PluginId });
 
         builder
